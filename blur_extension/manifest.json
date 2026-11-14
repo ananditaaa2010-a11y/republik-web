@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "WhatsApp Privacy Blur Addon",
+  "version": "1.0.0",
+  "description": "Privacy blur add-on untuk WhatsApp Web (Multi Account Desktop)",
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "css": [
+        "css/blur.css"
+      ],
+      "js": [
+        "js/content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": [
+    "storage"
+  ]
+}

@@ -1,0 +1,181 @@
+/* ==========================================================================
+   WhatsApp Web Privacy Blur Stylesheet (Version 2.3.0 - Ultra Safe)
+   
+   PRINSIP PRESISI:
+   1. HANYA BLUR:
+      - Foto profil (Sidebar, Header, Drawer info kontak, Pojok kiri bawah)
+      - Nama kontak (Sidebar, Header, Drawer info kontak)
+      - Nomor telepon / info status di Drawer
+      - Tombol Meta AI
+   2. JANGAN PERNAH BLUR:
+      - Tulisan "WhatsApp", search bar, tombol "Diarsipkan"
+      - Filter chips ("Semua", "Belum dibaca", "Favorit", "Grup", "+")
+      - Pesan obrolan, bubble chat, balasan kutipan pesan
+      - Preview pesan di sidebar, jam/timestamp, centang status
+      - Layar welcome / tampilan kosong tengah
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. PENGECUALIAN TEGAS (JANGAN PERNAH BLUR ELEMEN INI)
+   -------------------------------------------------------------------------- */
+#main div[role="row"],
+#main [data-testid="msg-container"],
+#main .message-in,
+#main .message-out,
+#main .copyable-text,
+#main .selectable-text,
+#main [data-testid="quoted-message"],
+#pane-side [data-testid="last-msg-status"],
+#pane-side div[data-testid="cell-frame-container"] > div:last-child,
+button[role="tab"],
+[data-testid*="filter"],
+[data-testid="archived"],
+div[data-testid="archived-chats"],
+#pane-side button,
+header button,
+div[data-testid="chat-list-search"],
+div[data-testid="search-input"] {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   1. FOTO PROFIL / AVATAR
+   -------------------------------------------------------------------------- */
+/* Sidebar Avatar */
+body:not(.wa-blur-disabled) #pane-side img,
+body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"],
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"],
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"],
+body:not(.wa-blur-disabled) #pane-side div._ak8h,
+/* Header Avatar di Atas Bubble */
+body:not(.wa-blur-disabled) #main header img,
+body:not(.wa-blur-disabled) #main header [data-testid="avatar"],
+body:not(.wa-blur-disabled) #main header div._ak8h,
+body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"],
+body:not(.wa-blur-disabled) .wa-privacy-header-avatar,
+/* Drawer Avatar (Foto Besar / Lingkaran "GP") */
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] > div[style*="border-radius"],
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] img,
+body:not(.wa-blur-disabled) .wa-privacy-drawer-avatar,
+body:not(.wa-blur-disabled) .wa-privacy-shared-avatar,
+/* Pojok Kiri Bawah */
+body:not(.wa-blur-disabled) nav button:last-child img,
+body:not(.wa-blur-disabled) nav div[role="button"]:last-child img,
+body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"],
+body:not(.wa-blur-disabled) .wa-privacy-avatar {
+  filter: blur(12px) !important;
+  -webkit-filter: blur(12px) !important;
+  transition: filter 0.15s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+/* Hover Foto Profil */
+body:not(.wa-blur-disabled) #pane-side img:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"]:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"]:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"]:hover,
+body:not(.wa-blur-disabled) #pane-side div._ak8h:hover,
+body:not(.wa-blur-disabled) #main header img:hover,
+body:not(.wa-blur-disabled) #main header [data-testid="avatar"]:hover,
+body:not(.wa-blur-disabled) #main header div._ak8h:hover,
+body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"]:hover,
+body:not(.wa-blur-disabled) .wa-privacy-header-avatar:hover,
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] > div[style*="border-radius"]:hover,
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] img:hover,
+body:not(.wa-blur-disabled) .wa-privacy-drawer-avatar:hover,
+body:not(.wa-blur-disabled) .wa-privacy-shared-avatar:hover,
+body:not(.wa-blur-disabled) nav button:last-child img:hover,
+body:not(.wa-blur-disabled) nav div[role="button"]:last-child img:hover,
+body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"]:hover,
+body:not(.wa-blur-disabled) .wa-privacy-avatar:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. NAMA KONTAK
+   -------------------------------------------------------------------------- */
+/* Sidebar Chat Name */
+body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-title"],
+/* Header Chat Name di Atas Bubble */
+body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-title"],
+body:not(.wa-blur-disabled) #main header [data-testid="chat-title"],
+body:not(.wa-blur-disabled) #main header span[title],
+body:not(.wa-blur-disabled) .wa-privacy-header-name,
+/* Drawer Contact Name ("Gatut P") */
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] h2,
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] [data-testid="contact-info-title"],
+body:not(.wa-blur-disabled) .wa-privacy-drawer-name,
+body:not(.wa-blur-disabled) .wa-privacy-shared-name,
+body:not(.wa-blur-disabled) .wa-privacy-name {
+  filter: blur(8px) !important;
+  -webkit-filter: blur(8px) !important;
+  transition: filter 0.15s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+}
+
+/* Hover Nama Kontak */
+body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-title"]:hover,
+body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-title"]:hover,
+body:not(.wa-blur-disabled) #main header [data-testid="chat-title"]:hover,
+body:not(.wa-blur-disabled) #main header span[title]:hover,
+body:not(.wa-blur-disabled) .wa-privacy-header-name:hover,
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] h2:hover,
+body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] [data-testid="contact-info-title"]:hover,
+body:not(.wa-blur-disabled) .wa-privacy-drawer-name:hover,
+body:not(.wa-blur-disabled) .wa-privacy-shared-name:hover,
+body:not(.wa-blur-disabled) .wa-privacy-name:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. NOMOR TELEPON / INFO KONTAK DI DRAWER
+   -------------------------------------------------------------------------- */
+body:not(.wa-blur-disabled) .wa-privacy-number {
+  filter: blur(8px) !important;
+  -webkit-filter: blur(8px) !important;
+  transition: filter 0.15s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+}
+
+body:not(.wa-blur-disabled) .wa-privacy-number:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. FITUR META AI
+   -------------------------------------------------------------------------- */
+body:not(.wa-blur-disabled) .wa-privacy-meta-ai,
+body:not(.wa-blur-disabled) button[aria-label*="Meta AI"],
+body:not(.wa-blur-disabled) div[aria-label*="Meta AI"],
+body:not(.wa-blur-disabled) span[data-icon*="meta-ai"],
+body:not(.wa-blur-disabled) span[data-icon*="ai-"] {
+  filter: blur(12px) !important;
+  -webkit-filter: blur(12px) !important;
+  transition: filter 0.15s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+body:not(.wa-blur-disabled) .wa-privacy-meta-ai:hover,
+body:not(.wa-blur-disabled) button[aria-label*="Meta AI"]:hover,
+body:not(.wa-blur-disabled) div[aria-label*="Meta AI"]:hover,
+body:not(.wa-blur-disabled) span[data-icon*="meta-ai"]:hover,
+body:not(.wa-blur-disabled) span[data-icon*="ai-"]:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. VERIFIED BADGE (TETAP 100% JERNIH)
+   -------------------------------------------------------------------------- */
+body:not(.wa-blur-disabled) [data-testid*="verified"],
+body:not(.wa-blur-disabled) [data-icon*="verified"],
+body:not(.wa-blur-disabled) span[data-icon*="psa-verified"] {
+  filter: none !important;
+  -webkit-filter: none !important;
+}

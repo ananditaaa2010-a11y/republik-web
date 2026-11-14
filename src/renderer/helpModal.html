@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Panduan Penggunaan - Republik Web</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --accent-ai: #6366f1;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      user-select: none;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header img {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+    }
+    .header h2 {
+      font-size: 18px;
+      color: #ffffff;
+    }
+    .header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .content::-webkit-scrollbar {
+      width: 4px;
+    }
+    .content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    .guide-step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .step-badge {
+      width: 28px;
+      height: 28px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step-badge.ai {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-ai);
+      border-color: var(--accent-ai);
+    }
+    .step-body h4 {
+      font-size: 14px;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .step-body p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    button {
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: var(--primary);
+      color: #ffffff;
+      transition: background 0.15s ease;
+    }
+    button:hover {
+      background: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="../../assets/icon.png" alt="Republik Web Logo">
+    <div>
+      <h2>Panduan Republik Web</h2>
+      <p>Petunjuk mudah penggunaan multi-akun WhatsApp, Telegram, Gmail, dan Auto Text</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="guide-step">
+      <div class="step-badge">1</div>
+      <div class="step-body">
+        <h4>Hubungkan WhatsApp (Scan QR)</h4>
+        <p>Buka WhatsApp di HP Anda &gt; menu Titik Tiga (atau Pengaturan di iPhone) &gt; <b>Perangkat Tertaut</b> &gt; <b>Tautkan Perangkat</b>, lalu arahkan kamera ke QR Code di layar. Sesi Anda aman dan tersimpan permanen.</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-badge">2</div>
+      <div class="step-body">
+        <h4>Tambah Akun Kedua &amp; Seterusnya</h4>
+        <p>Klik tombol <b>+ (Tambah Akun)</b> di sidebar sebelah kiri. Masukkan label nama (misal: "CS Admin", "Sales", "Pribadi") dan pilih warna. Anda dapat mengelola banyak nomor secara terpisah tanpa saling bentrok.</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-badge">3</div>
+      <div class="step-body">
+        <h4>Kelola Akun (Ganti Nama / Hapus)</h4>
+        <p><b>Klik kanan</b> pada ikon akun di sidebar untuk membuka menu: Ubah nama &amp; warna, muat ulang akun, atau hapus akun beserta sesinya.</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-badge">&#128279;</div>
+      <div class="step-body">
+        <h4>Keamanan &amp; Tautan Luar</h4>
+        <p>Semua link situs yang dikirim di chat WhatsApp akan dibuka secara aman di peramban utama komputer Anda (Google Chrome / Edge) untuk melindungi dari tautan phishing.</p>
+      </div>
+    </div>
+
+    <div class="guide-step">
+      <div class="step-badge">&#128737;&#65039;</div>
+      <div class="step-body">
+        <h4>Privacy Blur Addon (Sensor Layar WhatsApp)</h4>
+        <p>Gunakan tombol ikon <b>Mata</b> di sidebar dock atau tekan tombol <b>Alt + B</b> pada keyboard untuk mengaktifkan/menonaktifkan efek sensor blur pada pesan, nama kontak, dan foto profil. Arahkan kursor mouse (<i>hover</i>) pada chat untuk membuka blur sementara.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button id="btnClose">Tutup Panduan</button>
+  </div>
+
+  <script>
+    document.getElementById('btnClose').addEventListener('click', () => {
+      window.close();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') window.close();
+    });
+  </script>
+</body>
+</html>

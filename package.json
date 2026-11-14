@@ -1,0 +1,84 @@
+{
+  "name": "republik-web",
+  "version": "2.0.2",
+  "description": "Republik Web — Multi-Account Desktop Workspace untuk WhatsApp, Telegram, dan Gmail",
+  "main": "src/main/index.js",
+  "author": "Republik Web Team",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable",
+    "dist:publish": "electron-builder --win --publish always"
+  },
+  "build": {
+    "appId": "com.republikweb.desktop",
+    "productName": "Republik Web",
+    "copyright": "Copyright © 2026 Republik Web",
+    "asar": true,
+    "asarUnpack": [
+      "blur_extension/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "YOUR_GITHUB_OWNER",
+        "repo": "YOUR_GITHUB_REPO"
+      }
+    ],
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "blur_extension/**/*",
+      "package.json",
+      "!test-*",
+      "!start.bat",
+      "!README.md",
+      "!dist/**",
+      "!apk/**"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Republik Web",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "differentialPackage": true
+    }
+  },
+  "keywords": [
+    "republik-web",
+    "whatsapp",
+    "telegram",
+    "gmail",
+    "electron",
+    "chromium",
+    "multi-account"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "electron-store": "^12.0.0",
+    "electron-updater": "^6.8.11"
+  }
+}

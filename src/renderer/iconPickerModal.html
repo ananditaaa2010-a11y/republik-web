@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ubah Icon Akun</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 24px;
+      user-select: none;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #f1f5f9;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    /* Preview */
+    .preview-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 3px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .preview-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .preview-circle .platform-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-label {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* Section label */
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    /* Emoji grid */
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .emoji-btn {
+      background: #1e293b;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 22px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s;
+      line-height: 1;
+    }
+
+    .emoji-btn:hover {
+      background: #334155;
+    }
+
+    .emoji-btn.selected {
+      border-color: #10b981;
+      background: #064e3b;
+    }
+
+    /* Upload + Default buttons */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-align: center;
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    .btn-secondary.active-default {
+      border-color: #6366f1;
+      background: #1e1b4b;
+    }
+
+    /* Save button */
+    .btn-save {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-save:hover { opacity: 0.9; }
+
+    #fileInput { display: none; }
+  </style>
+</head>
+<body>
+  <h2>Ubah Icon Akun</h2>
+  <p class="subtitle" id="accountNameLabel">Pilih icon untuk akun ini</p>
+
+  <!-- Preview -->
+  <div class="preview-section">
+    <div class="preview-circle" id="previewCircle">
+      <span id="previewContent"></span>
+      <div class="platform-badge" id="platformBadge"></div>
+    </div>
+    <span class="preview-label">Pratinjau Icon</span>
+  </div>
+
+  <!-- Emoji picker -->
+  <p class="section-label">Emoji Cepat</p>
+  <div class="emoji-grid" id="emojiGrid"></div>
+
+  <!-- Upload & Reset -->
+  <div class="btn-row">
+    <button class="btn-secondary" id="btnUpload">📁 Upload Foto</button>
+    <button class="btn-secondary" id="btnDefault">↩ Reset Default</button>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" />
+
+  <!-- Save -->
+  <button class="btn-save" id="btnSave">Simpan Icon</button>
+
+  <canvas id="resizeCanvas" style="display:none;"></canvas>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const accountId = params.get('id') || '';
+    const accountName = params.get('name') || 'Akun';
+    const platform = params.get('platform') || 'whatsapp';
+    const initialIcon = params.get('icon') || '';
+
+    let selectedIcon = initialIcon; // current selection
+    let isDefault = !initialIcon;
+
+    // ── Platform SVGs ──────────────────────────────────────────────────
+    const PLATFORM_SVG = {
+      whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22"><circle cx="24" cy="24" r="24" fill="#25D366"/><path d="M35.5 12.5C32.7 9.7 29 8 25 8c-8.3 0-15 6.7-15 15 0 2.6.7 5.2 2 7.5L10 40l9.8-2.6c2.2 1.2 4.7 1.8 7.2 1.8 8.3 0 15-6.7 15-15 0-4-1.6-7.7-4.2-10.5-.5.3-.5.3 0 0zM25 36.5c-2.2 0-4.4-.6-6.3-1.7l-.5-.3-5.8 1.5 1.6-5.7-.3-.5c-1.2-2-1.8-4.2-1.8-6.5C11.9 17 17.9 11 25 11c3.5 0 6.7 1.4 9.2 3.8 2.4 2.5 3.8 5.8 3.8 9.2 0 7.1-6 13.1-13 12.5zM31.6 27.6c-.4-.2-2.2-1.1-2.5-1.2-.3-.1-.6-.2-.8.2-.2.4-.9 1.2-1.1 1.4-.2.2-.4.2-.8 0-.4-.2-1.6-.6-3-1.8-1.1-1-1.8-2.2-2.1-2.6-.2-.4 0-.6.2-.8.2-.2.4-.5.5-.7.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6-.1-.2-.8-2-1.1-2.8-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.4-1.2 1.2-1.2 2.8 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.8 5.1.8.4 1.5.6 2 .7.8.3 1.6.2 2.1.1.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.6.2-1.8-.2-.2-.4-.3-.8-.5z" fill="#fff"/></svg>`,
+      telegram: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22"><circle cx="24" cy="24" r="24" fill="#29B6F6"/><path d="M10 23.5l5.7 2.1 2.2 7 2.8-3.6 6.1 4.5 8.2-17.5L10 23.5zm7.5 4.3l-.9 5.2-1.5-5.2 18.7-11.2-16.3 11.2z" fill="#fff"/></svg>`,
+      gmail: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22"><rect width="48" height="48" rx="24" fill="#EA4335"/><path d="M10 16v16h6V22l8 6 8-6v10h6V16H34l-10 8-10-8H10z" fill="#fff"/></svg>`
+    };
+
+    const BADGE_BG = { whatsapp: '#25D366', telegram: '#29B6F6', gmail: '#EA4335' };
+
+    // ── Emoji presets ──────────────────────────────────────────────────
+    const EMOJIS = ['😊','😎','🔥','⭐','💼','🎯','🚀','🎨','🦁','💡','🌟','📱'];
+
+    // ── DOM refs ───────────────────────────────────────────────────────
+    const previewCircle = document.getElementById('previewCircle');
+    const previewContent = document.getElementById('previewContent');
+    const platformBadge = document.getElementById('platformBadge');
+    const emojiGrid = document.getElementById('emojiGrid');
+    const fileInput = document.getElementById('fileInput');
+    const btnUpload = document.getElementById('btnUpload');
+    const btnDefault = document.getElementById('btnDefault');
+    const btnSave = document.getElementById('btnSave');
+    const canvas = document.getElementById('resizeCanvas');
+
+    document.getElementById('accountNameLabel').textContent = `Pilih icon untuk: ${accountName}`;
+
+    // ── Build emoji grid ───────────────────────────────────────────────
+    EMOJIS.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.className = 'emoji-btn';
+      btn.textContent = emoji;
+      btn.addEventListener('click', () => selectEmoji(emoji, btn));
+      emojiGrid.appendChild(btn);
+    });
+
+    // ── Render preview ─────────────────────────────────────────────────
+    function renderPreview() {
+      // clear
+      previewContent.innerHTML = '';
+      previewContent.textContent = '';
+      platformBadge.innerHTML = '';
+
+      if (!selectedIcon) {
+        // default platform icon (large)
+        previewContent.innerHTML = PLATFORM_SVG[platform] || '';
+        const svg = previewContent.querySelector('svg');
+        if (svg) { svg.style.width = '54px'; svg.style.height = '54px'; }
+        platformBadge.innerHTML = '';
+      } else if (selectedIcon.startsWith('data:') || selectedIcon.startsWith('http')) {
+        // image
+        const img = document.createElement('img');
+        img.src = selectedIcon;
+        previewContent.appendChild(img);
+        // badge
+        platformBadge.style.background = BADGE_BG[platform] || '#64748b';
+        platformBadge.innerHTML = PLATFORM_SVG[platform] || '';
+        const svg2 = platformBadge.querySelector('svg');
+        if (svg2) { svg2.style.width = '14px'; svg2.style.height = '14px'; }
+      } else {
+        // emoji
+        previewContent.textContent = selectedIcon;
+        previewContent.style.fontSize = '40px';
+        // badge
+        platformBadge.style.background = BADGE_BG[platform] || '#64748b';
+        platformBadge.innerHTML = PLATFORM_SVG[platform] || '';
+        const svg3 = platformBadge.querySelector('svg');
+        if (svg3) { svg3.style.width = '14px'; svg3.style.height = '14px'; }
+      }
+
+      // highlight matching emoji btn
+      document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.textContent === selectedIcon);
+      });
+
+      btnDefault.classList.toggle('active-default', !selectedIcon);
+    }
+
+    // ── Actions ────────────────────────────────────────────────────────
+    function selectEmoji(emoji, btn) {
+      selectedIcon = emoji;
+      isDefault = false;
+      renderPreview();
+    }
+
+    btnDefault.addEventListener('click', () => {
+      selectedIcon = '';
+      isDefault = true;
+      renderPreview();
+    });
+
+    btnUpload.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext('2d');
+          // crop square center
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 128, 128);
+          selectedIcon = canvas.toDataURL('image/png');
+          isDefault = false;
+          renderPreview();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      fileInput.value = '';
+    });
+
+    btnSave.addEventListener('click', () => {
+      if (window.modalAPI && window.modalAPI.confirmEdit) {
+        window.modalAPI.confirmEdit({ id: accountId, icon: selectedIcon });
+      }
+    });
+
+    // ── Init ───────────────────────────────────────────────────────────
+    renderPreview();
+  </script>
+</body>
+</html>

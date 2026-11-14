@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Republik Web</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Sidebar Dock (Ferdium-style) -->
+  <aside class="sidebar-dock">
+    <!-- Top Branding Icon -->
+    <div class="dock-header">
+      <div class="brand-avatar" title="Republik Web">
+        <img src="../../assets/icon.png" class="brand-logo-img" alt="Republik Web Logo">
+      </div>
+    </div>
+
+    <!-- Accounts List -->
+    <div class="accounts-container" id="accountsList">
+      <!-- Injected by JavaScript -->
+    </div>
+
+    <!-- Add Account Button -->
+    <button class="dock-action-btn add-btn" id="btnAddAccount" title="Tambah Akun WhatsApp Baru">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <div class="dock-divider"></div>
+
+    <!-- System Actions & Tools -->
+    <div class="dock-footer">
+      <!-- Auto Text Quick Reply Manager -->
+      <button class="dock-action-btn autotext-btn" id="btnAutoText" title="Kelola Auto Text / Template (Tab Expand)">
+        <span class="autotext-indicator">TAB</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <path d="M8 10h.01M12 10h.01M16 10h.01"></path>
+        </svg>
+      </button>
+
+      <!-- Reload Active View -->
+      <button class="dock-action-btn" id="btnReload" title="Muat Ulang Halaman Aktif (F5)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+
+      <!-- Toggle Privacy Blur Addon -->
+      <button class="dock-action-btn blur-btn" id="btnToggleBlur" title="Toggle Privasi Blur WhatsApp (Alt + B)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+
+      <!-- Universal Notification Settings -->
+      <button class="dock-action-btn notif-btn" id="btnNotificationSettings" title="Pengaturan Notifikasi Universal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+      </button>
+
+      <!-- Quick Help & Guide -->
+      <button class="dock-action-btn help-btn" id="btnHelp" title="Panduan Penggunaan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main View Area is controlled by Electron WebContentsView -->
+  <main class="content-placeholder">
+    <div class="welcome-card" id="welcomeCard">
+      <img src="../../assets/icon.png" class="welcome-logo" alt="Republik Web">
+      <h2>Menghubungkan WhatsApp Web...</h2>
+      <p>Silakan tunggu sesaat atau pindah ke salah satu akun di sidebar sebelah kiri.</p>
+      <div class="loading-spinner"></div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

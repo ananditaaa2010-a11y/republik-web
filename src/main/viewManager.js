@@ -344,6 +344,19 @@ class ViewManager {
               const js = fs.readFileSync(jsPath, 'utf8');
               await view.webContents.executeJavaScript(js);
             }
+            if (this.privacyBlurStore) {
+              const currentSettings = this.privacyBlurStore.getSettings();
+              const jsonStr = JSON.stringify(currentSettings);
+              await view.webContents.executeJavaScript(`
+                (function() {
+                  try {
+                    if (window.__applyPrivacySettings) {
+                      window.__applyPrivacySettings(${jsonStr});
+                    }
+                  } catch(e) {}
+                })();
+              `);
+            }
           } catch (err) {
             console.warn('[Blur Addon] Injection notice:', err.message);
           }

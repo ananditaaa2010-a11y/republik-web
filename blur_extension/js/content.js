@@ -759,7 +759,7 @@
     // Foto Profil Pengguna di Pojok Kiri Bawah ("Kontak Anda")
     const allImages = document.querySelectorAll('img');
     allImages.forEach(img => {
-      if (img.closest('#pane-side') || img.closest('#main') || img.closest('[data-animate-drawer-right="true"]')) return;
+      if (img.closest('#pane-side') || img.closest('#main') || img.closest('[data-animate-drawer-right]') || img.closest('.wa-privacy-contact-drawer')) return;
       const rect = img.getBoundingClientRect();
       if (rect.width > 0 && rect.left >= 0 && rect.left < 80) {
         if (!img.classList.contains('wa-privacy-user-avatar')) {
@@ -767,11 +767,31 @@
         }
         attachDirectHover(img);
         const btn = img.closest('button') || img.closest('div[role="button"]');
-        if (btn) attachDirectHover(btn);
+        if (btn) {
+          if (!btn.classList.contains('wa-privacy-user-avatar')) {
+            btn.classList.add('wa-privacy-user-avatar');
+          }
+          attachDirectHover(btn);
+        }
       }
     });
 
-    // Meta AI
+    // Fallback: Tombol Profil Bawah di Rail Kiri jika tanpa tag img
+    const navRails = document.querySelectorAll('nav, header[role="navigation"], div[role="navigation"]');
+    navRails.forEach(rail => {
+      const bottomBtns = Array.from(rail.querySelectorAll('div[role="button"], button')).slice(-2);
+      bottomBtns.forEach(btn => {
+        const label = (btn.getAttribute('aria-label') || btn.getAttribute('title') || '').toLowerCase();
+        if (label.includes('profil') || label.includes('profile') || label.includes('anda') || label.includes('you')) {
+          if (!btn.classList.contains('wa-privacy-user-avatar')) {
+            btn.classList.add('wa-privacy-user-avatar');
+          }
+          attachDirectHover(btn);
+        }
+      });
+    });
+
+    // Meta AI di Bilah Kiri
     const metaAiElements = document.querySelectorAll(
       'button[aria-label*="Meta AI" i], ' +
       'div[aria-label*="Meta AI" i], ' +
@@ -786,6 +806,27 @@
         el.classList.add('wa-privacy-meta-ai');
       }
       attachDirectHover(el);
+      const parentBtn = el.closest('button') || el.closest('div[role="button"]');
+      if (parentBtn) {
+        if (!parentBtn.classList.contains('wa-privacy-meta-ai')) {
+          parentBtn.classList.add('wa-privacy-meta-ai');
+        }
+        attachDirectHover(parentBtn);
+      }
+    });
+
+    // Fallback deteksi tombol Meta AI di rail navigasi kiri
+    navRails.forEach(rail => {
+      const btns = rail.querySelectorAll('div[role="button"], button');
+      btns.forEach(btn => {
+        const label = (btn.getAttribute('aria-label') || btn.getAttribute('title') || '').toLowerCase();
+        if (label.includes('meta') || label.includes('ai')) {
+          if (!btn.classList.contains('wa-privacy-meta-ai')) {
+            btn.classList.add('wa-privacy-meta-ai');
+          }
+          attachDirectHover(btn);
+        }
+      });
     });
   }
 
@@ -884,7 +925,10 @@
   });
 
   function init() {
-    // Check localStorage cache first
+    // 1. Terapkan konfigurasi default seketika di awal agar body langsung mendapatkan wa-blur-master-enabled
+    applySettings(currentSettings);
+
+    // 2. Cek cache localStorage jika ada setting tersimpan
     try {
       const cached = localStorage.getItem('wa_privacy_blur_config');
       if (cached) {

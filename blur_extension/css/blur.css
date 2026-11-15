@@ -35,14 +35,14 @@ body:not(.wa-blur-master-enabled) * {
    0. PROTEKSI MUTLAK (DILARANG BLUR APAPUN PILIHANNYA)
    -------------------------------------------------------------------------- */
 /* Ikon Navigasi Bilah Kiri SVG (Chat, Status, Komunitas, Telepon, Saluran, Media, Pengaturan) */
-nav button svg,
-nav div[role="button"] svg,
-header[role="navigation"] button svg,
-header[role="navigation"] div[role="button"] svg,
-header > div:first-child button svg,
-header > div:first-child div[role="button"] svg,
-div[role="navigation"] button svg,
-div[role="navigation"] div[role="button"] svg,
+nav button:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) svg:not(.wa-privacy-meta-ai),
+nav div[role="button"]:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]):not(:has(.wa-privacy-user-avatar)) svg:not(.wa-privacy-meta-ai),
+header[role="navigation"] button:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) svg:not(.wa-privacy-meta-ai),
+header[role="navigation"] div[role="button"]:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]):not(:has(.wa-privacy-user-avatar)) svg:not(.wa-privacy-meta-ai),
+header > div:first-child button:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) svg:not(.wa-privacy-meta-ai),
+header > div:first-child div[role="button"]:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]):not(:has(.wa-privacy-user-avatar)) svg:not(.wa-privacy-meta-ai),
+div[role="navigation"] button:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) svg:not(.wa-privacy-meta-ai),
+div[role="navigation"] div[role="button"]:not(.wa-privacy-meta-ai):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]):not(:has(.wa-privacy-user-avatar)) svg:not(.wa-privacy-meta-ai),
 [data-icon="chats-outline"],
 [data-icon="status-outline"],
 [data-icon="community-outline"],
@@ -353,10 +353,6 @@ div[tabindex="0"]:has(.wa-privacy-shared-name):hover * {
   filter: none !important;
   -webkit-filter: none !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
-} {
-  filter: none !important;
-  -webkit-filter: none !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
 }
 
 /* Kotak Input Ketik Pesan & Filter Bar */
@@ -524,20 +520,53 @@ body.wa-blur-master-enabled.wa-blur-status-info [data-testid="status-tab"] [role
 }
 
 /* --------------------------------------------------------------------------
-   9. FITUR: META AI (ALWAYS BLURRED WHEN MASTER ENABLED)
+   9. FITUR: META AI & PROFIL BAWAH (ALWAYS BLURRED WHEN MASTER ENABLED)
    -------------------------------------------------------------------------- */
 body.wa-blur-master-enabled .wa-privacy-meta-ai,
+body.wa-blur-master-enabled .wa-privacy-meta-ai *,
 body.wa-blur-master-enabled button[aria-label*="Meta AI" i],
+body.wa-blur-master-enabled button[aria-label*="Meta AI" i] *,
 body.wa-blur-master-enabled div[aria-label*="Meta AI" i],
+body.wa-blur-master-enabled div[aria-label*="Meta AI" i] *,
 body.wa-blur-master-enabled button[title*="Meta AI" i],
+body.wa-blur-master-enabled button[title*="Meta AI" i] *,
 body.wa-blur-master-enabled div[title*="Meta AI" i],
+body.wa-blur-master-enabled div[title*="Meta AI" i] *,
 body.wa-blur-master-enabled [data-testid*="meta-ai" i],
+body.wa-blur-master-enabled [data-testid*="meta-ai" i] *,
 body.wa-blur-master-enabled span[data-icon="meta-ai"],
-body.wa-blur-master-enabled span[data-icon*="meta-ai"] {
+body.wa-blur-master-enabled span[data-icon="meta-ai"] *,
+body.wa-blur-master-enabled span[data-icon*="meta-ai"],
+body.wa-blur-master-enabled span[data-icon*="meta-ai"] *,
+body.wa-blur-master-enabled .wa-privacy-user-avatar,
+body.wa-blur-master-enabled .wa-privacy-user-avatar * {
   filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   -webkit-filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
-  transition: filter 0.15s ease-in-out !important;
+  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
   cursor: pointer !important;
+}
+
+body.wa-blur-master-enabled .wa-privacy-meta-ai:hover,
+body.wa-blur-master-enabled .wa-privacy-meta-ai:hover *,
+body.wa-blur-master-enabled button[aria-label*="Meta AI" i]:hover,
+body.wa-blur-master-enabled button[aria-label*="Meta AI" i]:hover *,
+body.wa-blur-master-enabled div[aria-label*="Meta AI" i]:hover,
+body.wa-blur-master-enabled div[aria-label*="Meta AI" i]:hover *,
+body.wa-blur-master-enabled button[title*="Meta AI" i]:hover,
+body.wa-blur-master-enabled button[title*="Meta AI" i]:hover *,
+body.wa-blur-master-enabled div[title*="Meta AI" i]:hover,
+body.wa-blur-master-enabled div[title*="Meta AI" i]:hover *,
+body.wa-blur-master-enabled [data-testid*="meta-ai" i]:hover,
+body.wa-blur-master-enabled [data-testid*="meta-ai" i]:hover *,
+body.wa-blur-master-enabled span[data-icon="meta-ai"]:hover,
+body.wa-blur-master-enabled span[data-icon="meta-ai"]:hover *,
+body.wa-blur-master-enabled span[data-icon*="meta-ai"]:hover,
+body.wa-blur-master-enabled span[data-icon*="meta-ai"]:hover *,
+body.wa-blur-master-enabled .wa-privacy-user-avatar:hover,
+body.wa-blur-master-enabled .wa-privacy-user-avatar:hover * {
+  filter: none !important;
+  -webkit-filter: none !important;
+  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
 }
 
 /* --------------------------------------------------------------------------

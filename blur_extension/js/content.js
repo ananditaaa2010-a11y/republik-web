@@ -1,5 +1,5 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 2.9.0 - Full Archive & Clean Messages)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 3.0.0 - Ironclad Separation)
  * 
  * Prinsip Mutlak:
  * 1. HANYA Foto Profil (Gambar asli, inisial huruf, ikon default) dan Nama Kontak yang di-blur.
@@ -94,90 +94,6 @@
       el.style.removeProperty('filter');
       el.style.removeProperty('-webkit-filter');
     });
-  }
-
-  // --------------------------------------------------------------------------
-  // Universal Avatar Finder (Strictly Within Current Row & Outside CellFrame)
-  // --------------------------------------------------------------------------
-  function getAvatarElementForChatCell(cell) {
-    if (!cell) return null;
-
-    // Batasi pencarian STRICTLY di dalam baris chat yang sama (tidak boleh keluar row)
-    const row = cell.closest('div[role="listitem"]') || 
-                cell.closest('div[role="row"]') || 
-                cell.closest('div[data-testid^="list-item-"]') ||
-                cell.parentElement;
-    if (!row) return null;
-
-    // A. Cek status ring SVG di dalam row ini
-    const statusSvg = row.querySelector('svg._ak8i, svg[class*="status"], svg:has(circle[stroke])');
-    if (statusSvg) {
-      statusSvg.style.setProperty('filter', 'none', 'important');
-      statusSvg.style.setProperty('-webkit-filter', 'none', 'important');
-      statusSvg.style.setProperty('opacity', '1', 'important');
-
-      let p = statusSvg.parentElement;
-      while (p && p !== row) {
-        p.classList.remove('wa-privacy-avatar');
-        p.style.removeProperty('filter');
-        p.style.removeProperty('-webkit-filter');
-        p = p.parentElement;
-      }
-
-      // Ambil elemen foto / inisial di dalam pembungkus status
-      const inner = row.querySelector('img:not(.emoji)') || 
-                    row.querySelector('._ak8h div:not(:has(svg))') || 
-                    row.querySelector('._ak8h span');
-      if (inner && !cell.contains(inner)) return inner;
-    }
-
-    // B. Cari gambar foto profil (img) di dalam row ini yang di LUAR cell
-    const imgs = row.querySelectorAll('img');
-    for (const img of imgs) {
-      if (img.classList.contains('emoji')) continue;
-      if (cell.contains(img)) continue; // DILARANG KERAS DI DALAM CELL (TEKS PESAN)!
-      if (img.closest('[data-testid="last-msg-status"]')) continue;
-      return img;
-    }
-
-    // C. Cari elemen avatar resmi WhatsApp (_ak8h atau [data-testid="avatar"])
-    const known = row.querySelector('._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"], [data-testid="default-user"], [data-testid="default-group"]');
-    if (known && !cell.contains(known)) {
-      return known;
-    }
-
-    // D. Cari elemen dengan background-image di luar cell (untuk ikon grup)
-    const bgDiv = row.querySelector('[style*="background-image"], [style*="background: url"]');
-    if (bgDiv && !cell.contains(bgDiv)) {
-      return bgDiv;
-    }
-
-    // E. Cari lingkaran inisial huruf di luar cell
-    const candidates = row.querySelectorAll('div, span');
-    for (const el of candidates) {
-      if (cell.contains(el)) continue; // DILARANG MENYENTUH CELL!
-      if (el.querySelector('svg._ak8i, svg:has(circle)')) continue;
-      if (el.querySelector('[data-icon*="archiv"]')) continue;
-
-      const txt = (el.textContent || '').trim();
-      const isInitialText = /^[\p{L}\p{N}]{1,3}$/u.test(txt);
-      const w = el.offsetWidth;
-      const h = el.offsetHeight;
-
-      if ((w >= 24 && w <= 75 && h >= 24 && h <= 75) || isInitialText) {
-        const comp = window.getComputedStyle(el);
-        const isRound = comp.borderRadius === '50%' || 
-                        comp.borderRadius.includes('50%') || 
-                        comp.borderRadius.includes('9999px') ||
-                        parseFloat(comp.borderRadius) >= 12;
-
-        if (isRound || isInitialText) {
-          return el;
-        }
-      }
-    }
-
-    return null;
   }
 
   // --------------------------------------------------------------------------
@@ -349,20 +265,11 @@
     );
 
     cellFrames.forEach(cell => {
-      // Hanya lewati tombol header "Diarsipkan" di daftar utama (bukan chat di dalam arsip)
+      // 1. Lewati tombol header "Diarsipkan" di daftar utama (bukan chat di dalam arsip)
       const isArchivedHeaderBtn = cell.closest('[data-testid="archived"]') && 
                                   !cell.closest('div[data-testid="archived-chats"]') &&
                                   !cell.closest('div[data-animate-drawer-left="true"]');
       if (isArchivedHeaderBtn) return;
-
-      // 1. Dapatkan elemen avatar (Foto profil ATAU Inisial Huruf seperti A, T, dsb)
-      const avatarEl = getAvatarElementForChatCell(cell);
-      if (avatarEl && avatarEl !== cell && !cell.contains(avatarEl)) {
-        if (!avatarEl.classList.contains('wa-privacy-avatar')) {
-          avatarEl.classList.add('wa-privacy-avatar');
-        }
-        attachDirectHover(avatarEl);
-      }
 
       // 2. Nama Kontak Chat di Baris Atas (TIDAK DIUBAH)
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
@@ -380,6 +287,64 @@
         attachDirectHover(titleEl);
       }
       // BARIS KEDUA (PREVIEW PESAN, STIKER, JAM) 100% TIDAK PERNAH DISENTUH.
+
+      // 3. Batasi pencarian avatar STRICTLY di dalam row yang sama
+      const row = cell.closest('div[role="listitem"]') || 
+                  cell.closest('div[role="row"]') || 
+                  cell.parentElement;
+      if (!row) return;
+
+      // 3.1 Cek status ring SVG di dalam row ini
+      const statusSvg = row.querySelector('svg._ak8i, svg[class*="status"], svg:has(circle[stroke])');
+      if (statusSvg) {
+        statusSvg.style.setProperty('filter', 'none', 'important');
+        statusSvg.style.setProperty('-webkit-filter', 'none', 'important');
+        statusSvg.style.setProperty('opacity', '1', 'important');
+
+        let p = statusSvg.parentElement;
+        while (p && p !== row) {
+          p.classList.remove('wa-privacy-avatar');
+          p.style.removeProperty('filter');
+          p.style.removeProperty('-webkit-filter');
+          p = p.parentElement;
+        }
+
+        const inner = row.querySelector('img:not(.emoji)') || row.querySelector('._ak8h div:not(:has(svg))');
+        if (inner && !cell.contains(inner)) {
+          if (!inner.classList.contains('wa-privacy-avatar')) {
+            inner.classList.add('wa-privacy-avatar');
+          }
+          attachDirectHover(inner);
+        }
+        return;
+      }
+
+      // 3.2 Cari gambar foto profil di dalam row (di luar cell teks pesan)
+      const imgs = row.querySelectorAll('img');
+      let foundImg = false;
+      for (const img of imgs) {
+        if (cell.contains(img)) continue; // DILARANG DI DALAM CELL (TEKS PESAN)!
+        if (img.classList.contains('emoji')) continue;
+        if (!img.classList.contains('wa-privacy-avatar')) {
+          img.classList.add('wa-privacy-avatar');
+        }
+        attachDirectHover(img);
+        foundImg = true;
+        break;
+      }
+
+      // 3.3 Jika tidak ada img (berarti inisial huruf seperti "A", "T", "GP"):
+      if (!foundImg && cell.parentElement) {
+        const siblings = cell.parentElement.children;
+        for (const sib of siblings) {
+          if (sib === cell) continue;
+          if (!sib.classList.contains('wa-privacy-avatar')) {
+            sib.classList.add('wa-privacy-avatar');
+          }
+          attachDirectHover(sib);
+          break;
+        }
+      }
     });
 
     // B. Foto Profil Pengguna di Pojok Kiri Bawah
@@ -453,5 +418,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 2.9.0 Full Archive & Clean Messages Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 3.0.0 Ironclad Separation Loaded.');
 })();

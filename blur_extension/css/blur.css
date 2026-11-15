@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WhatsApp Web Privacy Blur Stylesheet (Version 2.9.0 - Full Archive & Clean Messages)
+   WhatsApp Web Privacy Blur Stylesheet (Version 3.0.0 - Ironclad Separation)
    
    PRINSIP PRESISI:
    1. HANYA BLUR:
@@ -17,7 +17,7 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   0. PENGECUALIAN TEGAS (JANGAN PERNAH BLUR ELEMEN INI)
+   0. ATURAN BESI MUTLAK: PESAN OBROLAN DILARANG KERAS DI-BLUR
    -------------------------------------------------------------------------- */
 #main div[role="row"],
 #main [data-testid="msg-container"],
@@ -26,18 +26,10 @@
 #main .copyable-text,
 #main .selectable-text,
 #main [data-testid="quoted-message"],
-#pane-side [data-testid="cell-frame-container"] > div:last-child,
-#pane-side [data-testid="cell-frame-container"] > div:last-child *,
-div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:last-child,
-div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:last-child *,
-div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:last-child,
-div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:last-child *,
-#pane-side [data-testid="last-msg-status"],
-#pane-side [data-testid="last-msg-status"] *,
-div[data-testid="archived-chats"] [data-testid="last-msg-status"],
-div[data-testid="archived-chats"] [data-testid="last-msg-status"] *,
-div[data-animate-drawer-left="true"] [data-testid="last-msg-status"],
-div[data-animate-drawer-left="true"] [data-testid="last-msg-status"] *,
+[data-testid="cell-frame-container"] > div:last-child,
+[data-testid="cell-frame-container"] > div:last-child *,
+[data-testid="last-msg-status"],
+[data-testid="last-msg-status"] *,
 #pane-side [role="tablist"] button,
 #pane-side button[role="tab"],
 [data-testid*="filter"],
@@ -71,26 +63,34 @@ circle[stroke],
 body:not(.wa-blur-disabled) #pane-side img:not(.emoji),
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] img:not(.emoji),
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] img:not(.emoji),
+body:not(.wa-blur-disabled) [data-testid="chat-list"] img:not(.emoji),
 body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"],
 body:not(.wa-blur-disabled) img._ak8k,
-
-/* Sidebar & Arsip: Group Icons dengan background-image */
-body:not(.wa-blur-disabled) #pane-side [style*="background-image"],
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [style*="background-image"],
-body:not(.wa-blur-disabled) #pane-side [style*="background: url"],
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [style*="background: url"],
 
 /* Sidebar & Arsip: Wadah Avatar, Lingkaran Inisial & Ikon Default */
 body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"],
-body:not(.wa-blur-disabled) #pane-side div._ak8h,
+body:not(.wa-blur-disabled) #pane-side div._ak8h:not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) #pane-side div._ak8m:not(:has(svg._ak8i)),
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avatar"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"],
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h:not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8m:not(:has(svg._ak8i)),
+
+/* Sidebar Chat List dengan Story/Status WA */
+body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) img,
+body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) > div:not(svg) {
+  filter: blur(12px) !important;
+  -webkit-filter: blur(12px) !important;
+}
 
 /* Header Avatar di Atas Bubble Chat (#main header) */
 body:not(.wa-blur-disabled) #main header img:not(.emoji),
@@ -128,20 +128,21 @@ body:not(.wa-blur-disabled) .wa-privacy-avatar {
 body:not(.wa-blur-disabled) #pane-side img:not(.emoji):hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] img:not(.emoji):hover,
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] img:not(.emoji):hover,
+body:not(.wa-blur-disabled) [data-testid="chat-list"] img:not(.emoji):hover,
 body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"]:hover,
 body:not(.wa-blur-disabled) img._ak8k:hover,
-body:not(.wa-blur-disabled) #pane-side [style*="background-image"]:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [style*="background-image"]:hover,
 body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"]:hover,
 body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"]:hover,
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"]:hover,
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"]:hover,
 body:not(.wa-blur-disabled) #pane-side div._ak8h:hover,
+body:not(.wa-blur-disabled) #pane-side div._ak8m:hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avatar"]:hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"]:hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"]:hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"]:hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8m:hover,
 body:not(.wa-blur-disabled) #main header img:not(.emoji):hover,
 body:not(.wa-blur-disabled) #main header [data-testid="avatar"]:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"]:hover,
@@ -171,9 +172,7 @@ body:not(.wa-blur-disabled) .wa-privacy-avatar:hover {
    2. NAMA KONTAK (TIDAK DIUBAH)
    -------------------------------------------------------------------------- */
 /* Sidebar & Arsip Chat Name */
-body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-title"],
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="cell-frame-title"],
-body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] [data-testid="cell-frame-title"],
+body:not(.wa-blur-disabled) [data-testid="cell-frame-title"],
 /* Header Chat Name di Atas Bubble */
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-title"],
 body:not(.wa-blur-disabled) #main header [data-testid="chat-title"],
@@ -193,9 +192,7 @@ body:not(.wa-blur-disabled) .wa-privacy-name {
 }
 
 /* Hover Nama Kontak */
-body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-title"]:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="cell-frame-title"]:hover,
-body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] [data-testid="cell-frame-title"]:hover,
+body:not(.wa-blur-disabled) [data-testid="cell-frame-title"]:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-title"]:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="chat-title"]:hover,
 body:not(.wa-blur-disabled) #main header span[title]:hover,

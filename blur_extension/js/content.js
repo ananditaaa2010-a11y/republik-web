@@ -314,11 +314,11 @@
   // ==========================================================================
   function isPhoneNumber(text) {
     if (!text) return false;
-    const clean = text.trim();
+    const clean = text.replace(/[\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E\s]/g, '').trim();
     const digits = clean.replace(/\D/g, '');
     if (digits.length < 8 || digits.length > 16) return false;
-    return /^(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,5}[-.\s]?\d{3,5}$/.test(clean) ||
-           /^(\+?62|08)[0-9\s.-]{7,16}$/.test(clean);
+    return /^(\+?\d{8,16}|08\d{7,14})$/.test(clean.replace(/[\-\(\)\.]/g, '')) ||
+           /^(\+?62|08)[0-9\s.-]{7,16}$/.test(text.trim());
   }
 
   function attachDirectHover(el) {
@@ -326,15 +326,56 @@
     el._hasDirectHoverAttached = true;
 
     el.addEventListener('mouseenter', () => {
-      if (currentSettings.enabled && currentSettings.unblurOnHover) {
-        el.style.setProperty('filter', 'none', 'important');
-        el.style.setProperty('-webkit-filter', 'none', 'important');
+      el.style.setProperty('filter', 'none', 'important');
+      el.style.setProperty('-webkit-filter', 'none', 'important');
+      const allChildren = el.querySelectorAll('*');
+      for (let i = 0; i < allChildren.length; i++) {
+        allChildren[i].style.setProperty('filter', 'none', 'important');
+        allChildren[i].style.setProperty('-webkit-filter', 'none', 'important');
       }
     });
 
     el.addEventListener('mouseleave', () => {
       el.style.removeProperty('filter');
       el.style.removeProperty('-webkit-filter');
+      const allChildren = el.querySelectorAll('*');
+      for (let i = 0; i < allChildren.length; i++) {
+        allChildren[i].style.removeProperty('filter');
+        allChildren[i].style.removeProperty('-webkit-filter');
+      }
+    });
+  }
+
+  function attachRowHover(row, elementsToReveal) {
+    if (!row || row._hasRowHoverAttached) return;
+    row._hasRowHoverAttached = true;
+
+    row.addEventListener('mouseenter', () => {
+      elementsToReveal.forEach(el => {
+        if (el) {
+          el.style.setProperty('filter', 'none', 'important');
+          el.style.setProperty('-webkit-filter', 'none', 'important');
+          const children = el.querySelectorAll('*');
+          for (let i = 0; i < children.length; i++) {
+            children[i].style.setProperty('filter', 'none', 'important');
+            children[i].style.setProperty('-webkit-filter', 'none', 'important');
+          }
+        }
+      });
+    });
+
+    row.addEventListener('mouseleave', () => {
+      elementsToReveal.forEach(el => {
+        if (el) {
+          el.style.removeProperty('filter');
+          el.style.removeProperty('-webkit-filter');
+          const children = el.querySelectorAll('*');
+          for (let i = 0; i < children.length; i++) {
+            children[i].style.removeProperty('filter');
+            children[i].style.removeProperty('-webkit-filter');
+          }
+        }
+      });
     });
   }
 
@@ -409,35 +450,31 @@
         drawerHeader.classList.add('wa-privacy-drawer-protected');
       }
 
-      // 2. Foto Profil Besar / Inisial di Bagian Atas Drawer
+      // 2. Foto Profil Besar di Bagian Atas Drawer
       const topSection = drawerHeader ? drawerHeader.nextElementSibling : drawer;
       if (topSection) {
-        // Cari container avatar besar di bagian atas
-        const avatarCandidates = topSection.querySelectorAll('div[role="button"]:not([data-testid*="btn"]), div[tabindex="0"]');
+        const avatarCandidates = topSection.querySelectorAll(
+          'div[role="button"]:not([data-testid*="btn"]), div[tabindex="0"], div._ak8h, [data-testid="profile-pic"], [data-testid="avatar"], [data-testid="default-user"], [data-testid="default-group"]'
+        );
         avatarCandidates.forEach(btn => {
+          if (btn.closest('[data-testid="media-gallery"]')) return;
           const img = btn.querySelector('img:not(.emoji)');
-          if (img && !img.closest('[data-testid="media-gallery"]')) {
+          if (img) {
             if (!img.classList.contains('wa-privacy-drawer-avatar')) {
               img.classList.add('wa-privacy-drawer-avatar');
             }
             attachDirectHover(img);
+            attachDirectHover(btn);
           } else {
-            // Inisial huruf atau SVG siluet default
-            const w = btn.offsetWidth;
-            const h = btn.offsetHeight;
-            const txt = (btn.textContent || '').trim();
-            const isInitial = /^[\p{L}\p{N}]{1,2}$/u.test(txt);
-            if ((w >= 60 && h >= 60) || isInitial) {
-              if (!btn.classList.contains('wa-privacy-drawer-avatar')) {
-                btn.classList.add('wa-privacy-drawer-avatar');
-              }
-              attachDirectHover(btn);
+            if (!btn.classList.contains('wa-privacy-drawer-avatar')) {
+              btn.classList.add('wa-privacy-drawer-avatar');
             }
+            attachDirectHover(btn);
           }
         });
       }
 
-      // Pastikan semua avatar gambar di drawer (selain gallery media) tersamarkan
+      // Pastikan semua avatar profil di drawer (selain gallery media) tersamarkan
       const drawerAvatars = drawer.querySelectorAll('[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"]');
       drawerAvatars.forEach(av => {
         if (!av.closest('[data-testid="media-gallery"]') && !av.classList.contains('wa-privacy-drawer-avatar') && !av.classList.contains('wa-privacy-shared-avatar')) {
@@ -447,7 +484,7 @@
       });
 
       // 3. Nama Kontak di Drawer ("Alpin")
-      const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
+      const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"], span[data-testid="contact-info-title"]');
       headings.forEach(h => {
         if (!h.classList.contains('wa-privacy-drawer-name')) {
           h.classList.add('wa-privacy-drawer-name');
@@ -470,41 +507,70 @@
       });
 
       // 5. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> Harus Jernih (Proteksi)
-      const actionButtons = drawer.querySelectorAll('[data-testid="audio-call-btn"], [data-testid="video-call-btn"], [data-testid="search-btn"], div[role="button"]:has(span[data-icon="audio-call"]), div[role="button"]:has(span[data-icon="video-call"]), div[role="button"]:has(span[data-icon="search"])');
+      const actionButtons = drawer.querySelectorAll(
+        '[data-testid="audio-call-btn"], [data-testid="video-call-btn"], [data-testid="search-btn"], ' +
+        'div[role="button"]:has(span[data-icon="audio-call"]), div[role="button"]:has(span[data-icon="video-call"]), div[role="button"]:has(span[data-icon="search"])'
+      );
       actionButtons.forEach(btn => {
         btn.classList.add('wa-privacy-drawer-protected');
       });
 
       // 6. Baris Pengaturan ("Pesan berbintang", "Bisukan notifikasi", "Pesan sementara", "Obrolan terbatas", "Tema obrolan", "Enkripsi")
-      const settingRows = drawer.querySelectorAll('div[role="button"]:has([data-icon="star"]), div[role="button"]:has([data-icon="notifications"]), div[role="button"]:has([data-icon="timer"]), div[role="button"]:has([data-icon="lock"]), div[role="button"]:has([data-icon="paint-palette"]), div[role="button"]:has([data-icon="security-padlock"])');
+      const settingRows = drawer.querySelectorAll(
+        'div[role="button"]:has([data-icon="star"]), div[role="button"]:has([data-icon="notifications"]), ' +
+        'div[role="button"]:has([data-icon="timer"]), div[role="button"]:has([data-icon="lock"]), ' +
+        'div[role="button"]:has([data-icon="paint-palette"]), div[role="button"]:has([data-icon="security-padlock"])'
+      );
       settingRows.forEach(row => {
         row.classList.add('wa-privacy-drawer-protected');
       });
 
       // 7. Bagian Grup Bersama ("11 grup yang sama" / "groups in common")
-      const allSections = drawer.querySelectorAll('section, div[role="region"], div');
-      allSections.forEach(sec => {
-        const secText = (sec.textContent || '');
-        if (secText.includes('grup yang sama') || secText.includes('groups in common')) {
-          const groupRows = sec.querySelectorAll('div[role="listitem"], div[role="button"], div[data-testid*="cell"]');
-          groupRows.forEach(row => {
-            // Group avatar
-            const gAvatar = row.querySelector('img:not(.emoji)') || row.querySelector('._ak8h') || row.querySelector('[data-testid="avatar"]');
+      const groupHeadings = Array.from(drawer.querySelectorAll('span, div, h3')).filter(el => {
+        const t = (el.textContent || '').trim();
+        return /\d+\s+grup yang sama/i.test(t) || /\d+\s+groups in common/i.test(t);
+      });
+      groupHeadings.forEach(gh => {
+        gh.classList.add('wa-privacy-drawer-protected');
+        const container = gh.closest('section, div[role="region"]') || gh.parentElement?.parentElement;
+        if (container) {
+          const rows = container.querySelectorAll('div[role="listitem"], div[role="button"]:not([data-testid*="btn"])');
+          rows.forEach(row => {
+            if (row.contains(gh)) return;
+            const gAvatar = row.querySelector('img:not(.emoji), ._ak8h, [data-testid="avatar"], [data-testid="default-group"]');
             if (gAvatar && !gAvatar.classList.contains('wa-privacy-shared-avatar')) {
               gAvatar.classList.add('wa-privacy-shared-avatar');
-              attachDirectHover(gAvatar);
             }
-            // Group title
-            const gTitle = row.querySelector('span[title]') || row.querySelector('span[dir="auto"]') || row.querySelector('[data-testid="cell-frame-title"]');
-            if (gTitle && !gTitle.classList.contains('wa-privacy-shared-name') && !gTitle.contains(gAvatar)) {
+            const gTitle = row.querySelector('span[title], [data-testid="cell-frame-title"], span[dir="auto"]');
+            if (gTitle && !gTitle.classList.contains('wa-privacy-shared-name')) {
               gTitle.classList.add('wa-privacy-shared-name');
-              attachDirectHover(gTitle);
+            }
+            if (gAvatar || gTitle) {
+              attachRowHover(row, [gAvatar, gTitle]);
             }
           });
         }
       });
 
       // 8. Info Status / Bio Kontak
+      const aboutHeaders = Array.from(drawer.querySelectorAll('span, div, h3')).filter(el => {
+        const t = (el.textContent || '').trim();
+        return t === 'Tentang' || t === 'About' || t.startsWith('Tentang dan') || t.startsWith('About and');
+      });
+      aboutHeaders.forEach(ah => {
+        ah.classList.add('wa-privacy-drawer-protected');
+        const sec = ah.closest('section, div[role="region"]') || ah.parentElement;
+        if (sec) {
+          const bioTexts = sec.querySelectorAll('span[dir="auto"], div._ak8q');
+          bioTexts.forEach(bt => {
+            if (bt !== ah && !bt.classList.contains('wa-privacy-drawer-about')) {
+              bt.classList.add('wa-privacy-drawer-about');
+              attachDirectHover(bt);
+            }
+          });
+        }
+      });
+
       const groupDescs = drawer.querySelectorAll('[data-testid="group-description"], [data-testid="chat-info-description"], [data-testid="contact-info-about"]');
       groupDescs.forEach(gd => {
         if (!gd.classList.contains('wa-privacy-group-info') && !gd.classList.contains('wa-privacy-drawer-about')) {
@@ -513,11 +579,23 @@
         attachDirectHover(gd);
       });
 
-      // 9. Gallery Media Thumbnails -> 100% Jernih sesuai web.whatsapp.com asli
+      // 9. Tombol Bagian Bawah ("Tambah favorit", "Tambah ke daftar", "Ekspor", "Bersihkan", "Blokir", "Laporkan") -> 100% Jernih
+      const bottomActions = drawer.querySelectorAll(
+        'div[role="button"]:has([data-icon="heart"]), div[role="button"]:has([data-icon="contact-card"]), ' +
+        'div[role="button"]:has([data-icon="download"]), div[role="button"]:has([data-icon="delete"]), ' +
+        'div[role="button"]:has([data-icon="block"]), div[role="button"]:has([data-icon="thumb-down"]), ' +
+        '[data-testid="block-contact"], [data-testid="report-contact"]'
+      );
+      bottomActions.forEach(ba => {
+        ba.classList.add('wa-privacy-drawer-protected');
+      });
+
+      // 10. Gallery Media Thumbnails -> 100% Jernih sesuai web.whatsapp.com asli
       const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
       mediaGalleryImgs.forEach(m => {
         m.classList.remove('wa-privacy-media');
         m.style.removeProperty('filter');
+        m.style.removeProperty('-webkit-filter');
       });
     });
   }

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Blur & Lock Privacy Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="popup-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">Blur & Lock</h1>
+        <p class="brand-sub">WhatsApp Web Privacy</p>
+      </div>
+    </div>
+    <span class="status-badge" id="statusBadge">AKTIF</span>
+  </header>
+
+  <!-- Lock Now Banner / Quick Action -->
+  <section class="lock-section">
+    <button class="btn-lock-now" id="btnLockNow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <span>Lock Now (Kunci Layar)</span>
+    </button>
+    <div class="pin-status-row">
+      <span class="pin-status-text" id="pinStatusText">PIN: Belum diatur</span>
+      <button class="btn-text-link" id="btnManagePin">Atur PIN</button>
+    </div>
+  </section>
+
+  <!-- Main Scrollable Content -->
+  <main class="popup-content">
+
+    <!-- Master Switch Card -->
+    <div class="master-card">
+      <div class="card-info">
+        <span class="card-title">Proteksi Privasi</span>
+        <span class="card-desc">Aktifkan seluruh filter blur WhatsApp Web</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="masterToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Blur Intensity Slider -->
+    <div class="intensity-card">
+      <div class="intensity-header">
+        <span class="section-label">Intensitas Blur</span>
+        <span class="intensity-badge" id="intensityDisplay">10 px</span>
+      </div>
+      <input type="range" min="3" max="25" value="10" step="1" class="range-slider" id="intensitySlider">
+    </div>
+
+    <!-- Feature Toggles Group 1: Pesan & Obrolan -->
+    <div class="settings-group">
+      <div class="group-title">Obrolan & Pesan</div>
+      
+      <!-- 1. Blur Content of Conversations -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Isi Percakapan (#main)</span>
+          <span class="row-desc">Blur teks gelembung pesan di ruang chat</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurConversation">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 2. Blur Latest Message Preview -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Preview Pesan Terakhir</span>
+          <span class="row-desc">Blur cuplikan pesan di daftar kontak</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurLatestMessage" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 3. Blur All Messages in Chat List -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Semua Teks Chat List</span>
+          <span class="row-desc">Blur seluruh baris daftar percakapan</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurChatList">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 4. Blur Media -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Media & Dokumen</span>
+          <span class="row-desc">Blur foto, video, voice note, stiker, file</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurMedia" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Feature Toggles Group 2: Kontak & Identitas -->
+    <div class="settings-group">
+      <div class="group-title">Kontak & Identitas</div>
+
+      <!-- 5. Blur Contact Names -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Nama Kontak</span>
+          <span class="row-desc">Blur nama kontak di chat list & header</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurContactNames" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 6. Blur Profile Photos -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Foto Profil & Inisial</span>
+          <span class="row-desc">Blur foto profil asli & lingkaran inisial</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurProfilePhotos" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 7. Blur Group Names & Info -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Nama & Info Grup</span>
+          <span class="row-desc">Blur nama grup, deskripsi & anggota</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurGroupInfo" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 8. Blur Status Updates & Contact Info -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Status Cerita & Bio</span>
+          <span class="row-desc">Blur pembaruan status story & bio info</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="blurStatusInfo" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Feature Toggles Group 3: Interaksi -->
+    <div class="settings-group">
+      <div class="group-title">Interaksi Mouse</div>
+
+      <!-- 9. Reveal on Hover -->
+      <div class="setting-row">
+        <div class="row-info">
+          <span class="row-title">Hover to Reveal</span>
+          <span class="row-desc">Buka blur sementara saat cursor mouse diarahkan</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="unblurOnHover" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="popup-footer">
+    <button class="btn-secondary" id="btnResetDefaults">Reset Bawaan</button>
+    <span class="version-text">v1.0.0 (Manifest V3)</span>
+  </footer>
+
+  <!-- PIN Setup / Change Modal -->
+  <div class="pin-modal-overlay" id="pinModalOverlay">
+    <div class="pin-modal-card">
+      <h3 class="pin-modal-title" id="pinModalTitle">Atur PIN Keamanan</h3>
+      <p class="pin-modal-desc">Masukkan 4 digit angka untuk mengunci WhatsApp Web:</p>
+      
+      <div class="pin-inputs-wrapper">
+        <input type="password" maxlength="4" class="pin-input-field" id="pinInputField" placeholder="••••" inputmode="numeric">
+      </div>
+
+      <div class="pin-modal-error" id="pinModalError"></div>
+
+      <div class="pin-modal-actions">
+        <button class="btn-secondary" id="btnCancelPin">Batal</button>
+        <button class="btn-primary" id="btnSavePin">Simpan PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

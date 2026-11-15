@@ -1,27 +1,47 @@
 {
   "manifest_version": 3,
-  "name": "WhatsApp Privacy Blur Addon",
+  "name": "Blur & Lock Privacy Extension",
   "version": "1.0.0",
-  "description": "Privacy blur add-on untuk WhatsApp Web (Multi Account Desktop)",
+  "description": "Ekstensi privasi resmi untuk WhatsApp Web: Blur nama, foto profil, isi pesan, media, serta proteksi Lock Now dengan PIN.",
   "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Blur & Lock Privacy Settings"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*"
+  ],
   "content_scripts": [
     {
       "matches": [
         "https://web.whatsapp.com/*"
       ],
       "css": [
-        "css/blur.css"
+        "css/blur.css",
+        "css/lock.css"
       ],
       "js": [
         "js/content.js"
       ],
-      "run_at": "document_end"
+      "run_at": "document_start"
     }
-  ],
-  "permissions": [
-    "storage"
   ]
 }

@@ -1,23 +1,10 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 4.0.0 - Modular Privacy Suite)
- * 
- * Fitur:
- * 1. Blur all messages in chat list (.wa-blur-chat-list)
- * 2. Blur contact names (.wa-blur-contact-names)
- * 3. Blur profile photos & non-photo initials (.wa-blur-profile-photos)
- * 4. Blur conversation content in #main (.wa-blur-conversation)
- * 5. Blur media (images, videos, documents, audio) (.wa-blur-media)
- * 6. Blur preview of latest messages (.wa-blur-latest-message)
- * 7. Blur group names & group info (.wa-blur-group-info)
- * 8. Blur status updates & contact info (.wa-blur-status-info)
- * 9. Unblur on hover (.wa-blur-hover-reveal)
- * 10. Adjustable blur intensity (CSS Variables)
+ * Blur & Lock Privacy Extension — Content Script (Manifest V3)
+ * Operates directly on the official web.whatsapp.com
  */
 
 (function () {
   'use strict';
-
-  const STORAGE_KEY = 'wa_privacy_blur_config';
 
   const DEFAULT_SETTINGS = {
     enabled: true,
@@ -30,44 +17,33 @@
     blurLatestMessage: true,
     blurGroupInfo: true,
     blurStatusInfo: true,
-    unblurOnHover: true
+    unblurOnHover: true,
+    isLocked: false,
+    securityPin: ''
   };
 
   let currentSettings = { ...DEFAULT_SETTINGS };
 
-  function loadSettings() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          currentSettings = { ...DEFAULT_SETTINGS, ...parsed };
-        }
-      }
-    } catch (e) {
-      console.warn('[WA Privacy Blur] Error loading settings from storage:', e);
-    }
-  }
-
-  function applySettings(newSettings) {
-    if (newSettings && typeof newSettings === 'object') {
-      currentSettings = { ...currentSettings, ...newSettings };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentSettings));
-      } catch (e) {}
+  // ==========================================================================
+  // 1. SETTINGS & CSS CLASS CONTROLLER
+  // ==========================================================================
+  function applySettings(settings) {
+    if (settings && typeof settings === 'object') {
+      currentSettings = { ...currentSettings, ...settings };
     }
 
     const s = currentSettings;
+    const docEl = document.documentElement;
     const body = document.body;
-    if (!body) return;
+    if (!docEl || !body) return;
 
-    // 1. Set CSS Variables for adjustable blur intensity
+    // A. Set Dynamic CSS Variables for Adjustable Blur Intensity
     const intensity = Math.max(3, Math.min(30, parseInt(s.blurIntensity, 10) || 10));
     const avatarIntensity = Math.max(4, intensity + 2);
-    document.documentElement.style.setProperty('--wa-blur-intensity', `${intensity}px`);
-    document.documentElement.style.setProperty('--wa-blur-avatar-intensity', `${avatarIntensity}px`);
+    docEl.style.setProperty('--wa-blur-intensity', `${intensity}px`);
+    docEl.style.setProperty('--wa-blur-avatar-intensity', `${avatarIntensity}px`);
 
-    // 2. Master Toggle
+    // B. Master Toggle
     if (s.enabled !== false) {
       body.classList.add('wa-blur-master-enabled');
       body.classList.remove('wa-blur-disabled');
@@ -76,9 +52,9 @@
       body.classList.add('wa-blur-disabled');
     }
 
-    // 3. Feature Classes
-    const toggleClass = (cls, condition) => {
-      if (condition) body.classList.add(cls);
+    // C. Granular Feature Toggles
+    const toggleClass = (cls, cond) => {
+      if (cond) body.classList.add(cls);
       else body.classList.remove(cls);
     };
 
@@ -91,61 +67,247 @@
     toggleClass('wa-blur-group-info', s.blurGroupInfo !== false);
     toggleClass('wa-blur-status-info', s.blurStatusInfo !== false);
     toggleClass('wa-blur-hover-reveal', s.unblurOnHover !== false);
-  }
 
-  // Expose global updater for Electron host IPC
-  window.__applyPrivacySettings = applySettings;
-  window.addEventListener('wa-privacy-sync', (e) => {
-    if (e.detail) applySettings(e.detail);
-  });
-
-  function showToast(message) {
-    let toast = document.getElementById('wa-privacy-blur-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'wa-privacy-blur-toast';
-      toast.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        background: rgba(17, 27, 33, 0.94);
-        color: #00a884;
-        border: 1px solid rgba(0, 168, 132, 0.45);
-        padding: 10px 18px;
-        border-radius: 8px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        z-index: 999999;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-        transition: opacity 0.25s ease, transform 0.25s ease;
-        pointer-events: none;
-      `;
-      document.body.appendChild(toast);
+    // D. Lock Screen Status Check
+    if (s.isLocked) {
+      showLockOverlay();
+    } else {
+      hideLockOverlay();
     }
-    toast.innerText = message;
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateY(0)';
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(10px)';
-    }, 2000);
   }
 
-  function toggleMaster() {
-    currentSettings.enabled = !currentSettings.enabled;
-    applySettings(currentSettings);
-    showToast(currentSettings.enabled ? '🛡️ Privacy Blur: AKTIF' : '👁️ Privacy Blur: NONAKTIF');
+  // Load settings from Chrome Extension Storage
+  function loadSettingsFromStorage() {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(null, (items) => {
+          if (items) {
+            applySettings(items);
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('[Blur & Lock] Storage access error:', e);
+    }
   }
 
-  window.addEventListener('keydown', (e) => {
-    if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+  // Listen for real-time messages from extension popup or background
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.action === 'APPLY_SETTINGS') {
+        applySettings(message.settings);
+        tagAll();
+        sendResponse({ success: true });
+      } else if (message.action === 'TRIGGER_LOCK') {
+        currentSettings.isLocked = true;
+        showLockOverlay();
+        sendResponse({ success: true });
+      }
+    });
+  }
+
+  // ==========================================================================
+  // 2. PIN LOCK SCREEN OVERLAY ENGINE ("LOCK NOW")
+  // ==========================================================================
+  let lockOverlayEl = null;
+  let enteredPin = '';
+
+  function createLockOverlay() {
+    if (document.getElementById('wa-privacy-lock-overlay')) {
+      lockOverlayEl = document.getElementById('wa-privacy-lock-overlay');
+      return;
+    }
+
+    lockOverlayEl = document.createElement('div');
+    lockOverlayEl.id = 'wa-privacy-lock-overlay';
+    lockOverlayEl.className = 'hidden';
+
+    lockOverlayEl.innerHTML = `
+      <div class="wa-lock-card" id="waLockCard">
+        <div class="wa-lock-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2 class="wa-lock-title">WhatsApp Web Terkunci</h2>
+        <p class="wa-lock-subtitle">Masukkan 4 digit PIN keamanan Anda untuk membuka akses percakapan.</p>
+        
+        <div class="wa-lock-dots">
+          <div class="wa-lock-dot" data-index="0"></div>
+          <div class="wa-lock-dot" data-index="1"></div>
+          <div class="wa-lock-dot" data-index="2"></div>
+          <div class="wa-lock-dot" data-index="3"></div>
+        </div>
+
+        <div class="wa-lock-error" id="waLockError">PIN salah, silakan coba lagi</div>
+
+        <div class="wa-lock-keypad">
+          <button class="wa-lock-key" data-num="1">1</button>
+          <button class="wa-lock-key" data-num="2">2</button>
+          <button class="wa-lock-key" data-num="3">3</button>
+          <button class="wa-lock-key" data-num="4">4</button>
+          <button class="wa-lock-key" data-num="5">5</button>
+          <button class="wa-lock-key" data-num="6">6</button>
+          <button class="wa-lock-key" data-num="7">7</button>
+          <button class="wa-lock-key" data-num="8">8</button>
+          <button class="wa-lock-key" data-num="9">9</button>
+          <button class="wa-lock-key action-key" id="waLockClear">C</button>
+          <button class="wa-lock-key" data-num="0">0</button>
+          <button class="wa-lock-key action-key" id="waLockBackspace">⌫</button>
+        </div>
+
+        <div class="wa-lock-hint">
+          Proteksi aktif oleh <strong>Blur & Lock Privacy Extension</strong>
+        </div>
+      </div>
+    `;
+
+    document.documentElement.appendChild(lockOverlayEl);
+
+    // Keypad event listeners
+    lockOverlayEl.querySelectorAll('.wa-lock-key[data-num]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        appendPinDigit(btn.dataset.num);
+      });
+    });
+
+    const clearBtn = lockOverlayEl.querySelector('#waLockClear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetPinInput();
+      });
+    }
+
+    const bsBtn = lockOverlayEl.querySelector('#waLockBackspace');
+    if (bsBtn) {
+      bsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deletePinDigit();
+      });
+    }
+
+    // Trap keyboard events while locked
+    window.addEventListener('keydown', handleLockKeyDown, true);
+  }
+
+  function showLockOverlay() {
+    if (!lockOverlayEl) {
+      createLockOverlay();
+    }
+    enteredPin = '';
+    updatePinDots();
+    hideLockError();
+    lockOverlayEl.classList.remove('hidden');
+  }
+
+  function hideLockOverlay() {
+    if (lockOverlayEl) {
+      lockOverlayEl.classList.add('hidden');
+    }
+    enteredPin = '';
+  }
+
+  function appendPinDigit(digit) {
+    if (enteredPin.length >= 4) return;
+    enteredPin += digit;
+    updatePinDots();
+
+    if (enteredPin.length === 4) {
+      setTimeout(verifyPin, 100);
+    }
+  }
+
+  function deletePinDigit() {
+    if (enteredPin.length > 0) {
+      enteredPin = enteredPin.slice(0, -1);
+      updatePinDots();
+      hideLockError();
+    }
+  }
+
+  function resetPinInput() {
+    enteredPin = '';
+    updatePinDots();
+    hideLockError();
+  }
+
+  function updatePinDots() {
+    if (!lockOverlayEl) return;
+    const dots = lockOverlayEl.querySelectorAll('.wa-lock-dot');
+    dots.forEach((dot, idx) => {
+      if (idx < enteredPin.length) {
+        dot.classList.add('filled');
+      } else {
+        dot.classList.remove('filled');
+      }
+    });
+  }
+
+  function showLockError(msg) {
+    if (!lockOverlayEl) return;
+    const err = lockOverlayEl.querySelector('#waLockError');
+    if (err) {
+      if (msg) err.textContent = msg;
+      err.classList.add('visible');
+    }
+    const card = lockOverlayEl.querySelector('#waLockCard');
+    if (card) {
+      card.classList.remove('shake');
+      void card.offsetWidth; // Force reflow
+      card.classList.add('shake');
+    }
+  }
+
+  function hideLockError() {
+    if (!lockOverlayEl) return;
+    const err = lockOverlayEl.querySelector('#waLockError');
+    if (err) err.classList.remove('visible');
+  }
+
+  function verifyPin() {
+    const savedPin = currentSettings.securityPin || '';
+    if (!savedPin || enteredPin === savedPin) {
+      // PIN Correct -> Unlock!
+      currentSettings.isLocked = false;
+      hideLockOverlay();
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ action: 'UNLOCK_SUCCESS' }).catch(() => {});
+      }
+    } else {
+      // PIN Incorrect -> Shake & Retry
+      showLockError('PIN salah, silakan coba lagi');
+      setTimeout(() => {
+        resetPinInput();
+      }, 500);
+    }
+  }
+
+  function handleLockKeyDown(e) {
+    if (!currentSettings.isLocked || !lockOverlayEl || lockOverlayEl.classList.contains('hidden')) {
+      return;
+    }
+
+    // Stop WhatsApp Web from receiving keys
+    e.stopPropagation();
+
+    if (/^[0-9]$/.test(e.key)) {
       e.preventDefault();
-      toggleMaster();
+      appendPinDigit(e.key);
+    } else if (e.key === 'Backspace') {
+      e.preventDefault();
+      deletePinDigit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      resetPinInput();
     }
-  });
+  }
 
+  // ==========================================================================
+  // 3. CONTINUOUS DOM ELEMENT TAGGING (AUTO OBSERVER & SCROLLING)
+  // ==========================================================================
   function isPhoneNumber(text) {
     if (!text) return false;
     const clean = text.trim();
@@ -172,9 +334,7 @@
     });
   }
 
-  // --------------------------------------------------------------------------
-  // 1. Header di Atas Bubble Chat (#main header)
-  // --------------------------------------------------------------------------
+  // Header Elements
   function setupHeaderElements() {
     const mainHeader = document.querySelector('#main header');
     if (!mainHeader) return;
@@ -182,7 +342,6 @@
     const headerBtn = mainHeader.querySelector('div[role="button"]') || mainHeader.firstElementChild;
     if (!headerBtn) return;
 
-    // A. Foto Profil di Header (#main header)
     const headerAvatar = headerBtn.querySelector('img:not(.emoji)') ||
                          headerBtn.querySelector('._ak8h') ||
                          headerBtn.querySelector('[data-testid="conversation-info-header-chat-avatar"]') ||
@@ -194,7 +353,6 @@
       attachDirectHover(headerAvatar);
     }
 
-    // B. Nama Kontak & Info di Header (#main header)
     const titleCandidates = headerBtn.querySelectorAll(
       'span[title], div[title], ._ak8q, [data-testid="conversation-info-header-chat-title"], [data-testid="chat-title"]'
     );
@@ -202,7 +360,6 @@
       if (!el.closest('.wa-privacy-header-avatar')) {
         const titleText = el.getAttribute('title') || el.textContent || '';
         if (titleText.includes(',')) {
-          // Group participants list in header
           if (!el.classList.contains('wa-privacy-group-info')) el.classList.add('wa-privacy-group-info');
         } else {
           if (!el.classList.contains('wa-privacy-header-name')) el.classList.add('wa-privacy-header-name');
@@ -210,64 +367,15 @@
         attachDirectHover(el);
       }
     });
-
-    // Independent hover on header
-    if (!headerBtn.dataset.waHoverBound) {
-      headerBtn.dataset.waHoverBound = 'true';
-      headerBtn.addEventListener('mousemove', (e) => {
-        if (!currentSettings.enabled || !currentSettings.unblurOnHover) return;
-        const curAvatar = headerBtn.querySelector('.wa-privacy-header-avatar') || headerAvatar;
-        const curTitle = headerBtn.querySelector('.wa-privacy-header-name');
-
-        const onAvatar = curAvatar && (curAvatar === e.target || curAvatar.contains(e.target));
-        const onTitle = curTitle && (curTitle === e.target || curTitle.contains(e.target));
-
-        if (curAvatar) {
-          if (onAvatar) {
-            curAvatar.style.setProperty('filter', 'none', 'important');
-            curAvatar.style.setProperty('-webkit-filter', 'none', 'important');
-          } else {
-            curAvatar.style.removeProperty('filter');
-            curAvatar.style.removeProperty('-webkit-filter');
-          }
-        }
-
-        if (curTitle) {
-          if (onTitle) {
-            curTitle.style.setProperty('filter', 'none', 'important');
-            curTitle.style.setProperty('-webkit-filter', 'none', 'important');
-          } else {
-            curTitle.style.removeProperty('filter');
-            curTitle.style.removeProperty('-webkit-filter');
-          }
-        }
-      });
-
-      headerBtn.addEventListener('mouseleave', () => {
-        const curAvatar = headerBtn.querySelector('.wa-privacy-header-avatar') || headerAvatar;
-        const curTitle = headerBtn.querySelector('.wa-privacy-header-name');
-        if (curAvatar) {
-          curAvatar.style.removeProperty('filter');
-          curAvatar.style.removeProperty('-webkit-filter');
-        }
-        if (curTitle) {
-          curTitle.style.removeProperty('filter');
-          curTitle.style.removeProperty('-webkit-filter');
-        }
-      });
-    }
   }
 
-  // --------------------------------------------------------------------------
-  // 2. Drawer Info Kontak & Grup
-  // --------------------------------------------------------------------------
+  // Drawer Elements (Info Kontak, Grup, Media)
   function setupDrawerElements() {
     const drawers = document.querySelectorAll(
       '[data-animate-drawer-right="true"], div[data-testid="contact-info"], div[data-testid="chat-info-drawer"], div[data-testid="group-info-drawer"]'
     );
 
     drawers.forEach(drawer => {
-      // A. Foto Profil Besar / Lingkaran Inisial
       const drawerImgs = drawer.querySelectorAll('img:not(.emoji), [data-testid="profile-pic"], [data-testid="avatar"]');
       drawerImgs.forEach(img => {
         if (!img.classList.contains('wa-privacy-drawer-avatar')) {
@@ -276,7 +384,6 @@
         attachDirectHover(img);
       });
 
-      // Deteksi inisial besar lingkaran ("GP")
       const allDivs = drawer.querySelectorAll('div[role="button"] > div, div');
       allDivs.forEach(d => {
         const txt = (d.textContent || '').trim();
@@ -292,7 +399,6 @@
         }
       });
 
-      // B. Nama Kontak Besar di Drawer
       const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
       headings.forEach(h => {
         if (!h.classList.contains('wa-privacy-drawer-name')) {
@@ -301,7 +407,6 @@
         attachDirectHover(h);
       });
 
-      // C. Nomor Telepon & Info Status
       const spans = drawer.querySelectorAll('span, div');
       spans.forEach(sp => {
         if (sp.children.length === 0) {
@@ -315,7 +420,6 @@
         }
       });
 
-      // D. Deskripsi Grup
       const groupDescs = drawer.querySelectorAll('[data-testid="group-description"], [data-testid="chat-info-description"]');
       groupDescs.forEach(gd => {
         if (!gd.classList.contains('wa-privacy-group-info')) {
@@ -324,7 +428,6 @@
         attachDirectHover(gd);
       });
 
-      // E. Media Gallery di Drawer
       const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
       mediaGalleryImgs.forEach(m => {
         if (!m.classList.contains('wa-privacy-media')) {
@@ -335,9 +438,7 @@
     });
   }
 
-  // --------------------------------------------------------------------------
-  // 3. Sidebar Chat List, Arsip, Meta AI, & Profil Pojok Kiri Bawah
-  // --------------------------------------------------------------------------
+  // Sidebar Chat List, Arsip, & Profil Pojok Bawah
   function setupSidebarAndControls() {
     const cellFrames = document.querySelectorAll(
       '#pane-side [data-testid="cell-frame-container"], ' +
@@ -345,18 +446,16 @@
     );
 
     cellFrames.forEach(cell => {
-      // 1. Lewati tombol header "Diarsipkan" di daftar utama
       const isArchivedHeaderBtn = cell.closest('[data-testid="archived"]') && 
                                   !cell.closest('div[data-testid="archived-chats"]');
       if (isArchivedHeaderBtn) return;
 
-      // 2. Tag seluruh cell teks chat list untuk fitur "blurChatList"
       if (!cell.classList.contains('wa-privacy-chat-list-msg')) {
         cell.classList.add('wa-privacy-chat-list-msg');
       }
       attachDirectHover(cell);
 
-      // 3. Contact Name: Baris Pertama
+      // Contact Name
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
       if (titleEl) {
         const txt = (titleEl.textContent || '').trim();
@@ -372,7 +471,7 @@
         attachDirectHover(titleEl);
       }
 
-      // 4. Contact Display Last Chat: Baris Kedua Preview Pesan Terakhir
+      // Last Chat Preview (baris kedua)
       const lastChild = cell.lastElementChild;
       if (lastChild && lastChild !== titleEl && !lastChild.contains(titleEl)) {
         if (!lastChild.classList.contains('wa-privacy-last-chat')) {
@@ -390,13 +489,13 @@
         }
       }
 
-      // 5. Contact Profile: Avatar (Foto Asli maupun Inisial / Tanpa Foto)
+      // Contact Avatar (Foto maupun Inisial)
       const row = cell.closest('div[role="listitem"]') || 
                   cell.closest('div[role="row"]') || 
                   cell.parentElement;
       if (!row) return;
 
-      // 5.1 Cek Story Ring Hijau
+      // Status Ring Hijau (Selalu dilindungi jernih)
       const statusSvg = row.querySelector('svg._ak8i, circle[stroke]');
       if (statusSvg && !cell.contains(statusSvg)) {
         statusSvg.style.setProperty('filter', 'none', 'important');
@@ -420,7 +519,7 @@
         return;
       }
 
-      // 5.2 Foto Asli (img)
+      // Foto Gambar
       const imgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
       if (imgs.length > 0) {
         imgs.forEach(img => {
@@ -432,7 +531,7 @@
         return;
       }
 
-      // 5.3 Kontak Tanpa Foto (Lingkaran Inisial Huruf & Siluet)
+      // Inisial Tanpa Foto ("A", "T", siluet)
       const elementsOutsideCell = Array.from(row.querySelectorAll('div, span')).filter(el => {
         if (cell === el || cell.contains(el) || el.contains(cell)) return false;
         const w = el.offsetWidth;
@@ -459,33 +558,7 @@
       }
     });
 
-    // B. Foto Profil Pengguna di Pojok Kiri Bawah ("Kontak Anda")
-    const userProfileImgs = document.querySelectorAll(
-      'nav img, ' +
-      'header[role="navigation"] img, ' +
-      'header > div:first-child img, ' +
-      'div[role="navigation"] img, ' +
-      '[data-testid="profile-pic-btn"] img, ' +
-      '[data-testid="profile-pic-btn"], ' +
-      'div[role="button"][aria-label*="Profil" i] img, ' +
-      'button[aria-label*="Profil" i] img, ' +
-      'div[role="button"][aria-label*="Profile" i] img, ' +
-      'button[aria-label*="Profile" i] img, ' +
-      'div[role="button"][aria-label*="Anda" i] img, ' +
-      'button[aria-label*="Anda" i] img, ' +
-      'div[role="button"][aria-label*="You" i] img, ' +
-      'button[aria-label*="You" i] img'
-    );
-    userProfileImgs.forEach(img => {
-      if (!img.classList.contains('wa-privacy-user-avatar')) {
-        img.classList.add('wa-privacy-user-avatar');
-      }
-      attachDirectHover(img);
-      const btn = img.closest('button') || img.closest('div[role="button"]');
-      if (btn) attachDirectHover(btn);
-    });
-
-    // Deteksi foto profil pojok kiri bawah berdasarkan posisi (rect.left < 80)
+    // Foto Profil Pengguna di Pojok Kiri Bawah ("Kontak Anda")
     const allImages = document.querySelectorAll('img');
     allImages.forEach(img => {
       if (img.closest('#pane-side') || img.closest('#main') || img.closest('[data-animate-drawer-right="true"]')) return;
@@ -500,7 +573,7 @@
       }
     });
 
-    // C. Fitur Meta AI
+    // Meta AI
     const metaAiElements = document.querySelectorAll(
       'button[aria-label*="Meta AI" i], ' +
       'div[aria-label*="Meta AI" i], ' +
@@ -518,14 +591,12 @@
     });
   }
 
-  // --------------------------------------------------------------------------
-  // 4. Conversation Content & Media di Dalam Obrolan (#main)
-  // --------------------------------------------------------------------------
+  // Conversation Content & Media di Ruang Chat (#main)
   function setupConversationElements() {
     const mainEl = document.getElementById('main');
     if (!mainEl) return;
 
-    // A. Pesan Teks di Ruang Chat
+    // Isi Percakapan
     const textMessages = mainEl.querySelectorAll(
       'div[role="row"] .copyable-text:not([contenteditable="true"]), ' +
       'div[role="row"] .selectable-text:not([contenteditable="true"]), ' +
@@ -538,14 +609,13 @@
       attachDirectHover(msg);
     });
 
-    // B. Media di Ruang Chat (Gambar, Video, Voice Notes, Dokumen, Stiker)
+    // Media (Gambar, Video, Audio, Dokumen, Stiker)
     const mediaElements = mainEl.querySelectorAll(
       'img:not(.emoji), video, audio, [data-testid="media-canvas"], ' +
       '[data-testid="audio-player"], [data-testid="audio-track"], [data-testid="ptt-playback"], ' +
       '[data-testid="document-thumb"], [data-testid="document-container"], [data-testid="sticker"]'
     );
     mediaElements.forEach(med => {
-      // Jangan blur header avatar
       if (med.closest('header')) return;
       if (!med.classList.contains('wa-privacy-media')) {
         med.classList.add('wa-privacy-media');
@@ -554,9 +624,7 @@
     });
   }
 
-  // --------------------------------------------------------------------------
-  // 5. New Chat Drawer (Drawer Chat Baru)
-  // --------------------------------------------------------------------------
+  // Drawer Chat Baru
   function setupNewChatDrawerElements() {
     const newChatDrawers = document.querySelectorAll('div[data-animate-drawer-left="true"]');
     newChatDrawers.forEach(drawer => {
@@ -567,7 +635,6 @@
         const isActionBtn = item.querySelector('[data-icon="community"], [data-icon="groups"], [data-icon="new-group"]');
         if (isActionBtn) return;
 
-        // A. Avatar Kontak di Chat Baru
         const avatar = item.querySelector('img:not(.emoji)') ||
                        item.querySelector('[data-testid="avatar"]') ||
                        item.querySelector('[data-testid="chat-avatar"]') ||
@@ -577,7 +644,6 @@
           attachDirectHover(avatar);
         }
 
-        // B. Nama Kontak di Chat Baru
         const titleEl = item.querySelector('[data-testid="cell-frame-title"]') ||
                         item.querySelector('span[title]') ||
                         item.querySelector('span[dir="auto"]');
@@ -586,7 +652,6 @@
           attachDirectHover(titleEl);
         }
 
-        // C. Info / Bio / Nomor di bawah nama
         const textElements = Array.from(item.querySelectorAll('span[dir="auto"]'));
         if (textElements.length > 1) {
           const aboutEl = textElements[1];
@@ -599,9 +664,7 @@
     });
   }
 
-  // --------------------------------------------------------------------------
-  // Master Runner
-  // --------------------------------------------------------------------------
+  // Master Runner (Debounced)
   function tagAll() {
     setupHeaderElements();
     setupDrawerElements();
@@ -621,10 +684,10 @@
   }
 
   function init() {
-    loadSettings();
-    applySettings();
+    loadSettingsFromStorage();
     tagAll();
 
+    // Observe all scrolling, dynamic DOM updates, incoming messages, and drawer openings
     const observer = new MutationObserver(() => {
       scheduleTagAll();
     });
@@ -640,5 +703,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 4.0.0 Modular Privacy Suite Loaded.');
+  console.log('[Blur & Lock Privacy Extension] Active on WhatsApp Web.');
 })();

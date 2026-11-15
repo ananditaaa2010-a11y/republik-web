@@ -21,6 +21,16 @@
   --wa-blur-avatar-intensity: 12px;
 }
 
+/* ==========================================================================
+   MASTER TOGGLE OVERRIDE: KETIKA BLUR DINONAKTIFKAN
+   Pastikan SEMUA elemen 100% jernih seketika saat toggle OFF
+   ========================================================================== */
+body.wa-blur-disabled *,
+body:not(.wa-blur-master-enabled) * {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
 /* --------------------------------------------------------------------------
    0. PROTEKSI MUTLAK (DILARANG BLUR APAPUN PILIHANNYA)
    -------------------------------------------------------------------------- */

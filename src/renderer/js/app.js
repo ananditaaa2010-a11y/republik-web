@@ -170,48 +170,48 @@ function setupEventListeners() {
     }
   });
 
-  // Privacy Blur Settings & Toggle
+  // Toggle Privacy Blur (Sekali klik langsung toggle blur on/off, klik kanan untuk buka modal pengaturan)
   if (btnToggleBlur) {
     btnToggleBlur.addEventListener('click', () => {
-      if (api.openPrivacyBlurModal) {
-        api.openPrivacyBlurModal();
-      } else if (api.toggleBlur) {
+      if (api.toggleBlur) {
         api.toggleBlur();
       }
     });
 
     btnToggleBlur.addEventListener('contextmenu', (e) => {
       e.preventDefault();
+      if (api.openPrivacyBlurModal) {
+        api.openPrivacyBlurModal();
+      }
+    });
+
+    if (api.onPrivacySettingsChanged) {
+      api.onPrivacySettingsChanged((settings) => {
+        const isEnabled = settings && settings.enabled !== false;
+        btnToggleBlur.style.opacity = isEnabled ? '1' : '0.45';
+        btnToggleBlur.title = isEnabled 
+          ? 'Privasi Blur WhatsApp: AKTIF (Klik / Alt+B untuk Nonaktifkan)' 
+          : 'Privasi Blur WhatsApp: NONAKTIF (Klik / Alt+B untuk Aktifkan)';
+      });
+    }
+
+    if (api.getPrivacySettings) {
+      api.getPrivacySettings().then((settings) => {
+        const isEnabled = settings && settings.enabled !== false;
+        btnToggleBlur.style.opacity = isEnabled ? '1' : '0.45';
+        btnToggleBlur.title = isEnabled 
+          ? 'Privasi Blur WhatsApp: AKTIF (Klik / Alt+B untuk Nonaktifkan)' 
+          : 'Privasi Blur WhatsApp: NONAKTIF (Klik / Alt+B untuk Aktifkan)';
+      }).catch(() => {});
+    }
+  }
+
+  // Pintasan Keyboard Alt + B untuk Toggle Blur Cepat
+  window.addEventListener('keydown', (e) => {
+    if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+      e.preventDefault();
       if (api.toggleBlur) {
         api.toggleBlur();
-      }
-    });
-  }
-
-  // Lock Now Button
-  const btnLockApp = document.getElementById('btnLockApp');
-  if (btnLockApp) {
-    btnLockApp.addEventListener('click', () => {
-      if (api.lockNow) {
-        api.lockNow().then(res => {
-          if (res && res.needPin && api.openPrivacyBlurModal) {
-            api.openPrivacyBlurModal();
-          }
-        });
-      }
-    });
-  }
-
-  // Keyboard shortcut Alt + L for Lock Now
-  window.addEventListener('keydown', (e) => {
-    if (e.altKey && (e.key === 'l' || e.key === 'L')) {
-      e.preventDefault();
-      if (api.lockNow) {
-        api.lockNow().then(res => {
-          if (res && res.needPin && api.openPrivacyBlurModal) {
-            api.openPrivacyBlurModal();
-          }
-        });
       }
     }
   });

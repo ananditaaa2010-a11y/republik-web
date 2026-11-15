@@ -45,6 +45,12 @@ const api = {
     const subscription = (event, data) => callback(data);
     ipcRenderer.on('notifications:settingsChanged', subscription);
     return () => ipcRenderer.removeListener('notifications:settingsChanged', subscription);
+  },
+
+  onPrivacySettingsChanged: (callback) => {
+    const subscription = (event, data) => callback(data);
+    ipcRenderer.on('privacy:settingsChanged', subscription);
+    return () => ipcRenderer.removeListener('privacy:settingsChanged', subscription);
   }
 };
 

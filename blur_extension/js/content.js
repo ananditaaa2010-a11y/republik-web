@@ -754,6 +754,9 @@
 
   // Bridge for Electron / Host synchronization
   window.__applyPrivacySettings = function(settings) {
+    try {
+      localStorage.setItem('wa_privacy_blur_config', JSON.stringify(settings));
+    } catch(e) {}
     applySettings(settings);
     scheduleTagAll();
   };

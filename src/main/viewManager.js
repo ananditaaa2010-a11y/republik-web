@@ -118,39 +118,6 @@ class ViewManager {
         this.editModalWindow.close();
       }
     });
-
-    // Toggle blur on active WhatsApp view from sidebar button
-    ipcMain.on('view:toggle-blur', () => {
-      if (this.activeAccountId && this.views.has(this.activeAccountId)) {
-        const activeView = this.views.get(this.activeAccountId);
-        if (activeView && !activeView.webContents.isDestroyed()) {
-          activeView.webContents.executeJavaScript(`
-            (function() {
-              const STORAGE_KEY = 'wa_privacy_blur_enabled';
-              const isCurrentlyDisabled = document.body.classList.toggle('wa-blur-disabled');
-              const isEnabled = !isCurrentlyDisabled;
-              localStorage.setItem(STORAGE_KEY, isEnabled);
-
-              let toast = document.getElementById('wa-privacy-blur-toast');
-              if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'wa-privacy-blur-toast';
-                toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:rgba(17,27,33,0.92);color:#00a884;border:1px solid rgba(0,168,132,0.4);padding:10px 18px;border-radius:8px;font-family:sans-serif;font-size:13px;font-weight:600;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:opacity 0.3s ease,transform 0.3s ease;pointer-events:none;';
-                document.body.appendChild(toast);
-              }
-              toast.innerText = isEnabled ? '🛡️ Privacy Blur: AKTIF' : '👁️ Privacy Blur: NONAKTIF';
-              toast.style.opacity = '1';
-              toast.style.transform = 'translateY(0)';
-              clearTimeout(toast._timeout);
-              toast._timeout = setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-              }, 2000);
-            })();
-          `).catch(() => {});
-        }
-      }
-    });
   }
 
   async getOrCreateView(accountId) {
@@ -255,6 +222,14 @@ class ViewManager {
       }
 
       view.webContents.setUserAgent(CHROME_USER_AGENT);
+
+      // Keyboard shortcut Alt + B for Quick Privacy Blur Toggle inside WebContentsView
+      view.webContents.on('before-input-event', (event, input) => {
+        if (input.type === 'keyDown' && input.alt && (input.key === 'b' || input.key === 'B')) {
+          event.preventDefault();
+          this.toggleBlur();
+        }
+      });
 
       // If user landed on myaccount.google.com after login, smoothly redirect to Gmail inbox
       if (isGmail) {
@@ -929,6 +904,63 @@ class ViewManager {
     if (this.privacyModalWindow && !this.privacyModalWindow.isDestroyed()) {
       this.privacyModalWindow.close();
       this.privacyModalWindow = null;
+    }
+  }
+
+  toggleBlur() {
+    let isEnabled = true;
+    if (this.privacyBlurStore) {
+      const updated = this.privacyBlurStore.toggleMaster();
+      isEnabled = updated.enabled !== false;
+      this.broadcastPrivacySettings(updated);
+    } else {
+      for (const [accId, view] of this.views.entries()) {
+        if (view && view.webContents && !view.webContents.isDestroyed()) {
+          view.webContents.executeJavaScript(`
+            (function() {
+              const isCurrentlyDisabled = document.body.classList.toggle('wa-blur-disabled');
+              if (isCurrentlyDisabled) {
+                document.body.classList.remove('wa-blur-master-enabled');
+              } else {
+                document.body.classList.add('wa-blur-master-enabled');
+              }
+            })();
+          `).catch(() => {});
+        }
+      }
+    }
+    this.showPrivacyBlurToast(isEnabled);
+  }
+
+  showPrivacyBlurToast(isEnabled) {
+    if (this.activeAccountId && this.views.has(this.activeAccountId)) {
+      const activeView = this.views.get(this.activeAccountId);
+      if (activeView && !activeView.webContents.isDestroyed()) {
+        const text = isEnabled ? '🛡️ Privacy Blur: AKTIF' : '👁️ Privacy Blur: NONAKTIF';
+        const color = isEnabled ? '#00a884' : '#f87171';
+        const border = isEnabled ? 'rgba(0,168,132,0.5)' : 'rgba(239,68,68,0.5)';
+        activeView.webContents.executeJavaScript(`
+          (function() {
+            let toast = document.getElementById('wa-privacy-blur-toast');
+            if (!toast) {
+              toast = document.createElement('div');
+              toast.id = 'wa-privacy-blur-toast';
+              toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:rgba(17,27,33,0.95);color:#00a884;border:1px solid rgba(0,168,132,0.5);padding:10px 18px;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;z-index:9999999;box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:opacity 0.25s ease,transform 0.25s ease;pointer-events:none;';
+              document.body.appendChild(toast);
+            }
+            toast.innerText = ${JSON.stringify(text)};
+            toast.style.color = ${JSON.stringify(color)};
+            toast.style.borderColor = ${JSON.stringify(border)};
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+              toast.style.opacity = '0';
+              toast.style.transform = 'translateY(10px)';
+            }, 2000);
+          })();
+        `).catch(() => {});
+      }
     }
   }
 

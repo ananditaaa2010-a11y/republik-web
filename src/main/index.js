@@ -465,11 +465,8 @@ function setupIPCHandlers() {
   });
 
   ipcMain.on('view:toggle-blur', () => {
-    if (privacyBlurStore) {
-      const updated = privacyBlurStore.toggleMaster();
-      if (viewManager) {
-        viewManager.broadcastPrivacySettings(updated);
-      }
+    if (viewManager) {
+      viewManager.toggleBlur();
     }
   });
 

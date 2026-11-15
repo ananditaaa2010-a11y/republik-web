@@ -599,6 +599,15 @@ if (!isAuthPage) {
     showAutoTextToast(tpl.shortcut || fullWord);
   }, true);
 
+  // Pintasan Keyboard Alt + B untuk Toggle Privasi Blur WhatsApp
+  window.addEventListener('keydown', (e) => {
+    if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+      e.preventDefault();
+      e.stopPropagation();
+      ipcRenderer.send('view:toggle-blur');
+    }
+  }, true);
+
   // Privacy Blur Lock screen unlock sync
   window.addEventListener('wa-privacy-unlocked', () => {
     ipcRenderer.send('privacy:unlocked');

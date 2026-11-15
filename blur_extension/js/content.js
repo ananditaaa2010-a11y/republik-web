@@ -1,5 +1,5 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 2.7.0 - Zero Bleed Avatar Engine)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 2.8.0 - Direct Avatar Target)
  * 
  * Prinsip Mutlak:
  * 1. HANYA Foto Profil (Gambar asli, inisial huruf, ikon default) dan Nama Kontak yang di-blur.
@@ -96,90 +96,51 @@
   }
 
   // --------------------------------------------------------------------------
-  // Universal Avatar Finder (Strictly Avatar Only - Never Message Text)
+  // Universal Avatar Finder (Menemukan Avatar di Sebelah Kiri Cell Frame)
   // --------------------------------------------------------------------------
-  function findAvatarInRow(row) {
-    if (!row) return null;
+  function findAvatarElementForCell(cell) {
+    if (!cell) return null;
 
-    const cellFrame = row.querySelector('[data-testid="cell-frame-container"]');
+    // Cari elemen kolom avatar di sebelah kiri cell
+    let current = cell;
+    let avatarCol = null;
+    while (current && current.parentElement && current.id !== 'pane-side' && current !== document.body) {
+      if (current.previousElementSibling) {
+        avatarCol = current.previousElementSibling;
+        break;
+      }
+      current = current.parentElement;
+    }
 
-    // A. Proteksi status ring SVG (tanda hijau story WA)
-    const statusSvg = row.querySelector('svg._ak8i, svg:has(circle[stroke])');
+    if (!avatarCol) return null;
+
+    // A. Jika ada lingkaran story WA (svg._ak8i atau svg:has(circle[stroke]))
+    const statusSvg = avatarCol.querySelector('svg._ak8i, svg[class*="status"], svg:has(circle[stroke])');
     if (statusSvg) {
-      const svgEl = statusSvg.tagName.toLowerCase() === 'svg' ? statusSvg : statusSvg.closest('svg');
-      if (svgEl) {
-        svgEl.style.setProperty('filter', 'none', 'important');
-        svgEl.style.setProperty('-webkit-filter', 'none', 'important');
-        svgEl.style.setProperty('opacity', '1', 'important');
+      statusSvg.style.setProperty('filter', 'none', 'important');
+      statusSvg.style.setProperty('-webkit-filter', 'none', 'important');
+      statusSvg.style.setProperty('opacity', '1', 'important');
 
-        // Pastikan container SVG tidak kena filter blur
-        let p = svgEl.parentElement;
-        while (p && p !== row) {
-          p.classList.remove('wa-privacy-avatar');
-          p.style.removeProperty('filter');
-          p.style.removeProperty('-webkit-filter');
-          p = p.parentElement;
-        }
-      }
+      // Pastikan avatarCol sendiri tidak di-blur agar SVG tidak ikut kabur
+      avatarCol.classList.remove('wa-privacy-avatar');
+      avatarCol.style.removeProperty('filter');
+      avatarCol.style.removeProperty('-webkit-filter');
+
+      // Ambil elemen foto / inisial di dalam avatarCol (yang BUKAN SVG)
+      const innerAvatar = avatarCol.querySelector('img:not(.emoji)') || 
+                          avatarCol.querySelector('div:not(:has(svg))') || 
+                          avatarCol.querySelector('span');
+      return innerAvatar || null;
     }
 
-    // B. Cari gambar foto profil (img) di LUAR cellFrame
-    const imgs = row.querySelectorAll('img');
-    for (const img of imgs) {
-      if (img.classList.contains('emoji')) continue;
-      if (cellFrame && cellFrame.contains(img)) continue; // JANGAN PERNAH DI DALAM TEKS PESAN!
-      if (img.closest('[data-testid="last-msg-status"]')) continue;
-      return img;
-    }
+    // B. Jika TIDAK ada story WA:
+    // 1. Jika ada img di dalam avatarCol -> return img foto profil
+    const img = avatarCol.querySelector('img:not(.emoji)');
+    if (img) return img;
 
-    // C. Cari wadah avatar class resmi WhatsApp (_ak8h atau [data-testid="avatar"])
-    const known = row.querySelector('._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"], [data-testid="default-user"], [data-testid="default-group"]');
-    if (known && (!cellFrame || !cellFrame.contains(known))) {
-      if (known.querySelector('svg._ak8i, svg:has(circle)')) {
-        const innerImg = known.querySelector('img:not(.emoji)');
-        if (innerImg) return innerImg;
-        const innerChild = known.querySelector('div:not(:has(svg)), span');
-        if (innerChild) return innerChild;
-      } else {
-        return known;
-      }
-    }
-
-    // D. Deteksi elemen lingkaran inisial huruf (di luar cellFrame)
-    const candidates = row.querySelectorAll('div, span');
-    for (const el of candidates) {
-      if (cellFrame && cellFrame.contains(el)) continue; // DILARANG MENYENTUH CELLFRAME!
-      if (el.querySelector('svg._ak8i, svg:has(circle)')) continue;
-      if (el.querySelector('[data-icon*="archiv"]')) continue;
-
-      const txt = (el.textContent || '').trim();
-      const isInitialText = /^[\p{L}\p{N}]{1,3}$/u.test(txt);
-
-      const w = el.offsetWidth;
-      const h = el.offsetHeight;
-
-      if ((w >= 24 && w <= 75 && h >= 24 && h <= 75) || isInitialText) {
-        const comp = window.getComputedStyle(el);
-        const isRound = comp.borderRadius === '50%' || 
-                        comp.borderRadius.includes('50%') || 
-                        comp.borderRadius.includes('9999px') ||
-                        parseFloat(comp.borderRadius) >= 12;
-
-        if (isRound || isInitialText) {
-          return el;
-        }
-      }
-    }
-
-    // E. Fallback: Saudara sebelah kiri cellFrame (Hanya jika teks pendek <= 4 karakter dan bukan pesan)
-    if (cellFrame && cellFrame.previousElementSibling) {
-      const prev = cellFrame.previousElementSibling;
-      if (prev.textContent.trim().length <= 4 && !prev.querySelector('svg._ak8i')) {
-        return prev;
-      }
-    }
-
-    return null;
+    // 2. Jika tidak ada img (berarti inisial huruf seperti "A", "T", atau ikon default):
+    const roundEl = avatarCol.querySelector('div, span') || avatarCol;
+    return roundEl;
   }
 
   // --------------------------------------------------------------------------
@@ -347,19 +308,15 @@
     const cellFrames = document.querySelectorAll('#pane-side [data-testid="cell-frame-container"]');
 
     cellFrames.forEach(cell => {
-      const row = cell.closest('div[role="listitem"]') || cell.closest('div[role="row"]') || cell.parentElement;
-      if (!row) return;
-
-      // Pengecualian mutlak: Baris Arsip
-      if (row.querySelector('[data-icon*="archiv"]') || 
-          row.getAttribute('data-testid') === 'archived' ||
-          row.textContent.trim().startsWith('Diarsipkan') ||
-          row.textContent.trim().startsWith('Archived')) {
+      // Lewati jika ini baris Arsip
+      if (cell.closest('[data-testid="archived"]') || 
+          cell.textContent.trim().startsWith('Diarsipkan') || 
+          cell.textContent.trim().startsWith('Archived')) {
         return;
       }
 
-      // 1. Avatar Foto Profil (Foto asli MAUPUN Lingkaran Inisial Huruf)
-      const avatarEl = findAvatarInRow(row);
+      // 1. Dapatkan elemen avatar (Foto profil ATAU Inisial Huruf seperti A, T, dsb)
+      const avatarEl = findAvatarElementForCell(cell);
       if (avatarEl && avatarEl !== cell && !cell.contains(avatarEl)) {
         if (!avatarEl.classList.contains('wa-privacy-avatar')) {
           avatarEl.classList.add('wa-privacy-avatar');
@@ -382,10 +339,22 @@
         }
         attachDirectHover(titleEl);
       }
-      // BARIS KEDUA (PREVIEW PESAN, STIKER, JAM) 100% TIDAK DISENTUH.
+      // BARIS KEDUA (PREVIEW PESAN, STIKER, JAM) 100% TIDAK PERNAH DISENTUH.
     });
 
-    // B. Foto Profil Pengguna di Pojok Kiri Bawah
+    // B. Fallback Foto Profil di Sidebar: Semua img di #pane-side di luar cell-frame-container
+    const sidebarImgs = document.querySelectorAll('#pane-side img');
+    sidebarImgs.forEach(img => {
+      if (img.classList.contains('emoji')) return;
+      if (img.closest('[data-testid="cell-frame-container"]')) return;
+      if (img.closest('[data-testid="last-msg-status"]')) return;
+      if (!img.classList.contains('wa-privacy-avatar')) {
+        img.classList.add('wa-privacy-avatar');
+      }
+      attachDirectHover(img);
+    });
+
+    // C. Foto Profil Pengguna di Pojok Kiri Bawah
     const userProfileButtons = document.querySelectorAll(
       'header > div:first-child img, ' +
       'nav button:last-child img, ' +
@@ -400,7 +369,7 @@
       attachDirectHover(btn);
     });
 
-    // C. Fitur Meta AI
+    // D. Fitur Meta AI
     const metaAiElements = document.querySelectorAll(
       'button[aria-label*="Meta AI"], ' +
       'div[aria-label*="Meta AI"], ' +
@@ -456,5 +425,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 2.7.0 Zero Bleed Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 2.8.0 Direct Avatar Target Loaded.');
 })();

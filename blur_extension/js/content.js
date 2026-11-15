@@ -1,8 +1,8 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 3.1.0 - Total Avatar & Nav Fix)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 3.2.0 - Precision Isolation)
  * 
  * Prinsip Mutlak:
- * 1. HANYA Foto Profil (Gambar asli, inisial huruf, ikon default), Nama Kontak, Foto Akun Sendiri di pojok kiri bawah, dan Meta AI yang di-blur.
+ * 1. HANYA Foto Profil (Gambar asli, inisial huruf "A", "T", dll.), Nama Kontak, Foto Akun Sendiri di pojok kiri bawah, dan Meta AI yang di-blur.
  * 2. Berlaku di DAFTAR UTAMA maupun di DALAM ARSIP (Archived Chats).
  * 3. PESAN OBROLAN, preview pesan baris kedua, jam, tanda centang status 100% JERNIH NORMAL (DILARANG BLUR).
  * 4. SIDEBAR KIRI NAVIGASI (Chat, Status, Komunitas, Telepon/Panggilan, Saluran, Media/Bintang, Pengaturan) 100% JERNIH (DILARANG BLUR).
@@ -258,7 +258,6 @@
   // 3. Sidebar Chat List, Arsip, Meta AI, & Profil Pojok Kiri Bawah
   // --------------------------------------------------------------------------
   function setupSidebarAndControls() {
-    // A. Ambil semua cell frame di Sidebar Utama MAUPUN di dalam Arsip (Archived Chats)
     const cellFrames = document.querySelectorAll(
       '#pane-side [data-testid="cell-frame-container"], ' +
       'div[data-testid="archived-chats"] [data-testid="cell-frame-container"], ' +
@@ -272,7 +271,7 @@
                                   !cell.closest('div[data-animate-drawer-left="true"]');
       if (isArchivedHeaderBtn) return;
 
-      // 2. Nama Kontak Chat di Baris Atas (TIDAK DIUBAH)
+      // 2. Nama Kontak Chat di Baris Pertama (TIDAK DIUBAH)
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
       if (titleEl) {
         const txt = (titleEl.textContent || '').trim();
@@ -287,74 +286,98 @@
         }
         attachDirectHover(titleEl);
       }
-      // BARIS KEDUA (PREVIEW PESAN, STIKER, JAM) 100% TIDAK PERNAH DISENTUH.
+      // DILARANG MENYENTUH ISI CELL LAINNYA (PREVIEW PESAN 100% JERNIH NORMAL)
 
-      // 3. Avatar Kontak (Foto gambar asli maupun lingkaran inisial):
-      // Di WhatsApp Web, wadah avatar berada persis di sebelah kiri cell teks (previousElementSibling atau child pertama row)
-      const avatarContainer = cell.previousElementSibling || 
-                              (cell.parentElement && cell.parentElement.firstElementChild !== cell ? cell.parentElement.firstElementChild : null);
-      if (!avatarContainer) return;
+      // 3. Batasi pencarian avatar strictly di luar cell teks pesan
+      const row = cell.closest('div[role="listitem"]') || 
+                  cell.closest('div[role="row"]') || 
+                  cell.parentElement;
+      if (!row) return;
 
-      // Cek apakah ada story ring (lingkaran hijau status WA)
-      const statusSvg = avatarContainer.querySelector('svg._ak8i, circle[stroke], svg[class*="_ak8i"]');
-      if (statusSvg) {
+      // 3.1 Cek apakah ada story ring SVG di row ini (di luar cell pesan)
+      const statusSvg = row.querySelector('svg._ak8i, circle[stroke]');
+      if (statusSvg && !cell.contains(statusSvg)) {
         // Jaga lingkaran hijau tetap 100% jernih dan terlihat
         statusSvg.style.setProperty('filter', 'none', 'important');
         statusSvg.style.setProperty('-webkit-filter', 'none', 'important');
         statusSvg.style.setProperty('opacity', '1', 'important');
 
-        // Hapus blur dari wadah svg ring itu sendiri jika ada
-        avatarContainer.classList.remove('wa-privacy-avatar');
-        avatarContainer.style.removeProperty('filter');
-        avatarContainer.style.removeProperty('-webkit-filter');
+        // Wadah svg ring itu sendiri jangan di-blur
+        let p = statusSvg.parentElement;
+        if (p && p !== row) {
+          p.classList.remove('wa-privacy-avatar');
+          p.style.removeProperty('filter');
+        }
 
         // Blur hanya foto / inisial di DALAM ring
-        const innerAvatar = avatarContainer.querySelector('img:not(.emoji)') ||
-                            avatarContainer.querySelector('div:not(:has(svg))') ||
-                            avatarContainer.lastElementChild;
-        if (innerAvatar && innerAvatar !== statusSvg) {
+        const innerAvatar = row.querySelector('img:not(.emoji)') ||
+                            (p ? Array.from(p.children).find(c => c !== statusSvg) : null);
+        if (innerAvatar && innerAvatar !== statusSvg && !cell.contains(innerAvatar)) {
           if (!innerAvatar.classList.contains('wa-privacy-avatar')) {
             innerAvatar.classList.add('wa-privacy-avatar');
           }
           attachDirectHover(innerAvatar);
         }
-      } else {
-        // Tanpa story ring: Blur wadah avatar & img di dalamnya (meliputi gambar asli maupun inisial lingkaran huruf "A", "T")
-        if (!avatarContainer.classList.contains('wa-privacy-avatar')) {
-          avatarContainer.classList.add('wa-privacy-avatar');
-        }
-        attachDirectHover(avatarContainer);
+        return;
+      }
 
-        const img = avatarContainer.querySelector('img:not(.emoji)');
-        if (img) {
+      // 3.2 Jika ada foto gambar (img) di dalam row (di luar cell pesan):
+      const imgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
+      if (imgs.length > 0) {
+        imgs.forEach(img => {
           if (!img.classList.contains('wa-privacy-avatar')) {
             img.classList.add('wa-privacy-avatar');
           }
           attachDirectHover(img);
+        });
+        return;
+      }
+
+      // 3.3 Jika kontak TANPA foto (lingkaran inisial huruf "A", "T", default silhouette):
+      // Cari elemen avatar di luar cell yang berbentuk lingkaran atau berisi inisial
+      const elementsOutsideCell = Array.from(row.querySelectorAll('div, span')).filter(el => {
+        if (cell === el || cell.contains(el) || el.contains(cell)) return false;
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        if (w >= 30 && w <= 70 && h >= 30 && h <= 70) return true;
+        const txt = (el.textContent || '').trim();
+        return /^[\p{L}\p{N}]{1,2}$/u.test(txt);
+      });
+
+      if (elementsOutsideCell.length > 0) {
+        const initialAvatar = elementsOutsideCell[0];
+        if (!initialAvatar.classList.contains('wa-privacy-avatar')) {
+          initialAvatar.classList.add('wa-privacy-avatar');
+        }
+        attachDirectHover(initialAvatar);
+      } else {
+        // Fallback sibling sebelum cell
+        const sib = cell.previousElementSibling;
+        if (sib && !cell.contains(sib)) {
+          if (!sib.classList.contains('wa-privacy-avatar')) {
+            sib.classList.add('wa-privacy-avatar');
+          }
+          attachDirectHover(sib);
         }
       }
     });
 
     // B. Foto Profil Pengguna di Pojok Kiri Bawah ("Kontak Anda")
-    const userProfileButtons = document.querySelectorAll(
-      'nav button:last-child img, ' +
-      'nav button:last-child > div, ' +
-      'nav div[role="button"]:last-child img, ' +
-      'nav div[role="button"]:last-child > div, ' +
-      'header[role="navigation"] button:last-child img, ' +
-      'header[role="navigation"] div[role="button"]:last-child img, ' +
+    // Cari semua elemen gambar foto (img) di bilah navigasi kiri
+    const userProfileImgs = document.querySelectorAll(
+      'nav img, ' +
+      'header[role="navigation"] img, ' +
+      'header > div:first-child img, ' +
       '[data-testid="profile-pic-btn"] img, ' +
       '[data-testid="profile-pic-btn"], ' +
       'div[role="button"][aria-label*="Profil" i] img, ' +
-      'div[role="button"][aria-label*="Profile" i] img, ' +
-      'button[aria-label*="Profil" i] img, ' +
-      'button[aria-label*="Profile" i] img'
+      'button[aria-label*="Profil" i] img'
     );
-    userProfileButtons.forEach(btn => {
-      if (!btn.classList.contains('wa-privacy-user-avatar')) {
-        btn.classList.add('wa-privacy-user-avatar');
+    userProfileImgs.forEach(img => {
+      if (!img.classList.contains('wa-privacy-user-avatar')) {
+        img.classList.add('wa-privacy-user-avatar');
       }
-      attachDirectHover(btn);
+      attachDirectHover(img);
     });
 
     // C. Fitur Meta AI
@@ -413,5 +436,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 3.1.0 Total Avatar & Nav Fix Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 3.2.0 Precision Isolation Loaded.');
 })();

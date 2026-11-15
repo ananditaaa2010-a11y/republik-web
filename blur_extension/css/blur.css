@@ -1,17 +1,18 @@
 /* ==========================================================================
-   WhatsApp Web Privacy Blur Stylesheet (Version 3.0.0 - Ironclad Separation)
+   WhatsApp Web Privacy Blur Stylesheet (Version 3.1.0 - Total Avatar & Nav Fix)
    
    PRINSIP PRESISI:
    1. HANYA BLUR:
-      - Foto profil & Lingkaran Inisial SEMUA Kontak (Sidebar, Arsip, Header, Drawer, Pojok kiri bawah)
+      - SEMUA FOTO PROFIL & LINGKARAN INISIAL KONTAK (Sidebar, Arsip, Header, Drawer)
       - Nama kontak (Sidebar, Arsip, Header, Drawer info kontak)
       - Nomor telepon / info status di Drawer
-      - Tombol Meta AI
+      - Foto profil akun Anda sendiri di pojok kiri bawah ("Kontak Anda")
+      - Tombol / ikon Meta AI
    2. JANGAN PERNAH BLUR:
       - PESAN OBROLAN / CHAT BUBBLE / PREVIEW PESAN DI SIDEBAR & ARSIP (100% JERNIH NORMAL)
-      - Tanda lingkaran hijau story/status WA (tetap terlihat jelas & tajam)
-      - Tulisan "WhatsApp", search bar, tombol "Diarsipkan" di daftar utama
-      - Filter chips ("Semua", "Belum dibaca", "Favorit", "Grup", "+")
+      - IKON SIDEBAR KIRI NAVIGASI (Chat, Status, Komunitas, Telepon/Panggilan, Saluran, Media/Bintang, Pengaturan)
+      - Tanda lingkaran hijau story/status WA (tetap terlihat jelas & tajam di sekeliling avatar)
+      - Tulisan "WhatsApp", search bar, tombol filter ("Semua", "Belum dibaca", "Favorit", "Grup", "+")
       - Jam/timestamp, tanda centang status
       - Layar welcome / tampilan kosong tengah
    ========================================================================== */
@@ -33,7 +34,7 @@
 #pane-side [role="tablist"] button,
 #pane-side button[role="tab"],
 [data-testid*="filter"],
-header button,
+header button:not(:last-child):not([aria-label*="Meta AI" i]),
 div[data-testid="chat-list-search"],
 div[data-testid="search-input"] {
   filter: none !important;
@@ -41,7 +42,31 @@ div[data-testid="search-input"] {
 }
 
 /* --------------------------------------------------------------------------
-   0.1 LINGKARAN HIJAU STATUS / STORY WA (TETAP JERNIH & TAMPAK JELAS)
+   0.1 PROTEKSI SIDEBAR KIRI: IKON NAVIGASI (Chat, Status, Komunitas, Telepon, Saluran, Media)
+   DILARANG KERAS DI-BLUR
+   -------------------------------------------------------------------------- */
+nav button:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]),
+nav button:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) *,
+nav div[role="button"]:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]),
+nav div[role="button"]:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) *,
+header[role="navigation"] button:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]),
+header[role="navigation"] button:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) *,
+header[role="navigation"] div[role="button"]:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]),
+header[role="navigation"] div[role="button"]:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) *,
+header > div:first-child button:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]),
+header > div:first-child button:not(:last-child):not([aria-label*="Meta AI" i]):not([title*="Meta AI" i]) *,
+[data-icon="chats-outline"],
+[data-icon="status-outline"],
+[data-icon="community-outline"],
+[data-icon="newsletter-outline"],
+[data-icon="settings-outline"],
+[data-icon="star-outline"] {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   0.2 LINGKARAN HIJAU STATUS / STORY WA (TETAP JERNIH & TAMPAK JELAS)
    -------------------------------------------------------------------------- */
 svg._ak8i,
 svg._ak8i circle,
@@ -59,7 +84,7 @@ circle[stroke],
 /* --------------------------------------------------------------------------
    1. FOTO PROFIL / AVATAR (FOTO ASLI, GAMBAR, MAUPUN LINGKARAN INISIAL)
    -------------------------------------------------------------------------- */
-/* Sidebar & Arsip: Semua Foto Profil Gambar Asli */
+/* A. Semua Gambar Foto Profil Asli di Sidebar, Arsip, & Chat List */
 body:not(.wa-blur-disabled) #pane-side img:not(.emoji),
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] img:not(.emoji),
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] img:not(.emoji),
@@ -67,32 +92,30 @@ body:not(.wa-blur-disabled) [data-testid="chat-list"] img:not(.emoji),
 body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"],
 body:not(.wa-blur-disabled) img._ak8k,
 
-/* Sidebar & Arsip: Wadah Avatar, Lingkaran Inisial & Ikon Default */
+/* B. Wadah Avatar & Lingkaran Inisial Kontak ("A", "T", "GP", default silhouette) Tanpa Ring Story */
+body:not(.wa-blur-disabled) #pane-side div:has(> [data-testid="cell-frame-container"]) > div:first-child:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div:has(> [data-testid="cell-frame-container"]) > div:first-child:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] div:has(> [data-testid="cell-frame-container"]) > div:first-child:not(:has(circle[stroke])):not(:has(svg._ak8i)),
 body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"],
-body:not(.wa-blur-disabled) #pane-side div._ak8h:not(:has(svg._ak8i)),
-body:not(.wa-blur-disabled) #pane-side div._ak8m:not(:has(svg._ak8i)),
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avatar"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"],
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h:not(:has(svg._ak8i)),
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8m:not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) #pane-side div._ak8m,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8m,
 
-/* Sidebar Chat List dengan Story/Status WA */
-body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) {
-  filter: none !important;
-  -webkit-filter: none !important;
-}
+/* C. Wadah Avatar yang Memiliki Ring Story (Hanya blur isi di dalamnya, BUKAN ring svg) */
+body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:has(circle[stroke]) img,
+body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:has(circle[stroke]) > div,
+body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:has(svg._ak8i) img,
+body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:has(svg._ak8i) > div,
 body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) img,
-body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) > div:not(svg) {
-  filter: blur(12px) !important;
-  -webkit-filter: blur(12px) !important;
-}
+body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) > div:not(svg),
 
-/* Header Avatar di Atas Bubble Chat (#main header) */
+/* D. Header Avatar di Atas Bubble Chat (#main header) */
 body:not(.wa-blur-disabled) #main header img:not(.emoji),
 body:not(.wa-blur-disabled) #main header [data-testid="avatar"],
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"],
@@ -100,7 +123,7 @@ body:not(.wa-blur-disabled) #main header div._ak8h,
 body:not(.wa-blur-disabled) #main header div[role="button"] > div:first-child,
 body:not(.wa-blur-disabled) .wa-privacy-header-avatar,
 
-/* Drawer Info Kontak (Foto Besar / Lingkaran Inisial "GP") */
+/* E. Drawer Info Kontak (Foto Profil Besar / Lingkaran Inisial) */
 body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] img,
 body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] > div:first-child,
 body:not(.wa-blur-disabled) div[data-testid="contact-info"] div[role="button"] img,
@@ -112,11 +135,7 @@ body:not(.wa-blur-disabled) div[title*="Profile picture"],
 body:not(.wa-blur-disabled) .wa-privacy-drawer-avatar,
 body:not(.wa-blur-disabled) .wa-privacy-shared-avatar,
 
-/* Pojok Kiri Bawah & Class Universal (Ditandai oleh JavaScript) */
-body:not(.wa-blur-disabled) nav button:last-child img,
-body:not(.wa-blur-disabled) nav div[role="button"]:last-child img,
-body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"],
-body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"] img,
+/* F. Class Universal dari JavaScript */
 body:not(.wa-blur-disabled) .wa-privacy-avatar {
   filter: blur(12px) !important;
   -webkit-filter: blur(12px) !important;
@@ -124,25 +143,44 @@ body:not(.wa-blur-disabled) .wa-privacy-avatar {
   cursor: pointer !important;
 }
 
-/* Hover Foto Profil & Inisial */
+/* --------------------------------------------------------------------------
+   1.1 PROFIL PENGGUNA DI POJOK KIRI BAWAH ("KONTAK ANDA")
+   -------------------------------------------------------------------------- */
+body:not(.wa-blur-disabled) nav button:last-child img,
+body:not(.wa-blur-disabled) nav button:last-child > div,
+body:not(.wa-blur-disabled) nav div[role="button"]:last-child img,
+body:not(.wa-blur-disabled) nav div[role="button"]:last-child > div,
+body:not(.wa-blur-disabled) header[role="navigation"] button:last-child img,
+body:not(.wa-blur-disabled) header[role="navigation"] div[role="button"]:last-child img,
+body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"],
+body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"] img,
+body:not(.wa-blur-disabled) div[role="button"][aria-label*="Profil" i] img,
+body:not(.wa-blur-disabled) div[role="button"][aria-label*="Profile" i] img,
+body:not(.wa-blur-disabled) button[aria-label*="Profil" i] img,
+body:not(.wa-blur-disabled) button[aria-label*="Profile" i] img,
+body:not(.wa-blur-disabled) .wa-privacy-user-avatar {
+  filter: blur(12px) !important;
+  -webkit-filter: blur(12px) !important;
+  transition: filter 0.15s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+/* --------------------------------------------------------------------------
+   1.2 HOVER: FOTO PROFIL & INISIAL
+   -------------------------------------------------------------------------- */
 body:not(.wa-blur-disabled) #pane-side img:not(.emoji):hover,
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] img:not(.emoji):hover,
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] img:not(.emoji):hover,
 body:not(.wa-blur-disabled) [data-testid="chat-list"] img:not(.emoji):hover,
 body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"]:hover,
 body:not(.wa-blur-disabled) img._ak8k:hover,
-body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"]:hover,
-body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"]:hover,
-body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"]:hover,
-body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"]:hover,
-body:not(.wa-blur-disabled) #pane-side div._ak8h:hover,
-body:not(.wa-blur-disabled) #pane-side div._ak8m:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avatar"]:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"]:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"]:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"]:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h:hover,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8m:hover,
+body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:hover,
+body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child *:hover,
+body:not(.wa-blur-disabled) [data-testid="avatar"]:hover,
+body:not(.wa-blur-disabled) [data-testid="chat-avatar"]:hover,
+body:not(.wa-blur-disabled) [data-testid="default-user"]:hover,
+body:not(.wa-blur-disabled) [data-testid="default-group"]:hover,
+body:not(.wa-blur-disabled) div._ak8m:hover,
 body:not(.wa-blur-disabled) #main header img:not(.emoji):hover,
 body:not(.wa-blur-disabled) #main header [data-testid="avatar"]:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"]:hover,
@@ -160,9 +198,11 @@ body:not(.wa-blur-disabled) div[title*="Profile picture"]:hover,
 body:not(.wa-blur-disabled) .wa-privacy-drawer-avatar:hover,
 body:not(.wa-blur-disabled) .wa-privacy-shared-avatar:hover,
 body:not(.wa-blur-disabled) nav button:last-child img:hover,
+body:not(.wa-blur-disabled) nav button:last-child > div:hover,
 body:not(.wa-blur-disabled) nav div[role="button"]:last-child img:hover,
 body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"]:hover,
 body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"] img:hover,
+body:not(.wa-blur-disabled) .wa-privacy-user-avatar:hover,
 body:not(.wa-blur-disabled) .wa-privacy-avatar:hover {
   filter: none !important;
   -webkit-filter: none !important;
@@ -223,13 +263,16 @@ body:not(.wa-blur-disabled) .wa-privacy-number:hover {
 }
 
 /* --------------------------------------------------------------------------
-   4. FITUR META AI (TIDAK DIUBAH)
+   4. FITUR META AI (BLUR)
    -------------------------------------------------------------------------- */
 body:not(.wa-blur-disabled) .wa-privacy-meta-ai,
-body:not(.wa-blur-disabled) button[aria-label*="Meta AI"],
-body:not(.wa-blur-disabled) div[aria-label*="Meta AI"],
-body:not(.wa-blur-disabled) span[data-icon*="meta-ai"],
-body:not(.wa-blur-disabled) span[data-icon*="ai-"] {
+body:not(.wa-blur-disabled) button[aria-label*="Meta AI" i],
+body:not(.wa-blur-disabled) div[aria-label*="Meta AI" i],
+body:not(.wa-blur-disabled) button[title*="Meta AI" i],
+body:not(.wa-blur-disabled) div[title*="Meta AI" i],
+body:not(.wa-blur-disabled) [data-testid*="meta-ai" i],
+body:not(.wa-blur-disabled) span[data-icon="meta-ai"],
+body:not(.wa-blur-disabled) span[data-icon*="meta-ai"] {
   filter: blur(12px) !important;
   -webkit-filter: blur(12px) !important;
   transition: filter 0.15s ease-in-out !important;
@@ -237,10 +280,13 @@ body:not(.wa-blur-disabled) span[data-icon*="ai-"] {
 }
 
 body:not(.wa-blur-disabled) .wa-privacy-meta-ai:hover,
-body:not(.wa-blur-disabled) button[aria-label*="Meta AI"]:hover,
-body:not(.wa-blur-disabled) div[aria-label*="Meta AI"]:hover,
-body:not(.wa-blur-disabled) span[data-icon*="meta-ai"]:hover,
-body:not(.wa-blur-disabled) span[data-icon*="ai-"]:hover {
+body:not(.wa-blur-disabled) button[aria-label*="Meta AI" i]:hover,
+body:not(.wa-blur-disabled) div[aria-label*="Meta AI" i]:hover,
+body:not(.wa-blur-disabled) button[title*="Meta AI" i]:hover,
+body:not(.wa-blur-disabled) div[title*="Meta AI" i]:hover,
+body:not(.wa-blur-disabled) [data-testid*="meta-ai" i]:hover,
+body:not(.wa-blur-disabled) span[data-icon="meta-ai"]:hover,
+body:not(.wa-blur-disabled) span[data-icon*="meta-ai"]:hover {
   filter: none !important;
   -webkit-filter: none !important;
 }

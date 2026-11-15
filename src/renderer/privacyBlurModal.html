@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Pengaturan Privasi Blur — WhatsApp Web</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-hover: #24344d;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --accent: #38bdf8;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(56, 189, 248, 0.2));
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #34d399;
+    }
+
+    .header-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .header-title h2 {
+      font-size: 17px;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .header-title p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Content Scroll Area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    /* Master Switch Card */
+    .master-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      border: 1.5px solid rgba(16, 185, 129, 0.4);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .master-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .master-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .master-badge {
+      font-size: 10px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .master-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* Blur Intensity Slider Card */
+    .intensity-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .intensity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .intensity-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .intensity-title svg {
+      width: 16px;
+      height: 16px;
+      color: #38bdf8;
+    }
+
+    .intensity-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 10px;
+      border-radius: 12px;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-slider {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: #334155;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s ease;
+    }
+
+    .range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Live Preview Box */
+    .preview-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .preview-sample-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: filter 0.15s ease;
+    }
+
+    .preview-sample-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .preview-sample-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      transition: filter 0.15s ease;
+    }
+
+    .preview-sample-text {
+      font-size: 12px;
+      color: var(--muted);
+      transition: filter 0.15s ease;
+    }
+
+    .preview-hint {
+      font-size: 11px;
+      color: #38bdf8;
+      font-style: italic;
+    }
+
+    /* Section */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .settings-list {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.15s ease;
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .setting-item:hover {
+      background: var(--card-hover);
+    }
+
+    .setting-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-width: 440px;
+    }
+
+    .setting-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-name svg {
+      width: 15px;
+      height: 15px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--muted);
+      padding-left: 23px;
+      line-height: 1.3;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #334155;
+      transition: .25s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .25s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    /* Footer & Buttons */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+
+    .btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+    </div>
+    <div class="header-title">
+      <h2>Pengaturan Privasi Blur (Privacy Blur Settings)</h2>
+      <p>Kustomisasi tingkat intensitas blur dan pilih bagian WhatsApp yang ingin disamarkan</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Master Switch -->
+    <div class="master-card">
+      <div class="master-info">
+        <div class="master-title">
+          <span>Master Switch: Privasi Blur Aktif</span>
+          <span class="master-badge">Global</span>
+        </div>
+        <div class="master-desc">
+          Aktifkan proteksi privasi otomatis di seluruh akun WhatsApp Web. Pintasan keyboard cepat: <strong>Alt + B</strong>.
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="masterToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Adjustable Blur Intensity Slider -->
+    <div class="intensity-card">
+      <div class="intensity-header">
+        <div class="intensity-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Tingkat Intensitas Blur (Adjustable Intensity)</span>
+        </div>
+        <span class="intensity-value" id="intensityDisplay">10 px</span>
+      </div>
+
+      <div class="slider-container">
+        <input type="range" min="3" max="25" value="10" step="1" class="range-slider" id="intensitySlider">
+      </div>
+
+      <!-- Live Preview -->
+      <div class="preview-box">
+        <div class="preview-sample-avatar" id="sampleAvatar">A</div>
+        <div class="preview-sample-content">
+          <div class="preview-sample-title" id="sampleTitle">Klien VIP (Contoh Nama)</div>
+          <div class="preview-sample-text" id="sampleText">Halo kak, tagihan pembayaran invoice sudah kami proses...</div>
+        </div>
+        <span class="preview-hint">Arahkan mouse untuk tes hover</span>
+      </div>
+    </div>
+
+    <!-- Group 1: Obrolan & Pesan -->
+    <div>
+      <div class="section-title">Fitur Pesan & Obrolan</div>
+      <div class="settings-list">
+
+        <!-- 1. Blur Chat List Messages -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Blur Semua Pesan di Daftar Obrolan (Chat List)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan seluruh teks pesan di daftar sidebar obrolan WhatsApp.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurChatList">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- 2. Blur Latest Message Preview -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>Blur Preview Pesan Terakhir (Latest Message Preview)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan baris kedua cuplikan pesan terakhir di daftar kontak.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurLatestMessage" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- 3. Blur Content of Conversations -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span>Blur Isi Percakapan (Conversation Content)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan seluruh gelembung teks pesan di ruang chat yang sedang dibuka.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurConversation">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- 4. Blur Media -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span>Blur Media (Foto, Video, Dokumen, Audio)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan gambar, video, pesan suara/PTT, stiker, dan lampiran berkas.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurMedia" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Group 2: Kontak & Profil -->
+    <div>
+      <div class="section-title">Fitur Kontak & Profil</div>
+      <div class="settings-list">
+
+        <!-- 5. Blur Contact Names -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>Blur Nama Kontak (Contact Names)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan nama kontak di daftar chat, header percakapan, dan info kontak.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurContactNames" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- 6. Blur Profile Photos -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+              <span>Blur Foto Profil & Inisial (Profile Photos)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan foto profil asli, lingkaran inisial huruf, dan profil akun Anda di pojok kiri bawah.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurProfilePhotos" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- 7. Blur Group Names & Info -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>Blur Nama & Informasi Grup (Group Names & Info)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan nama grup, deskripsi grup, dan daftar anggota di grup.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurGroupInfo" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- 8. Blur Status & Contact Info -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 14 14"></polyline>
+              </svg>
+              <span>Blur Pembaruan Status & Info Kontak (Status & About)</span>
+            </div>
+            <div class="setting-desc">Menyamarkan pratinjau pembaruan status (story), nomor telepon, dan status/bio info.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="blurStatusInfo" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Group 3: Interaksi Hover -->
+    <div>
+      <div class="section-title">Interaksi Mouse</div>
+      <div class="settings-list">
+
+        <!-- 9. Reveal on Hover -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Buka Blur Saat Kursor Diarahkan (Hover to Reveal)</span>
+            </div>
+            <div class="setting-desc">Membuka samaran pesan atau foto sementara ketika kursor mouse diarahkan di atasnya.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="unblurOnHover" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="btn btn-secondary" id="btnReset" title="Kembalikan ke pengaturan bawaan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+      </svg>
+      <span>Reset Default</span>
+    </button>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="btnClose">Tutup</button>
+      <button class="btn btn-primary" id="btnSave">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Simpan Pengaturan</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentSettings = {};
+
+    const masterToggle = document.getElementById('masterToggle');
+    const intensitySlider = document.getElementById('intensitySlider');
+    const intensityDisplay = document.getElementById('intensityDisplay');
+    const sampleAvatar = document.getElementById('sampleAvatar');
+    const sampleTitle = document.getElementById('sampleTitle');
+    const sampleText = document.getElementById('sampleText');
+
+    const blurChatList = document.getElementById('blurChatList');
+    const blurLatestMessage = document.getElementById('blurLatestMessage');
+    const blurConversation = document.getElementById('blurConversation');
+    const blurMedia = document.getElementById('blurMedia');
+    const blurContactNames = document.getElementById('blurContactNames');
+    const blurProfilePhotos = document.getElementById('blurProfilePhotos');
+    const blurGroupInfo = document.getElementById('blurGroupInfo');
+    const blurStatusInfo = document.getElementById('blurStatusInfo');
+    const unblurOnHover = document.getElementById('unblurOnHover');
+
+    const btnReset = document.getElementById('btnReset');
+    const btnClose = document.getElementById('btnClose');
+    const btnSave = document.getElementById('btnSave');
+
+    function updateLivePreview(val) {
+      intensityDisplay.textContent = val + ' px';
+      const isEnabled = masterToggle.checked;
+      const blurVal = isEnabled ? `blur(${val}px)` : 'none';
+      sampleAvatar.style.filter = blurVal;
+      sampleTitle.style.filter = blurVal;
+      sampleText.style.filter = blurVal;
+    }
+
+    // Attach hover reveal to sample
+    [sampleAvatar, sampleTitle, sampleText].forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        if (unblurOnHover.checked && masterToggle.checked) {
+          el.style.filter = 'none';
+        }
+      });
+      el.addEventListener('mouseleave', () => {
+        if (masterToggle.checked) {
+          el.style.filter = `blur(${intensitySlider.value}px)`;
+        }
+      });
+    });
+
+    intensitySlider.addEventListener('input', (e) => {
+      updateLivePreview(e.target.value);
+    });
+
+    masterToggle.addEventListener('change', () => {
+      updateLivePreview(intensitySlider.value);
+    });
+
+    async function init() {
+      try {
+        currentSettings = await window.privacyAPI.getSettings();
+
+        masterToggle.checked = currentSettings.enabled !== false;
+        intensitySlider.value = currentSettings.blurIntensity || 10;
+        blurChatList.checked = currentSettings.blurChatList === true;
+        blurLatestMessage.checked = currentSettings.blurLatestMessage !== false;
+        blurConversation.checked = currentSettings.blurConversation === true;
+        blurMedia.checked = currentSettings.blurMedia !== false;
+        blurContactNames.checked = currentSettings.blurContactNames !== false;
+        blurProfilePhotos.checked = currentSettings.blurProfilePhotos !== false;
+        blurGroupInfo.checked = currentSettings.blurGroupInfo !== false;
+        blurStatusInfo.checked = currentSettings.blurStatusInfo !== false;
+        unblurOnHover.checked = currentSettings.unblurOnHover !== false;
+
+        updateLivePreview(intensitySlider.value);
+      } catch (e) {
+        console.error('Error initializing privacy settings:', e);
+      }
+    }
+
+    async function saveSettings() {
+      const updated = {
+        enabled: masterToggle.checked,
+        blurIntensity: parseInt(intensitySlider.value, 10) || 10,
+        blurChatList: blurChatList.checked,
+        blurLatestMessage: blurLatestMessage.checked,
+        blurConversation: blurConversation.checked,
+        blurMedia: blurMedia.checked,
+        blurContactNames: blurContactNames.checked,
+        blurProfilePhotos: blurProfilePhotos.checked,
+        blurGroupInfo: blurGroupInfo.checked,
+        blurStatusInfo: blurStatusInfo.checked,
+        unblurOnHover: unblurOnHover.checked
+      };
+
+      await window.privacyAPI.saveSettings(updated);
+      window.privacyAPI.closeModal();
+    }
+
+    btnSave.addEventListener('click', saveSettings);
+    btnClose.addEventListener('click', () => window.privacyAPI.closeModal());
+    btnReset.addEventListener('click', async () => {
+      if (confirm('Kembalikan semua pengaturan privasi blur ke bawaan?')) {
+        const defaults = await window.privacyAPI.resetDefaults();
+        currentSettings = defaults;
+        init();
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

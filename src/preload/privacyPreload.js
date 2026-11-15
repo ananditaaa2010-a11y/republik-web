@@ -1,0 +1,8 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('privacyAPI', {
+  getSettings: () => ipcRenderer.invoke('privacy:getSettings'),
+  saveSettings: (settings) => ipcRenderer.invoke('privacy:saveSettings', settings),
+  resetDefaults: () => ipcRenderer.invoke('privacy:resetDefaults'),
+  closeModal: () => ipcRenderer.send('privacy:closeModal')
+});

@@ -11,10 +11,11 @@ const {
 const APP_ICON_PATH = path.join(__dirname, '../../assets/icon.png');
 
 class ViewManager {
-  constructor(mainWindow, accountStore, notificationStore) {
+  constructor(mainWindow, accountStore, notificationStore, privacyBlurStore) {
     this.mainWindow = mainWindow;
     this.accountStore = accountStore;
     this.notificationStore = notificationStore;
+    this.privacyBlurStore = privacyBlurStore;
     this.views = new Map(); // accountId -> WebContentsView
     this.loadingViews = new Map(); // accountId -> Promise<WebContentsView> (prevents race conditions)
     this.activeAccountId = null;
@@ -24,6 +25,7 @@ class ViewManager {
     this.helpModalWindow = null;
     this.autoTextModalWindow = null;
     this.notificationModalWindow = null;
+    this.privacyModalWindow = null;
 
     this.setupWindowEvents();
     this.setupIPC();
@@ -431,6 +433,28 @@ class ViewManager {
 
       // Load platform URL
       view.webContents.loadURL(targetUrl);
+
+      // Sync initial Privacy Blur settings to WhatsApp Web instance
+      if (platform === 'whatsapp') {
+        view.webContents.on('did-finish-load', () => {
+          if (this.privacyBlurStore) {
+            const cfg = this.privacyBlurStore.getSettings();
+            const jsonStr = JSON.stringify(cfg);
+            view.webContents.executeJavaScript(`
+              (function() {
+                try {
+                  if (window.__applyPrivacySettings) {
+                    window.__applyPrivacySettings(${jsonStr});
+                  } else {
+                    localStorage.setItem('wa_privacy_blur_config', ${JSON.stringify(jsonStr)});
+                    window.dispatchEvent(new CustomEvent('wa-privacy-sync', { detail: ${jsonStr} }));
+                  }
+                } catch(e) {}
+              })();
+            `).catch(() => {});
+          }
+        });
+      }
 
       // Auto-recovery from Google Botguard rejection & poisoned cookies
       if (platform === 'gmail') {
@@ -869,6 +893,67 @@ class ViewManager {
     this.notificationModalWindow.on('closed', () => {
       this.notificationModalWindow = null;
     });
+  }
+
+  openPrivacyBlurModal() {
+    if (this.privacyModalWindow && !this.privacyModalWindow.isDestroyed()) {
+      this.privacyModalWindow.focus();
+      return;
+    }
+
+    this.privacyModalWindow = new BrowserWindow({
+      parent: this.mainWindow,
+      modal: true,
+      width: 630,
+      height: 720,
+      icon: APP_ICON_PATH,
+      resizable: false,
+      title: 'Pengaturan Privasi Blur',
+      autoHideMenuBar: true,
+      backgroundColor: '#0f172a',
+      webPreferences: {
+        preload: path.join(__dirname, '../preload/privacyPreload.js'),
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    });
+
+    this.privacyModalWindow.loadFile(path.join(__dirname, '../renderer/privacyBlurModal.html'));
+
+    this.privacyModalWindow.on('closed', () => {
+      this.privacyModalWindow = null;
+    });
+  }
+
+  closePrivacyBlurModal() {
+    if (this.privacyModalWindow && !this.privacyModalWindow.isDestroyed()) {
+      this.privacyModalWindow.close();
+      this.privacyModalWindow = null;
+    }
+  }
+
+  broadcastPrivacySettings(settings) {
+    if (!settings) return;
+    const jsonStr = JSON.stringify(settings);
+    for (const [accId, view] of this.views.entries()) {
+      if (view && view.webContents && !view.webContents.isDestroyed()) {
+        view.webContents.executeJavaScript(`
+          (function() {
+            try {
+              if (window.__applyPrivacySettings) {
+                window.__applyPrivacySettings(${jsonStr});
+              } else {
+                localStorage.setItem('wa_privacy_blur_config', ${JSON.stringify(jsonStr)});
+                window.dispatchEvent(new CustomEvent('wa-privacy-sync', { detail: ${jsonStr} }));
+              }
+            } catch(e) {}
+          })();
+        `).catch(() => {});
+      }
+    }
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.webContents.send('privacy:settingsChanged', settings);
+    }
   }
 
   /**

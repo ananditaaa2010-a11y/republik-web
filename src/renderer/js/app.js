@@ -170,9 +170,18 @@ function setupEventListeners() {
     }
   });
 
-  // Toggle Privacy Blur
+  // Privacy Blur Settings & Toggle
   if (btnToggleBlur) {
     btnToggleBlur.addEventListener('click', () => {
+      if (api.openPrivacyBlurModal) {
+        api.openPrivacyBlurModal();
+      } else if (api.toggleBlur) {
+        api.toggleBlur();
+      }
+    });
+
+    btnToggleBlur.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
       if (api.toggleBlur) {
         api.toggleBlur();
       }

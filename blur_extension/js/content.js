@@ -1,32 +1,103 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 3.5.0 - Ultimate Contact Privacy)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 4.0.0 - Modular Privacy Suite)
  * 
- * Prinsip Mutlak:
- * 1. HANYA BLUR:
- *    - Contact name (Nama kontak di Sidebar, Arsip, Header, Drawer)
- *    - Contact profile (Foto profil asli, gambar, maupun inisial/tanpa foto di Sidebar, Arsip, Header, Drawer, pojok kiri bawah)
- *    - Contact display last chat (Preview pesan terakhir di daftar kontak Sidebar & Arsip)
- *    - New chat contact (Kontak di drawer Chat Baru: foto profil, inisial, nama, dan info status)
- *    - Meta AI
- * 2. DILARANG KERAS BLUR:
- *    - OBROLAN UTAMA (#main chat bubbles, area pesan aktif 100% JERNIH NORMAL)
- *    - IKON SIDEBAR KIRI NAVIGASI (Chat, Status, Komunitas, Telepon/Panggilan, Saluran, Media/Bintang, Pengaturan)
- *    - Tanda lingkaran hijau status/story WA (tetap terlihat jelas & tajam)
+ * Fitur:
+ * 1. Blur all messages in chat list (.wa-blur-chat-list)
+ * 2. Blur contact names (.wa-blur-contact-names)
+ * 3. Blur profile photos & non-photo initials (.wa-blur-profile-photos)
+ * 4. Blur conversation content in #main (.wa-blur-conversation)
+ * 5. Blur media (images, videos, documents, audio) (.wa-blur-media)
+ * 6. Blur preview of latest messages (.wa-blur-latest-message)
+ * 7. Blur group names & group info (.wa-blur-group-info)
+ * 8. Blur status updates & contact info (.wa-blur-status-info)
+ * 9. Unblur on hover (.wa-blur-hover-reveal)
+ * 10. Adjustable blur intensity (CSS Variables)
  */
 
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'wa_privacy_blur_enabled';
-  let isBlurEnabled = localStorage.getItem(STORAGE_KEY) !== 'false';
+  const STORAGE_KEY = 'wa_privacy_blur_config';
 
-  function applyBlurState() {
-    if (isBlurEnabled) {
-      document.body.classList.remove('wa-blur-disabled');
-    } else {
-      document.body.classList.add('wa-blur-disabled');
+  const DEFAULT_SETTINGS = {
+    enabled: true,
+    blurIntensity: 10,
+    blurChatList: false,
+    blurContactNames: true,
+    blurProfilePhotos: true,
+    blurConversation: false,
+    blurMedia: true,
+    blurLatestMessage: true,
+    blurGroupInfo: true,
+    blurStatusInfo: true,
+    unblurOnHover: true
+  };
+
+  let currentSettings = { ...DEFAULT_SETTINGS };
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          currentSettings = { ...DEFAULT_SETTINGS, ...parsed };
+        }
+      }
+    } catch (e) {
+      console.warn('[WA Privacy Blur] Error loading settings from storage:', e);
     }
   }
+
+  function applySettings(newSettings) {
+    if (newSettings && typeof newSettings === 'object') {
+      currentSettings = { ...currentSettings, ...newSettings };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentSettings));
+      } catch (e) {}
+    }
+
+    const s = currentSettings;
+    const body = document.body;
+    if (!body) return;
+
+    // 1. Set CSS Variables for adjustable blur intensity
+    const intensity = Math.max(3, Math.min(30, parseInt(s.blurIntensity, 10) || 10));
+    const avatarIntensity = Math.max(4, intensity + 2);
+    document.documentElement.style.setProperty('--wa-blur-intensity', `${intensity}px`);
+    document.documentElement.style.setProperty('--wa-blur-avatar-intensity', `${avatarIntensity}px`);
+
+    // 2. Master Toggle
+    if (s.enabled !== false) {
+      body.classList.add('wa-blur-master-enabled');
+      body.classList.remove('wa-blur-disabled');
+    } else {
+      body.classList.remove('wa-blur-master-enabled');
+      body.classList.add('wa-blur-disabled');
+    }
+
+    // 3. Feature Classes
+    const toggleClass = (cls, condition) => {
+      if (condition) body.classList.add(cls);
+      else body.classList.remove(cls);
+    };
+
+    toggleClass('wa-blur-chat-list', s.blurChatList === true);
+    toggleClass('wa-blur-contact-names', s.blurContactNames !== false);
+    toggleClass('wa-blur-profile-photos', s.blurProfilePhotos !== false);
+    toggleClass('wa-blur-conversation', s.blurConversation === true);
+    toggleClass('wa-blur-media', s.blurMedia !== false);
+    toggleClass('wa-blur-latest-message', s.blurLatestMessage !== false);
+    toggleClass('wa-blur-group-info', s.blurGroupInfo !== false);
+    toggleClass('wa-blur-status-info', s.blurStatusInfo !== false);
+    toggleClass('wa-blur-hover-reveal', s.unblurOnHover !== false);
+  }
+
+  // Expose global updater for Electron host IPC
+  window.__applyPrivacySettings = applySettings;
+  window.addEventListener('wa-privacy-sync', (e) => {
+    if (e.detail) applySettings(e.detail);
+  });
 
   function showToast(message) {
     let toast = document.getElementById('wa-privacy-blur-toast');
@@ -37,17 +108,17 @@
         position: fixed;
         bottom: 24px;
         right: 24px;
-        background: rgba(17, 27, 33, 0.92);
+        background: rgba(17, 27, 33, 0.94);
         color: #00a884;
-        border: 1px solid rgba(0, 168, 132, 0.4);
+        border: 1px solid rgba(0, 168, 132, 0.45);
         padding: 10px 18px;
         border-radius: 8px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         font-size: 13px;
         font-weight: 600;
         z-index: 999999;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+        transition: opacity 0.25s ease, transform 0.25s ease;
         pointer-events: none;
       `;
       document.body.appendChild(toast);
@@ -62,17 +133,16 @@
     }, 2000);
   }
 
-  function toggleBlur() {
-    isBlurEnabled = !isBlurEnabled;
-    localStorage.setItem(STORAGE_KEY, isBlurEnabled);
-    applyBlurState();
-    showToast(isBlurEnabled ? '🛡️ Privacy Blur: AKTIF' : '👁️ Privacy Blur: NONAKTIF');
+  function toggleMaster() {
+    currentSettings.enabled = !currentSettings.enabled;
+    applySettings(currentSettings);
+    showToast(currentSettings.enabled ? '🛡️ Privacy Blur: AKTIF' : '👁️ Privacy Blur: NONAKTIF');
   }
 
   window.addEventListener('keydown', (e) => {
     if (e.altKey && (e.key === 'b' || e.key === 'B')) {
       e.preventDefault();
-      toggleBlur();
+      toggleMaster();
     }
   });
 
@@ -90,7 +160,7 @@
     el._hasDirectHoverAttached = true;
 
     el.addEventListener('mouseenter', () => {
-      if (isBlurEnabled) {
+      if (currentSettings.enabled && currentSettings.unblurOnHover) {
         el.style.setProperty('filter', 'none', 'important');
         el.style.setProperty('-webkit-filter', 'none', 'important');
       }
@@ -121,21 +191,31 @@
 
     if (headerAvatar && !headerAvatar.classList.contains('wa-privacy-header-avatar')) {
       headerAvatar.classList.add('wa-privacy-header-avatar');
+      attachDirectHover(headerAvatar);
     }
 
-    // B. Nama Kontak di Header (#main header)
-    const titleCandidates = headerBtn.querySelectorAll('span[title], div[title], ._ak8q, [data-testid="conversation-info-header-chat-title"], [data-testid="chat-title"]');
+    // B. Nama Kontak & Info di Header (#main header)
+    const titleCandidates = headerBtn.querySelectorAll(
+      'span[title], div[title], ._ak8q, [data-testid="conversation-info-header-chat-title"], [data-testid="chat-title"]'
+    );
     titleCandidates.forEach(el => {
-      if (!el.closest('.wa-privacy-header-avatar') && !el.classList.contains('wa-privacy-header-name')) {
-        el.classList.add('wa-privacy-header-name');
+      if (!el.closest('.wa-privacy-header-avatar')) {
+        const titleText = el.getAttribute('title') || el.textContent || '';
+        if (titleText.includes(',')) {
+          // Group participants list in header
+          if (!el.classList.contains('wa-privacy-group-info')) el.classList.add('wa-privacy-group-info');
+        } else {
+          if (!el.classList.contains('wa-privacy-header-name')) el.classList.add('wa-privacy-header-name');
+        }
+        attachDirectHover(el);
       }
     });
 
-    // Independent Hover di Header
+    // Independent hover on header
     if (!headerBtn.dataset.waHoverBound) {
       headerBtn.dataset.waHoverBound = 'true';
-
       headerBtn.addEventListener('mousemove', (e) => {
+        if (!currentSettings.enabled || !currentSettings.unblurOnHover) return;
         const curAvatar = headerBtn.querySelector('.wa-privacy-header-avatar') || headerAvatar;
         const curTitle = headerBtn.querySelector('.wa-privacy-header-name');
 
@@ -179,15 +259,15 @@
   }
 
   // --------------------------------------------------------------------------
-  // 2. Drawer Info Kontak (Profil Besar & Inisial)
+  // 2. Drawer Info Kontak & Grup
   // --------------------------------------------------------------------------
   function setupDrawerElements() {
     const drawers = document.querySelectorAll(
-      '[data-animate-drawer-right="true"], div[data-testid="contact-info"], div[data-testid="chat-info-drawer"]'
+      '[data-animate-drawer-right="true"], div[data-testid="contact-info"], div[data-testid="chat-info-drawer"], div[data-testid="group-info-drawer"]'
     );
 
     drawers.forEach(drawer => {
-      // A. Foto Profil Besar / Lingkaran Inisial ("GP", foto asli, dsb.)
+      // A. Foto Profil Besar / Lingkaran Inisial
       const drawerImgs = drawer.querySelectorAll('img:not(.emoji), [data-testid="profile-pic"], [data-testid="avatar"]');
       drawerImgs.forEach(img => {
         if (!img.classList.contains('wa-privacy-drawer-avatar')) {
@@ -196,14 +276,14 @@
         attachDirectHover(img);
       });
 
-      // Deteksi wadah lingkaran avatar besar ("GP")
+      // Deteksi inisial besar lingkaran ("GP")
       const allDivs = drawer.querySelectorAll('div[role="button"] > div, div');
       allDivs.forEach(d => {
         const txt = (d.textContent || '').trim();
         const isInitialText = /^[\p{L}\p{N}]{1,3}$/u.test(txt);
         if ((d.offsetWidth >= 50 && d.offsetWidth <= 250 && d.offsetHeight >= 50 && d.offsetHeight <= 250) || isInitialText) {
           const comp = window.getComputedStyle(d);
-          if (comp.borderRadius === '50%' || comp.borderRadius.includes('50%') || comp.borderRadius.includes('9999px') || isInitialText) {
+          if (comp.borderRadius === '50%' || comp.borderRadius.includes('50%') || isInitialText) {
             if (!d.classList.contains('wa-privacy-drawer-avatar')) {
               d.classList.add('wa-privacy-drawer-avatar');
             }
@@ -212,7 +292,7 @@
         }
       });
 
-      // B. Nama Kontak Besar di Drawer ("Gatut P")
+      // B. Nama Kontak Besar di Drawer
       const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
       headings.forEach(h => {
         if (!h.classList.contains('wa-privacy-drawer-name')) {
@@ -221,7 +301,7 @@
         attachDirectHover(h);
       });
 
-      // C. Nomor Telepon / Info Status di Drawer
+      // C. Nomor Telepon & Info Status
       const spans = drawer.querySelectorAll('span, div');
       spans.forEach(sp => {
         if (sp.children.length === 0) {
@@ -235,26 +315,22 @@
         }
       });
 
-      // D. Grup Bersama (Shared Groups) di Drawer
-      const sharedRows = drawer.querySelectorAll('div[role="listitem"], div[role="button"][tabindex="0"]');
-      sharedRows.forEach(row => {
-        if (row.offsetTop > 250) {
-          const groupAvatar = row.querySelector('img:not(.emoji)') || row.querySelector('._ak8h') || row.firstElementChild;
-          if (groupAvatar && groupAvatar.offsetWidth > 0 && groupAvatar.offsetWidth < 75) {
-            if (!groupAvatar.classList.contains('wa-privacy-shared-avatar')) {
-              groupAvatar.classList.add('wa-privacy-shared-avatar');
-            }
-            attachDirectHover(groupAvatar);
-          }
-
-          const groupTitle = row.querySelector('span[title]') || row.querySelector('._ak8q');
-          if (groupTitle) {
-            if (!groupTitle.classList.contains('wa-privacy-shared-name')) {
-              groupTitle.classList.add('wa-privacy-shared-name');
-            }
-            attachDirectHover(groupTitle);
-          }
+      // D. Deskripsi Grup
+      const groupDescs = drawer.querySelectorAll('[data-testid="group-description"], [data-testid="chat-info-description"]');
+      groupDescs.forEach(gd => {
+        if (!gd.classList.contains('wa-privacy-group-info')) {
+          gd.classList.add('wa-privacy-group-info');
         }
+        attachDirectHover(gd);
+      });
+
+      // E. Media Gallery di Drawer
+      const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
+      mediaGalleryImgs.forEach(m => {
+        if (!m.classList.contains('wa-privacy-media')) {
+          m.classList.add('wa-privacy-media');
+        }
+        attachDirectHover(m);
       });
     });
   }
@@ -269,12 +345,18 @@
     );
 
     cellFrames.forEach(cell => {
-      // 1. Lewati tombol header "Diarsipkan" di daftar utama (bukan chat di dalam arsip)
+      // 1. Lewati tombol header "Diarsipkan" di daftar utama
       const isArchivedHeaderBtn = cell.closest('[data-testid="archived"]') && 
                                   !cell.closest('div[data-testid="archived-chats"]');
       if (isArchivedHeaderBtn) return;
 
-      // 2. Contact Name: Nama Kontak Chat di Baris Pertama
+      // 2. Tag seluruh cell teks chat list untuk fitur "blurChatList"
+      if (!cell.classList.contains('wa-privacy-chat-list-msg')) {
+        cell.classList.add('wa-privacy-chat-list-msg');
+      }
+      attachDirectHover(cell);
+
+      // 3. Contact Name: Baris Pertama
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
       if (titleEl) {
         const txt = (titleEl.textContent || '').trim();
@@ -290,7 +372,7 @@
         attachDirectHover(titleEl);
       }
 
-      // 3. Contact Display Last Chat: Preview Pesan Terakhir di Daftar Kontak
+      // 4. Contact Display Last Chat: Baris Kedua Preview Pesan Terakhir
       const lastChild = cell.lastElementChild;
       if (lastChild && lastChild !== titleEl && !lastChild.contains(titleEl)) {
         if (!lastChild.classList.contains('wa-privacy-last-chat')) {
@@ -308,16 +390,15 @@
         }
       }
 
-      // 4. Contact Profile: Avatar (Foto Asli maupun Inisial / Tanpa Foto)
+      // 5. Contact Profile: Avatar (Foto Asli maupun Inisial / Tanpa Foto)
       const row = cell.closest('div[role="listitem"]') || 
                   cell.closest('div[role="row"]') || 
                   cell.parentElement;
       if (!row) return;
 
-      // 4.1 Cek apakah ada story ring SVG di row ini (di luar cell pesan)
+      // 5.1 Cek Story Ring Hijau
       const statusSvg = row.querySelector('svg._ak8i, circle[stroke]');
       if (statusSvg && !cell.contains(statusSvg)) {
-        // Jaga lingkaran hijau tetap 100% jernih dan terlihat
         statusSvg.style.setProperty('filter', 'none', 'important');
         statusSvg.style.setProperty('-webkit-filter', 'none', 'important');
         statusSvg.style.setProperty('opacity', '1', 'important');
@@ -328,7 +409,6 @@
           p.style.removeProperty('filter');
         }
 
-        // Blur hanya foto / inisial di DALAM ring
         const innerAvatar = row.querySelector('img:not(.emoji)') ||
                             (p ? Array.from(p.children).find(c => c !== statusSvg) : null);
         if (innerAvatar && innerAvatar !== statusSvg && !cell.contains(innerAvatar)) {
@@ -340,7 +420,7 @@
         return;
       }
 
-      // 4.2 Jika ada foto gambar (img) di dalam row (di luar cell pesan):
+      // 5.2 Foto Asli (img)
       const imgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
       if (imgs.length > 0) {
         imgs.forEach(img => {
@@ -352,7 +432,7 @@
         return;
       }
 
-      // 4.3 Jika kontak TANPA foto (lingkaran inisial huruf "A", "T", default silhouette):
+      // 5.3 Kontak Tanpa Foto (Lingkaran Inisial Huruf & Siluet)
       const elementsOutsideCell = Array.from(row.querySelectorAll('div, span')).filter(el => {
         if (cell === el || cell.contains(el) || el.contains(cell)) return false;
         const w = el.offsetWidth;
@@ -405,7 +485,7 @@
       if (btn) attachDirectHover(btn);
     });
 
-    // Deteksi foto profil pojok kiri bawah berdasarkan posisi di bilah navigasi kiri (rect.left < 80)
+    // Deteksi foto profil pojok kiri bawah berdasarkan posisi (rect.left < 80)
     const allImages = document.querySelectorAll('img');
     allImages.forEach(img => {
       if (img.closest('#pane-side') || img.closest('#main') || img.closest('[data-animate-drawer-right="true"]')) return;
@@ -439,7 +519,43 @@
   }
 
   // --------------------------------------------------------------------------
-  // 4. New Chat Contact (Kontak di Drawer Chat Baru / Obrolan Baru)
+  // 4. Conversation Content & Media di Dalam Obrolan (#main)
+  // --------------------------------------------------------------------------
+  function setupConversationElements() {
+    const mainEl = document.getElementById('main');
+    if (!mainEl) return;
+
+    // A. Pesan Teks di Ruang Chat
+    const textMessages = mainEl.querySelectorAll(
+      'div[role="row"] .copyable-text:not([contenteditable="true"]), ' +
+      'div[role="row"] .selectable-text:not([contenteditable="true"]), ' +
+      '[data-testid="quoted-message"]'
+    );
+    textMessages.forEach(msg => {
+      if (!msg.classList.contains('wa-privacy-conversation-msg')) {
+        msg.classList.add('wa-privacy-conversation-msg');
+      }
+      attachDirectHover(msg);
+    });
+
+    // B. Media di Ruang Chat (Gambar, Video, Voice Notes, Dokumen, Stiker)
+    const mediaElements = mainEl.querySelectorAll(
+      'img:not(.emoji), video, audio, [data-testid="media-canvas"], ' +
+      '[data-testid="audio-player"], [data-testid="audio-track"], [data-testid="ptt-playback"], ' +
+      '[data-testid="document-thumb"], [data-testid="document-container"], [data-testid="sticker"]'
+    );
+    mediaElements.forEach(med => {
+      // Jangan blur header avatar
+      if (med.closest('header')) return;
+      if (!med.classList.contains('wa-privacy-media')) {
+        med.classList.add('wa-privacy-media');
+      }
+      attachDirectHover(med);
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 5. New Chat Drawer (Drawer Chat Baru)
   // --------------------------------------------------------------------------
   function setupNewChatDrawerElements() {
     const newChatDrawers = document.querySelectorAll('div[data-animate-drawer-left="true"]');
@@ -451,7 +567,7 @@
         const isActionBtn = item.querySelector('[data-icon="community"], [data-icon="groups"], [data-icon="new-group"]');
         if (isActionBtn) return;
 
-        // A. Foto Profil / Avatar Kontak di Chat Baru
+        // A. Avatar Kontak di Chat Baru
         const avatar = item.querySelector('img:not(.emoji)') ||
                        item.querySelector('[data-testid="avatar"]') ||
                        item.querySelector('[data-testid="chat-avatar"]') ||
@@ -470,7 +586,7 @@
           attachDirectHover(titleEl);
         }
 
-        // C. Info / About / Nomor di bawah nama
+        // C. Info / Bio / Nomor di bawah nama
         const textElements = Array.from(item.querySelectorAll('span[dir="auto"]'));
         if (textElements.length > 1) {
           const aboutEl = textElements[1];
@@ -484,12 +600,13 @@
   }
 
   // --------------------------------------------------------------------------
-  // Master Runner (OBROLAN UTAMA & IKON NAVIGASI 100% JERNIH)
+  // Master Runner
   // --------------------------------------------------------------------------
   function tagAll() {
     setupHeaderElements();
     setupDrawerElements();
     setupSidebarAndControls();
+    setupConversationElements();
     setupNewChatDrawerElements();
   }
 
@@ -504,7 +621,8 @@
   }
 
   function init() {
-    applyBlurState();
+    loadSettings();
+    applySettings();
     tagAll();
 
     const observer = new MutationObserver(() => {
@@ -522,5 +640,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 3.5.0 Ultimate Contact Privacy Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 4.0.0 Modular Privacy Suite Loaded.');
 })();

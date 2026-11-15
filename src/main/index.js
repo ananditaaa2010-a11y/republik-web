@@ -4,6 +4,7 @@ const os = require('os');
 const AccountStore = require('./accountStore');
 const AutoTextStore = require('./autoTextStore');
 const NotificationStore = require('./notificationStore');
+const PrivacyBlurStore = require('./privacyBlurStore');
 const ViewManager = require('./viewManager');
 const AutoUpdaterManager = require('./autoUpdaterManager');
 
@@ -91,10 +92,13 @@ app.commandLine.appendSwitch('disable-features', 'FedCm,CalculateNativeWinOcclus
 // Set global User-Agent fallback to genuine Microsoft Edge desktop
 app.userAgentFallback = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0';
 
+let privacyBlurStore = null;
+
 function createMainWindow() {
   accountStore = new AccountStore();
   autoTextStore = new AutoTextStore();
   notificationStore = new NotificationStore();
+  privacyBlurStore = new PrivacyBlurStore();
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -114,7 +118,7 @@ function createMainWindow() {
     }
   });
 
-  viewManager = new ViewManager(mainWindow, accountStore, notificationStore);
+  viewManager = new ViewManager(mainWindow, accountStore, notificationStore, privacyBlurStore);
   autoUpdaterManager = new AutoUpdaterManager(mainWindow);
 
   // Load the shell HTML UI (Sidebar, Dock, Modals)
@@ -398,6 +402,51 @@ function setupIPCHandlers() {
       viewManager.openNotificationSettingsModal();
     }
     return { success: true };
+  });
+
+  // Privacy Blur Settings Handlers
+  ipcMain.handle('privacy:getSettings', () => {
+    return privacyBlurStore ? privacyBlurStore.getSettings() : {};
+  });
+
+  ipcMain.handle('privacy:saveSettings', (event, settings) => {
+    if (!privacyBlurStore) return { success: false };
+    const updated = privacyBlurStore.updateSettings(settings);
+    if (viewManager) {
+      viewManager.broadcastPrivacySettings(updated);
+    }
+    return { success: true, settings: updated };
+  });
+
+  ipcMain.handle('privacy:resetDefaults', () => {
+    if (!privacyBlurStore) return {};
+    const defaults = privacyBlurStore.resetDefaults();
+    if (viewManager) {
+      viewManager.broadcastPrivacySettings(defaults);
+    }
+    return defaults;
+  });
+
+  ipcMain.handle('privacy:openModal', () => {
+    if (viewManager) {
+      viewManager.openPrivacyBlurModal();
+    }
+    return { success: true };
+  });
+
+  ipcMain.on('privacy:closeModal', () => {
+    if (viewManager) {
+      viewManager.closePrivacyBlurModal();
+    }
+  });
+
+  ipcMain.on('view:toggle-blur', () => {
+    if (privacyBlurStore) {
+      const updated = privacyBlurStore.toggleMaster();
+      if (viewManager) {
+        viewManager.broadcastPrivacySettings(updated);
+      }
+    }
   });
 
   function showDesktopNotification({ title, body, icon, silent = false, urgency = 'normal', timeoutType = 'default', isCall = false, onClick = null }) {

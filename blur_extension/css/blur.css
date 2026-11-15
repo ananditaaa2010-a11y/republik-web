@@ -292,86 +292,9 @@ body.wa-blur-master-enabled.wa-blur-status-info [data-testid="status-tab"] [role
 }
 
 /* --------------------------------------------------------------------------
-   9. FITUR: META AI (ALWAYS BLURRED WHEN MASTER ENABLED) & BILAH NAVIGASI KIRI
+   9. FITUR: META AI (ALWAYS BLURRED WHEN MASTER ENABLED)
    -------------------------------------------------------------------------- */
-/* Bilah Navigasi Kiri (Left Navigation Rail) Button Styling */
-.wa-rail-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
-  min-height: 40px !important;
-  margin: 6px auto !important;
-  padding: 0 !important;
-  border: none !important;
-  outline: none !important;
-  background: transparent !important;
-  border-radius: 50% !important;
-  color: #aebac1 !important;
-  cursor: pointer !important;
-  transition: background-color 0.15s ease, color 0.15s ease !important;
-  box-sizing: border-box !important;
-  position: relative !important;
-}
-
-.wa-rail-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #e9edef !important;
-}
-
-.wa-rail-btn .wa-rail-icon-wrapper {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 24px !important;
-  height: 24px !important;
-}
-
-.wa-rail-btn svg {
-  width: 24px !important;
-  height: 24px !important;
-  fill: currentColor !important;
-}
-
-/* Telepon & Saluran Selalu Jernih */
-.wa-rail-calls-btn,
-.wa-rail-calls-btn *,
-.wa-rail-channels-btn,
-.wa-rail-channels-btn * {
-  filter: none !important;
-  -webkit-filter: none !important;
-  opacity: 1 !important;
-}
-
-/* Meta AI Icon Ring (Conic Gradient Ring Sesuai Asli WhatsApp Web) */
-.wa-meta-ai-icon-ring {
-  display: block !important;
-  width: 28px !important;
-  height: 28px !important;
-  border-radius: 50% !important;
-  background: conic-gradient(from 180deg at 50% 50%, #0064e0 0deg, #00b2ff 72deg, #9b51e0 144deg, #ff4181 216deg, #00b2ff 288deg, #0064e0 360deg) !important;
-  position: relative !important;
-  box-shadow: 0 0 8px rgba(0, 178, 255, 0.45) !important;
-  transition: filter 0.2s ease-in-out, -webkit-filter 0.2s ease-in-out !important;
-}
-
-.wa-meta-ai-icon-ring::after {
-  content: '' !important;
-  position: absolute !important;
-  top: 5px !important;
-  left: 5px !important;
-  right: 5px !important;
-  bottom: 5px !important;
-  border-radius: 50% !important;
-  background: #111b21 !important;
-}
-
-/* Meta AI Selalu Blur saat Master Enabled */
 body.wa-blur-master-enabled .wa-privacy-meta-ai,
-body.wa-blur-master-enabled .wa-rail-meta-ai-btn,
-body.wa-blur-master-enabled .wa-rail-meta-ai-btn .wa-meta-ai-icon-ring,
 body.wa-blur-master-enabled button[aria-label*="Meta AI" i],
 body.wa-blur-master-enabled div[aria-label*="Meta AI" i],
 body.wa-blur-master-enabled button[title*="Meta AI" i],
@@ -480,8 +403,6 @@ body.wa-blur-master-enabled.wa-blur-hover-reveal [data-testid="chat-info-descrip
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-group-info:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-status-info:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-meta-ai:hover,
-body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-rail-meta-ai-btn:hover,
-body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-rail-meta-ai-btn:hover .wa-meta-ai-icon-ring,
 body.wa-blur-master-enabled.wa-blur-hover-reveal button[aria-label*="Meta AI" i]:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal div[aria-label*="Meta AI" i]:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal button[title*="Meta AI" i]:hover,

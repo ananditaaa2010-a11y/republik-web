@@ -72,46 +72,81 @@ circle[stroke],
 }
 
 /* Proteksi Drawer Items (Tombol Aksi Suara/Video/Cari, Pengaturan, Enkripsi, Media Gallery, Aksi Bawah) */
-[data-animate-drawer-right="true"] header,
-[data-animate-drawer-right="true"] header *,
-[data-animate-drawer-right="true"] [role="button"]:not(.wa-privacy-drawer-avatar):not(.wa-privacy-shared-avatar) svg,
-[data-animate-drawer-right="true"] [role="switch"],
-[data-animate-drawer-right="true"] [role="switch"] *,
-[data-animate-drawer-right="true"] [data-icon="star"],
-[data-animate-drawer-right="true"] [data-icon="notifications"],
-[data-animate-drawer-right="true"] [data-icon="timer"],
-[data-animate-drawer-right="true"] [data-icon="lock"],
-[data-animate-drawer-right="true"] [data-icon="paint-palette"],
-[data-animate-drawer-right="true"] [data-icon="security-padlock"],
-[data-animate-drawer-right="true"] [data-icon="search"],
-[data-animate-drawer-right="true"] [data-icon="audio-call"],
-[data-animate-drawer-right="true"] [data-icon="video-call"],
-[data-animate-drawer-right="true"] [data-icon="pencil"],
-[data-animate-drawer-right="true"] [data-icon="x"],
-[data-animate-drawer-right="true"] [data-icon="chevron-down"],
-[data-animate-drawer-right="true"] [data-icon="chevron-right"],
-[data-animate-drawer-right="true"] [data-icon="heart"],
-[data-animate-drawer-right="true"] [data-icon="contact-card"],
-[data-animate-drawer-right="true"] [data-icon="download"],
-[data-animate-drawer-right="true"] [data-icon="delete"],
-[data-animate-drawer-right="true"] [data-icon="block"],
-[data-animate-drawer-right="true"] [data-icon="thumb-down"],
-[data-animate-drawer-right="true"] [data-testid="audio-call-btn"],
-[data-animate-drawer-right="true"] [data-testid="audio-call-btn"] *,
-[data-animate-drawer-right="true"] [data-testid="video-call-btn"],
-[data-animate-drawer-right="true"] [data-testid="video-call-btn"] *,
-[data-animate-drawer-right="true"] [data-testid="search-btn"],
-[data-animate-drawer-right="true"] [data-testid="search-btn"] *,
-[data-animate-drawer-right="true"] [data-testid="media-gallery"],
-[data-animate-drawer-right="true"] [data-testid="media-gallery"] *,
-[data-animate-drawer-right="true"] [data-testid="media-gallery-title"],
-[data-animate-drawer-right="true"] [data-testid="media-gallery-title"] *,
-[data-animate-drawer-right="true"] [data-testid="image-thumb"],
-[data-animate-drawer-right="true"] [data-testid="image-thumb"] *,
-[data-animate-drawer-right="true"] [data-testid="block-contact"],
-[data-animate-drawer-right="true"] [data-testid="block-contact"] *,
-[data-animate-drawer-right="true"] [data-testid="report-contact"],
-[data-animate-drawer-right="true"] [data-testid="report-contact"] *,
+[data-animate-drawer-right] header,
+[data-animate-drawer-right] header *,
+.wa-privacy-contact-drawer header,
+.wa-privacy-contact-drawer header *,
+div:has(header [data-icon="x"]) header,
+div:has(header [data-icon="x"]) header *,
+[data-animate-drawer-right] [role="switch"],
+[data-animate-drawer-right] [role="switch"] *,
+.wa-privacy-contact-drawer [role="switch"],
+.wa-privacy-contact-drawer [role="switch"] *,
+[data-animate-drawer-right] [data-icon="star"],
+[data-animate-drawer-right] [data-icon="notifications"],
+[data-animate-drawer-right] [data-icon="timer"],
+[data-animate-drawer-right] [data-icon="lock"],
+[data-animate-drawer-right] [data-icon="paint-palette"],
+[data-animate-drawer-right] [data-icon="security-padlock"],
+[data-animate-drawer-right] [data-icon="search"],
+[data-animate-drawer-right] [data-icon="audio-call"],
+[data-animate-drawer-right] [data-icon="video-call"],
+[data-animate-drawer-right] [data-icon="pencil"],
+[data-animate-drawer-right] [data-icon="x"],
+[data-animate-drawer-right] [data-icon="chevron-down"],
+[data-animate-drawer-right] [data-icon="chevron-right"],
+[data-animate-drawer-right] [data-icon="heart"],
+[data-animate-drawer-right] [data-icon="contact-card"],
+[data-animate-drawer-right] [data-icon="download"],
+[data-animate-drawer-right] [data-icon="delete"],
+[data-animate-drawer-right] [data-icon="block"],
+[data-animate-drawer-right] [data-icon="thumb-down"],
+[data-testid="audio-call-btn"],
+[data-testid="audio-call-btn"] *,
+[data-testid="video-call-btn"],
+[data-testid="video-call-btn"] *,
+[data-testid="search-btn"],
+[data-testid="search-btn"] *,
+div[role="button"]:has(span[data-icon="audio-call"]),
+div[role="button"]:has(span[data-icon="audio-call"]) *,
+div[role="button"]:has(span[data-icon="video-call"]),
+div[role="button"]:has(span[data-icon="video-call"]) *,
+div[role="button"]:has(span[data-icon="search"]),
+div[role="button"]:has(span[data-icon="search"]) *,
+div[role="button"]:has([data-icon="star"]),
+div[role="button"]:has([data-icon="star"]) *,
+div[role="button"]:has([data-icon="notifications"]),
+div[role="button"]:has([data-icon="notifications"]) *,
+div[role="button"]:has([data-icon="timer"]),
+div[role="button"]:has([data-icon="timer"]) *,
+div[role="button"]:has([data-icon="lock"]),
+div[role="button"]:has([data-icon="lock"]) *,
+div[role="button"]:has([data-icon="paint-palette"]),
+div[role="button"]:has([data-icon="paint-palette"]) *,
+div[role="button"]:has([data-icon="security-padlock"]),
+div[role="button"]:has([data-icon="security-padlock"]) *,
+div[role="button"]:has([data-icon="heart"]),
+div[role="button"]:has([data-icon="heart"]) *,
+div[role="button"]:has([data-icon="contact-card"]),
+div[role="button"]:has([data-icon="contact-card"]) *,
+div[role="button"]:has([data-icon="download"]),
+div[role="button"]:has([data-icon="download"]) *,
+div[role="button"]:has([data-icon="delete"]),
+div[role="button"]:has([data-icon="delete"]) *,
+div[role="button"]:has([data-icon="block"]),
+div[role="button"]:has([data-icon="block"]) *,
+div[role="button"]:has([data-icon="thumb-down"]),
+div[role="button"]:has([data-icon="thumb-down"]) *,
+[data-testid="media-gallery"],
+[data-testid="media-gallery"] *,
+[data-testid="media-gallery-title"],
+[data-testid="media-gallery-title"] *,
+[data-testid="image-thumb"],
+[data-testid="image-thumb"] *,
+[data-testid="block-contact"],
+[data-testid="block-contact"] *,
+[data-testid="report-contact"],
+[data-testid="report-contact"] *,
 .wa-privacy-drawer-protected,
 .wa-privacy-drawer-protected * {
   filter: none !important;
@@ -169,15 +204,17 @@ circle[stroke],
    - Jika kursor TIDAK mengarah ke situ: BLUR
    ========================================================================== */
 /* 1. Foto Profil Utama di Info Kontak */
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] .wa-privacy-drawer-avatar,
-body.wa-blur-master-enabled.wa-blur-profile-photos div[data-testid="contact-info"] .wa-privacy-drawer-avatar,
-body.wa-blur-master-enabled.wa-blur-profile-photos div[data-testid="chat-info-drawer"] .wa-privacy-drawer-avatar,
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] div[role="button"]:has(img:not([data-icon])) img,
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] div[role="button"]:has(img:not([data-icon])) > div:first-child,
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] [data-testid="profile-pic"],
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] [data-testid="avatar"],
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] [data-testid="default-user"],
-body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="true"] [data-testid="default-group"] {
+body.wa-blur-master-enabled .wa-privacy-drawer-avatar,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-drawer-avatar,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-avatar,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) .wa-privacy-drawer-avatar,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]) img,
+body.wa-blur-master-enabled [data-animate-drawer-right] div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]) img,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]) img,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="profile-pic"],
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="avatar"],
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="default-user"],
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="default-group"] {
   filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   -webkit-filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
@@ -185,14 +222,19 @@ body.wa-blur-master-enabled.wa-blur-profile-photos [data-animate-drawer-right="t
 }
 
 /* 2. Nama Kontak di Info Kontak */
-body.wa-blur-master-enabled.wa-blur-contact-names [data-animate-drawer-right="true"] h2,
-body.wa-blur-master-enabled.wa-blur-contact-names [data-animate-drawer-right="true"] [data-testid="contact-info-title"],
-body.wa-blur-master-enabled.wa-blur-contact-names [data-animate-drawer-right="true"] [data-testid="chat-info-title"],
-body.wa-blur-master-enabled.wa-blur-contact-names [data-animate-drawer-right="true"] .wa-privacy-drawer-name,
-body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="contact-info"] h2,
-body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="contact-info"] [data-testid="contact-info-title"],
-body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="chat-info-drawer"] h2,
-body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="chat-info-drawer"] [data-testid="chat-info-title"] {
+body.wa-blur-master-enabled .wa-privacy-drawer-name,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-drawer-name,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-name,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) .wa-privacy-drawer-name,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer h2:not(.wa-privacy-drawer-protected),
+body.wa-blur-master-enabled [data-animate-drawer-right] h2:not(.wa-privacy-drawer-protected),
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) h2:not(.wa-privacy-drawer-protected),
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="contact-info-title"],
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-title"],
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) [data-testid="contact-info-title"],
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="chat-info-title"],
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="chat-info-title"],
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) [data-testid="chat-info-title"] {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
@@ -201,9 +243,13 @@ body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="chat-info-dra
 }
 
 /* 3. Nomor Telepon di Bawah Nama di Info Kontak */
-body.wa-blur-master-enabled.wa-blur-contact-names [data-animate-drawer-right="true"] .wa-privacy-number,
-body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="contact-info"] .wa-privacy-number,
-body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="chat-info-drawer"] .wa-privacy-number {
+body.wa-blur-master-enabled .wa-privacy-number,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-number,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-number,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) .wa-privacy-number,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="contact-info-subtitle"],
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-subtitle"],
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) [data-testid="contact-info-subtitle"] {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
@@ -212,13 +258,13 @@ body.wa-blur-master-enabled.wa-blur-contact-names div[data-testid="chat-info-dra
 }
 
 /* 4. Bio / Tentang Kontak (Status Bio di Info Kontak) */
-body.wa-blur-master-enabled.wa-blur-status-info [data-animate-drawer-right="true"] .wa-privacy-drawer-about,
-body.wa-blur-master-enabled.wa-blur-status-info [data-animate-drawer-right="true"] [data-testid="contact-info-about"],
-body.wa-blur-master-enabled.wa-blur-status-info [data-animate-drawer-right="true"] [data-testid="chat-info-description"],
-body.wa-blur-master-enabled.wa-blur-status-info [data-animate-drawer-right="true"] [data-testid="group-description"],
-body.wa-blur-master-enabled.wa-blur-status-info [data-animate-drawer-right="true"] .wa-privacy-group-info,
-body.wa-blur-master-enabled.wa-blur-status-info div[data-testid="contact-info"] [data-testid="contact-info-about"],
-body.wa-blur-master-enabled.wa-blur-status-info div[data-testid="chat-info-drawer"] [data-testid="contact-info-about"] {
+body.wa-blur-master-enabled .wa-privacy-drawer-about,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-drawer-about,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-about,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) .wa-privacy-drawer-about,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer [data-testid="contact-info-about"],
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-about"],
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) [data-testid="contact-info-about"] {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
@@ -227,18 +273,20 @@ body.wa-blur-master-enabled.wa-blur-status-info div[data-testid="chat-info-drawe
 }
 
 /* 5. Grup Bersama ("grup yang sama" / Groups in common) */
-body.wa-blur-master-enabled [data-animate-drawer-right="true"] .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled div[data-testid="contact-info"] .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled div[data-testid="chat-info-drawer"] .wa-privacy-shared-avatar {
+body.wa-blur-master-enabled .wa-privacy-shared-avatar,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-shared-avatar,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-avatar,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) .wa-privacy-shared-avatar {
   filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   -webkit-filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
   cursor: pointer !important;
 }
 
-body.wa-blur-master-enabled [data-animate-drawer-right="true"] .wa-privacy-shared-name,
-body.wa-blur-master-enabled div[data-testid="contact-info"] .wa-privacy-shared-name,
-body.wa-blur-master-enabled div[data-testid="chat-info-drawer"] .wa-privacy-shared-name {
+body.wa-blur-master-enabled .wa-privacy-shared-name,
+body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-shared-name,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-name,
+body.wa-blur-master-enabled div:has(header [data-icon="x"]) .wa-privacy-shared-name {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
@@ -250,84 +298,62 @@ body.wa-blur-master-enabled div[data-testid="chat-info-drawer"] .wa-privacy-shar
    HOVER REVEAL DI INFO KONTAK (NON-BLUR / JERNIH KETIKA CURSOR DIARAHKAN):
    ========================================================================== */
 /* A. Hover Foto Profil Utama */
-[data-animate-drawer-right="true"] .wa-privacy-drawer-avatar:hover,
-[data-animate-drawer-right="true"] .wa-privacy-drawer-avatar:hover *,
-[data-animate-drawer-right="true"] div[role="button"]:has(.wa-privacy-drawer-avatar):hover,
-[data-animate-drawer-right="true"] div[role="button"]:has(.wa-privacy-drawer-avatar):hover *,
-[data-animate-drawer-right="true"] div[role="button"]:has(img:not([data-icon])):hover,
-[data-animate-drawer-right="true"] div[role="button"]:has(img:not([data-icon])):hover *,
-[data-animate-drawer-right="true"] [data-testid="avatar"]:hover,
-[data-animate-drawer-right="true"] [data-testid="avatar"]:hover *,
-[data-animate-drawer-right="true"] [data-testid="profile-pic"]:hover,
-[data-animate-drawer-right="true"] [data-testid="profile-pic"]:hover *,
-[data-animate-drawer-right="true"] [data-testid="default-user"]:hover,
-[data-animate-drawer-right="true"] [data-testid="default-user"]:hover *,
-[data-animate-drawer-right="true"] [data-testid="default-group"]:hover,
-[data-animate-drawer-right="true"] [data-testid="default-group"]:hover *,
-div[data-testid="contact-info"] .wa-privacy-drawer-avatar:hover,
-div[data-testid="contact-info"] .wa-privacy-drawer-avatar:hover *,
-div[data-testid="chat-info-drawer"] .wa-privacy-drawer-avatar:hover,
-div[data-testid="chat-info-drawer"] .wa-privacy-drawer-avatar:hover *,
+.wa-privacy-drawer-avatar:hover,
+.wa-privacy-drawer-avatar:hover *,
+div[role="button"]:has(.wa-privacy-drawer-avatar):hover,
+div[role="button"]:has(.wa-privacy-drawer-avatar):hover *,
+.wa-privacy-contact-drawer div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]):hover,
+.wa-privacy-contact-drawer div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]):hover *,
+[data-animate-drawer-right] div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]):hover,
+[data-animate-drawer-right] div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]):hover *,
+div:has(header [data-icon="x"]) div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]):hover,
+div:has(header [data-icon="x"]) div[role="button"]:not(.wa-privacy-drawer-protected):not([data-testid*="btn"]):hover *,
 
 /* B. Hover Nama Kontak */
-[data-animate-drawer-right="true"] h2:hover,
-[data-animate-drawer-right="true"] h2:hover *,
-[data-animate-drawer-right="true"] [data-testid="contact-info-title"]:hover,
-[data-animate-drawer-right="true"] [data-testid="contact-info-title"]:hover *,
-[data-animate-drawer-right="true"] [data-testid="chat-info-title"]:hover,
-[data-animate-drawer-right="true"] [data-testid="chat-info-title"]:hover *,
-[data-animate-drawer-right="true"] .wa-privacy-drawer-name:hover,
-[data-animate-drawer-right="true"] .wa-privacy-drawer-name:hover *,
-div[data-testid="contact-info"] h2:hover,
-div[data-testid="contact-info"] h2:hover *,
-div[data-testid="contact-info"] [data-testid="contact-info-title"]:hover,
-div[data-testid="contact-info"] [data-testid="contact-info-title"]:hover *,
-div[data-testid="chat-info-drawer"] h2:hover,
-div[data-testid="chat-info-drawer"] h2:hover *,
-div[data-testid="chat-info-drawer"] [data-testid="chat-info-title"]:hover,
-div[data-testid="chat-info-drawer"] [data-testid="chat-info-title"]:hover *,
+.wa-privacy-drawer-name:hover,
+.wa-privacy-drawer-name:hover *,
+.wa-privacy-contact-drawer h2:hover,
+.wa-privacy-contact-drawer h2:hover *,
+[data-animate-drawer-right] h2:hover,
+[data-animate-drawer-right] h2:hover *,
+div:has(header [data-icon="x"]) h2:hover,
+div:has(header [data-icon="x"]) h2:hover *,
+[data-testid="contact-info-title"]:hover,
+[data-testid="contact-info-title"]:hover *,
+[data-testid="chat-info-title"]:hover,
+[data-testid="chat-info-title"]:hover *,
 
 /* C. Hover Nomor Telepon */
-[data-animate-drawer-right="true"] .wa-privacy-number:hover,
-[data-animate-drawer-right="true"] .wa-privacy-number:hover *,
-div[data-testid="contact-info"] .wa-privacy-number:hover,
-div[data-testid="contact-info"] .wa-privacy-number:hover *,
-div[data-testid="chat-info-drawer"] .wa-privacy-number:hover,
-div[data-testid="chat-info-drawer"] .wa-privacy-number:hover *,
+.wa-privacy-number:hover,
+.wa-privacy-number:hover *,
+[data-testid="contact-info-subtitle"]:hover,
+[data-testid="contact-info-subtitle"]:hover *,
 
 /* D. Hover Bio / Tentang Kontak */
-[data-animate-drawer-right="true"] .wa-privacy-drawer-about:hover,
-[data-animate-drawer-right="true"] .wa-privacy-drawer-about:hover *,
-[data-animate-drawer-right="true"] [data-testid="contact-info-about"]:hover,
-[data-animate-drawer-right="true"] [data-testid="contact-info-about"]:hover *,
-[data-animate-drawer-right="true"] [data-testid="chat-info-description"]:hover,
-[data-animate-drawer-right="true"] [data-testid="chat-info-description"]:hover *,
-[data-animate-drawer-right="true"] [data-testid="group-description"]:hover,
-[data-animate-drawer-right="true"] [data-testid="group-description"]:hover *,
-[data-animate-drawer-right="true"] .wa-privacy-group-info:hover,
-[data-animate-drawer-right="true"] .wa-privacy-group-info:hover *,
-div[data-testid="contact-info"] [data-testid="contact-info-about"]:hover,
-div[data-testid="contact-info"] [data-testid="contact-info-about"]:hover *,
-div[data-testid="chat-info-drawer"] [data-testid="contact-info-about"]:hover,
-div[data-testid="chat-info-drawer"] [data-testid="contact-info-about"]:hover *,
+.wa-privacy-drawer-about:hover,
+.wa-privacy-drawer-about:hover *,
+[data-testid="contact-info-about"]:hover,
+[data-testid="contact-info-about"]:hover *,
+[data-testid="chat-info-description"]:hover,
+[data-testid="chat-info-description"]:hover *,
+[data-testid="group-description"]:hover,
+[data-testid="group-description"]:hover *,
 
 /* E. Hover Grup Bersama */
-[data-animate-drawer-right="true"] .wa-privacy-shared-avatar:hover,
-[data-animate-drawer-right="true"] .wa-privacy-shared-avatar:hover *,
-[data-animate-drawer-right="true"] .wa-privacy-shared-name:hover,
-[data-animate-drawer-right="true"] .wa-privacy-shared-name:hover *,
-[data-animate-drawer-right="true"] div[role="listitem"]:has(.wa-privacy-shared-name):hover,
-[data-animate-drawer-right="true"] div[role="listitem"]:has(.wa-privacy-shared-name):hover *,
-[data-animate-drawer-right="true"] div[role="button"]:has(.wa-privacy-shared-name):hover,
-[data-animate-drawer-right="true"] div[role="button"]:has(.wa-privacy-shared-name):hover *,
-div[data-testid="contact-info"] .wa-privacy-shared-avatar:hover,
-div[data-testid="contact-info"] .wa-privacy-shared-avatar:hover *,
-div[data-testid="contact-info"] .wa-privacy-shared-name:hover,
-div[data-testid="contact-info"] .wa-privacy-shared-name:hover *,
-div[data-testid="chat-info-drawer"] .wa-privacy-shared-avatar:hover,
-div[data-testid="chat-info-drawer"] .wa-privacy-shared-avatar:hover *,
-div[data-testid="chat-info-drawer"] .wa-privacy-shared-name:hover,
-div[data-testid="chat-info-drawer"] .wa-privacy-shared-name:hover * {
+.wa-privacy-shared-avatar:hover,
+.wa-privacy-shared-avatar:hover *,
+.wa-privacy-shared-name:hover,
+.wa-privacy-shared-name:hover *,
+div[role="listitem"]:has(.wa-privacy-shared-name):hover,
+div[role="listitem"]:has(.wa-privacy-shared-name):hover *,
+div[role="button"]:has(.wa-privacy-shared-name):hover,
+div[role="button"]:has(.wa-privacy-shared-name):hover *,
+div[tabindex="0"]:has(.wa-privacy-shared-name):hover,
+div[tabindex="0"]:has(.wa-privacy-shared-name):hover * {
+  filter: none !important;
+  -webkit-filter: none !important;
+  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+} {
   filter: none !important;
   -webkit-filter: none !important;
   transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;

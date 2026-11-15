@@ -439,11 +439,31 @@
 
   // Drawer Elements (Info Kontak, Grup, Media)
   function setupDrawerElements() {
-    const drawers = document.querySelectorAll(
-      '[data-animate-drawer-right="true"], div[data-testid="contact-info"], div[data-testid="chat-info-drawer"], div[data-testid="group-info-drawer"]'
-    );
+    let drawers = Array.from(document.querySelectorAll(
+      '[data-animate-drawer-right], [data-animate-drawer-right="true"], [data-animate-drawer-right="false"], ' +
+      'div[data-testid="contact-info"], div[data-testid="chat-info-drawer"], div[data-testid="group-info-drawer"], ' +
+      'div:has(> header [data-icon="x"]), div:has(header span[data-icon="x"]), div:has(header [data-icon="pencil"])'
+    ));
+
+    // Fallback: cari header di luar obrolan utama dan sidebar
+    if (drawers.length === 0) {
+      const allHeaders = document.querySelectorAll('header');
+      allHeaders.forEach(h => {
+        if (h.closest('#pane-side') || h.closest('#main')) return;
+        const hasX = h.querySelector('[data-icon="x"], button[aria-label*="Tutup" i], button[aria-label*="Close" i]');
+        const text = (h.textContent || '').toLowerCase();
+        if (hasX || text.includes('info kontak') || text.includes('contact info')) {
+          const parent = h.parentElement;
+          if (parent && !drawers.includes(parent)) {
+            drawers.push(parent);
+          }
+        }
+      });
+    }
 
     drawers.forEach(drawer => {
+      drawer.classList.add('wa-privacy-contact-drawer');
+
       // 1. Header (Tombol Tutup X, "Info kontak", Edit Pensil) -> Proteksi jernih
       const drawerHeader = drawer.querySelector('header');
       if (drawerHeader) {
@@ -454,10 +474,12 @@
       const topSection = drawerHeader ? drawerHeader.nextElementSibling : drawer;
       if (topSection) {
         const avatarCandidates = topSection.querySelectorAll(
-          'div[role="button"]:not([data-testid*="btn"]), div[tabindex="0"], div._ak8h, [data-testid="profile-pic"], [data-testid="avatar"], [data-testid="default-user"], [data-testid="default-group"]'
+          'div[role="button"]:not([data-testid*="btn"]):not(.wa-privacy-drawer-protected), ' +
+          'div[tabindex="0"]:not(.wa-privacy-drawer-protected), ' +
+          'div._ak8h, [data-testid="profile-pic"], [data-testid="avatar"], [data-testid="default-user"], [data-testid="default-group"]'
         );
         avatarCandidates.forEach(btn => {
-          if (btn.closest('[data-testid="media-gallery"]')) return;
+          if (btn.closest('[data-testid="media-gallery"]') || btn.classList.contains('wa-privacy-drawer-protected')) return;
           const img = btn.querySelector('img:not(.emoji)');
           if (img) {
             if (!img.classList.contains('wa-privacy-drawer-avatar')) {
@@ -466,16 +488,16 @@
             attachDirectHover(img);
             attachDirectHover(btn);
           } else {
-            if (!btn.classList.contains('wa-privacy-drawer-avatar')) {
+            if (!btn.classList.contains('wa-privacy-drawer-avatar') && !btn.querySelector('h2')) {
               btn.classList.add('wa-privacy-drawer-avatar');
+              attachDirectHover(btn);
             }
-            attachDirectHover(btn);
           }
         });
       }
 
       // Pastikan semua avatar profil di drawer (selain gallery media) tersamarkan
-      const drawerAvatars = drawer.querySelectorAll('[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"]');
+      const drawerAvatars = drawer.querySelectorAll('[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"], img._ak8k');
       drawerAvatars.forEach(av => {
         if (!av.closest('[data-testid="media-gallery"]') && !av.classList.contains('wa-privacy-drawer-avatar') && !av.classList.contains('wa-privacy-shared-avatar')) {
           av.classList.add('wa-privacy-drawer-avatar');
@@ -486,18 +508,33 @@
       // 3. Nama Kontak di Drawer ("Alpin")
       const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"], span[data-testid="contact-info-title"]');
       headings.forEach(h => {
-        if (!h.classList.contains('wa-privacy-drawer-name')) {
-          h.classList.add('wa-privacy-drawer-name');
+        if (!h.classList.contains('wa-privacy-drawer-protected')) {
+          if (!h.classList.contains('wa-privacy-drawer-name')) {
+            h.classList.add('wa-privacy-drawer-name');
+          }
+          attachDirectHover(h);
         }
-        attachDirectHover(h);
       });
 
       // 4. Nomor Telepon di Bawah Nama ("+62 858-1755-6573")
+      if (topSection) {
+        const subtitleCandidates = topSection.querySelectorAll('[data-testid="contact-info-subtitle"], span[dir="ltr"], span[title*="+"]');
+        subtitleCandidates.forEach(sc => {
+          if (!sc.classList.contains('wa-privacy-drawer-protected') && !sc.classList.contains('wa-privacy-drawer-name')) {
+            if (!sc.classList.contains('wa-privacy-number')) {
+              sc.classList.add('wa-privacy-number');
+            }
+            attachDirectHover(sc);
+          }
+        });
+      }
+
       const spans = drawer.querySelectorAll('span, div');
       spans.forEach(sp => {
-        if (sp.children.length === 0) {
-          const txt = (sp.textContent || '').trim();
-          if (isPhoneNumber(txt)) {
+        if (sp.classList.contains('wa-privacy-drawer-protected') || sp.classList.contains('wa-privacy-drawer-name')) return;
+        const txt = (sp.textContent || '').trim();
+        if (isPhoneNumber(txt)) {
+          if (sp.children.length <= 1) {
             if (!sp.classList.contains('wa-privacy-number')) {
               sp.classList.add('wa-privacy-number');
             }

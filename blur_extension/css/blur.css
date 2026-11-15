@@ -1,22 +1,22 @@
 /* ==========================================================================
-   WhatsApp Web Privacy Blur Stylesheet (Version 3.3.0 - Revised Specification)
+   WhatsApp Web Privacy Blur Stylesheet (Version 3.5.0 - Ultimate Contact Privacy)
    
-   SPESIFIKASI MUTLAK:
-   1. HANYA BLUR 3 BAGIAN:
-      - Contact name (Nama kontak di Sidebar, Arsip, Header, Drawer)
-      - Contact profile (Foto profil & inisial di Sidebar, Arsip, Header, Drawer, dan pojok kiri bawah)
-      - New chat contact (Kontak di drawer Chat Baru: foto profil, inisial, nama, dan status info)
+   PRINSIP PRIVASI MUTLAK:
+   1. HANYA BLUR:
+      - Contact profile: Semua foto profil & inisial/tanpa foto (Sidebar, Arsip, Header, Drawer, Pojok kiri bawah)
+      - Contact name: Nama kontak di semua tempat (Sidebar, Arsip, Header, Drawer)
+      - Contact display last chat: Preview pesan terakhir di daftar kontak (Sidebar & Arsip)
+      - New chat contact: Kontak di drawer Chat Baru (avatar, nama, status/about)
       - Meta AI
-   2. DILARANG KERAS BLUR:
-      - PESAN OBROLAN / PREVIEW PESAN BARIS KEDUA (100% JERNIH NORMAL)
+   2. DILARANG BLUR (100% JERNIH NORMAL):
+      - OBROLAN UTAMA (#main chat bubbles, area pesan aktif di sebelah kanan 100% JERNIH NORMAL)
       - IKON SIDEBAR KIRI NAVIGASI (Chat, Status, Komunitas, Telepon/Panggilan, Saluran, Media/Bintang, Pengaturan)
       - Tanda lingkaran hijau story/status WA (tetap terlihat jelas & tajam di sekeliling avatar)
       - Tulisan "WhatsApp", search bar, tombol filter ("Semua", "Belum dibaca", "Favorit", "Grup", "+")
-      - Jam/timestamp, tanda centang status
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   0. ATURAN BESI MUTLAK: PESAN OBROLAN 100% JERNIH NORMAL (DILARANG BLUR)
+   0. ATURAN BESI: OBROLAN UTAMA (#main) 100% JERNIH NORMAL (DILARANG BLUR)
    -------------------------------------------------------------------------- */
 #main div[role="row"],
 #main [data-testid="msg-container"],
@@ -25,11 +25,6 @@
 #main .copyable-text,
 #main .selectable-text,
 #main [data-testid="quoted-message"],
-[data-testid="cell-frame-container"],
-[data-testid="cell-frame-container"] > div:last-child,
-[data-testid="cell-frame-container"] > div:last-child *,
-[data-testid="last-msg-status"],
-[data-testid="last-msg-status"] *,
 #pane-side [role="tablist"] button,
 #pane-side button[role="tab"],
 [data-testid*="filter"],
@@ -49,12 +44,17 @@ header[role="navigation"] button svg,
 header[role="navigation"] div[role="button"] svg,
 header > div:first-child button svg,
 header > div:first-child div[role="button"] svg,
+div[role="navigation"] button svg,
+div[role="navigation"] div[role="button"] svg,
 [data-icon="chats-outline"],
 [data-icon="status-outline"],
 [data-icon="community-outline"],
 [data-icon="newsletter-outline"],
 [data-icon="settings-outline"],
-[data-icon="star-outline"] {
+[data-icon="star-outline"],
+[data-icon*="phone"],
+[data-icon*="call"],
+[data-icon*="channel"] {
   filter: none !important;
   -webkit-filter: none !important;
   opacity: 1 !important;
@@ -77,9 +77,9 @@ circle[stroke],
 }
 
 /* --------------------------------------------------------------------------
-   1. CONTACT PROFILE (FOTO PROFIL & LINGKARAN INISIAL SEMUA KONTAK)
+   1. CONTACT PROFILE (FOTO ASLI MAUPUN TANPA FOTO / INISIAL / SILUET DEFAULT)
    -------------------------------------------------------------------------- */
-/* A. Semua Gambar Foto Profil Asli di Sidebar, Arsip, & Chat List */
+/* A. Semua Foto Profil Gambar Asli di Sidebar, Arsip, & Chat List */
 body:not(.wa-blur-disabled) #pane-side img:not(.emoji),
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] img:not(.emoji),
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] img:not(.emoji),
@@ -87,13 +87,25 @@ body:not(.wa-blur-disabled) [data-testid="chat-list"] img:not(.emoji),
 body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"],
 body:not(.wa-blur-disabled) img._ak8k,
 
-/* B. Wadah Avatar yang Memiliki Ring Story (Hanya blur foto/inisial di dalamnya) */
+/* B. Kontak Tanpa Foto (Lingkaran Inisial Huruf "A", "T", dsb. & Ikon Siluet Default) */
+body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"],
+body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"],
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"],
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"],
+body:not(.wa-blur-disabled) #pane-side div._ak8h:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avatar"],
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"],
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"],
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"],
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+
+/* C. Wadah Avatar yang Memiliki Ring Story (Hanya blur foto/inisial di dalamnya) */
 body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) img,
 body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) > div:not(svg),
 body:not(.wa-blur-disabled) div._ak8h:has(circle[stroke]) img,
 body:not(.wa-blur-disabled) div._ak8h:has(circle[stroke]) > div:not(svg),
 
-/* C. Header Avatar di Atas Bubble Chat (#main header) */
+/* D. Header Avatar di Atas Bubble Chat (#main header) */
 body:not(.wa-blur-disabled) #main header img:not(.emoji),
 body:not(.wa-blur-disabled) #main header [data-testid="avatar"],
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"],
@@ -101,7 +113,7 @@ body:not(.wa-blur-disabled) #main header div._ak8h,
 body:not(.wa-blur-disabled) #main header div[role="button"] > div:first-child,
 body:not(.wa-blur-disabled) .wa-privacy-header-avatar,
 
-/* D. Drawer Info Kontak (Foto Profil Besar / Lingkaran Inisial) */
+/* E. Drawer Info Kontak (Foto Profil Besar / Lingkaran Inisial) */
 body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] img,
 body:not(.wa-blur-disabled) [data-animate-drawer-right="true"] div[role="button"] > div:first-child,
 body:not(.wa-blur-disabled) div[data-testid="contact-info"] div[role="button"] img,
@@ -113,7 +125,7 @@ body:not(.wa-blur-disabled) div[title*="Profile picture"],
 body:not(.wa-blur-disabled) .wa-privacy-drawer-avatar,
 body:not(.wa-blur-disabled) .wa-privacy-shared-avatar,
 
-/* E. Class Universal dari JavaScript (Meliputi Foto Gambar & Lingkaran Inisial "A", "T", dll.) */
+/* F. Class Universal dari JavaScript (Foto Asli, Inisial "A", "T", dsb.) */
 body:not(.wa-blur-disabled) .wa-privacy-avatar {
   filter: blur(12px) !important;
   -webkit-filter: blur(12px) !important;
@@ -121,7 +133,9 @@ body:not(.wa-blur-disabled) .wa-privacy-avatar {
   cursor: pointer !important;
 }
 
-/* F. Profil Pengguna di Pojok Kiri Bawah ("Kontak Anda") */
+/* G. Profil Pengguna di Pojok Kiri Bawah ("Kontak Anda") */
+body:not(.wa-blur-disabled) .wa-privacy-user-avatar,
+body:not(.wa-blur-disabled) div[role="navigation"] img,
 body:not(.wa-blur-disabled) nav img,
 body:not(.wa-blur-disabled) header[role="navigation"] img,
 body:not(.wa-blur-disabled) header > div:first-child img,
@@ -131,7 +145,12 @@ body:not(.wa-blur-disabled) div[role="button"][aria-label*="Profil" i] img,
 body:not(.wa-blur-disabled) div[role="button"][aria-label*="Profile" i] img,
 body:not(.wa-blur-disabled) button[aria-label*="Profil" i] img,
 body:not(.wa-blur-disabled) button[aria-label*="Profile" i] img,
-body:not(.wa-blur-disabled) .wa-privacy-user-avatar {
+body:not(.wa-blur-disabled) [aria-label*="Anda" i] img,
+body:not(.wa-blur-disabled) [aria-label*="You" i] img,
+body:not(.wa-blur-disabled) [title*="Profil" i] img,
+body:not(.wa-blur-disabled) [title*="Profile" i] img,
+body:not(.wa-blur-disabled) [title*="Anda" i] img,
+body:not(.wa-blur-disabled) [title*="You" i] img {
   filter: blur(12px) !important;
   -webkit-filter: blur(12px) !important;
   transition: filter 0.15s ease-in-out !important;
@@ -163,7 +182,23 @@ body:not(.wa-blur-disabled) .wa-privacy-name {
 }
 
 /* --------------------------------------------------------------------------
-   3. NEW CHAT CONTACT (KONTAK DI DRAWER CHAT BARU / OBROLAN BARU)
+   3. CONTACT DISPLAY LAST CHAT (PREVIEW PESAN TERAKHIR DI DAFTAR KONTAK)
+   -------------------------------------------------------------------------- */
+body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-container"] > div:last-child,
+body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-container"] > div:nth-child(2),
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:last-child,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:nth-child(2),
+body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:last-child,
+body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:nth-child(2),
+body:not(.wa-blur-disabled) .wa-privacy-last-chat {
+  filter: blur(8px) !important;
+  -webkit-filter: blur(8px) !important;
+  transition: filter 0.15s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. NEW CHAT CONTACT (KONTAK DI DRAWER CHAT BARU / OBROLAN BARU)
    -------------------------------------------------------------------------- */
 /* Foto Profil & Inisial Kontak di Chat Baru */
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] div[role="listitem"] img,
@@ -204,7 +239,7 @@ body:not(.wa-blur-disabled) .wa-privacy-new-chat-about {
 }
 
 /* --------------------------------------------------------------------------
-   4. FITUR META AI (BLUR)
+   5. FITUR META AI (BLUR)
    -------------------------------------------------------------------------- */
 body:not(.wa-blur-disabled) .wa-privacy-meta-ai,
 body:not(.wa-blur-disabled) button[aria-label*="Meta AI" i],
@@ -221,7 +256,7 @@ body:not(.wa-blur-disabled) span[data-icon*="meta-ai"] {
 }
 
 /* --------------------------------------------------------------------------
-   5. HOVER: MEMBUKA BLUR SEMENTARA
+   6. HOVER: MEMBUKA BLUR SEMENTARA
    -------------------------------------------------------------------------- */
 /* Hover Foto Profil & Inisial */
 body:not(.wa-blur-disabled) #pane-side img:not(.emoji):hover,
@@ -230,6 +265,16 @@ body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] img:not(.emoji)
 body:not(.wa-blur-disabled) [data-testid="chat-list"] img:not(.emoji):hover,
 body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"]:hover,
 body:not(.wa-blur-disabled) img._ak8k:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"]:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"]:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"]:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="default-group"]:hover,
+body:not(.wa-blur-disabled) #pane-side div._ak8h:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avatar"]:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"]:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"]:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"]:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8h:hover,
 body:not(.wa-blur-disabled) #main header img:not(.emoji):hover,
 body:not(.wa-blur-disabled) #main header [data-testid="avatar"]:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-avatar"]:hover,
@@ -246,19 +291,38 @@ body:not(.wa-blur-disabled) div[title*="Foto profil"]:hover,
 body:not(.wa-blur-disabled) div[title*="Profile picture"]:hover,
 body:not(.wa-blur-disabled) .wa-privacy-drawer-avatar:hover,
 body:not(.wa-blur-disabled) .wa-privacy-shared-avatar:hover,
+body:not(.wa-blur-disabled) .wa-privacy-new-chat-avatar:hover,
+body:not(.wa-blur-disabled) .wa-privacy-avatar:hover,
+body:not(.wa-blur-disabled) .wa-privacy-user-avatar:hover,
+body:not(.wa-blur-disabled) div[role="navigation"] img:hover,
 body:not(.wa-blur-disabled) nav img:hover,
 body:not(.wa-blur-disabled) header[role="navigation"] img:hover,
+body:not(.wa-blur-disabled) header > div:first-child img:hover,
 body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"]:hover,
 body:not(.wa-blur-disabled) [data-testid="profile-pic-btn"] img:hover,
-body:not(.wa-blur-disabled) .wa-privacy-user-avatar:hover,
-body:not(.wa-blur-disabled) .wa-privacy-new-chat-avatar:hover,
-body:not(.wa-blur-disabled) .wa-privacy-avatar:hover {
+body:not(.wa-blur-disabled) div[role="button"][aria-label*="Profil" i] img:hover,
+body:not(.wa-blur-disabled) div[role="button"][aria-label*="Profile" i] img:hover,
+body:not(.wa-blur-disabled) button[aria-label*="Profil" i] img:hover,
+body:not(.wa-blur-disabled) button[aria-label*="Profile" i] img:hover,
+body:not(.wa-blur-disabled) [aria-label*="Anda" i] img:hover,
+body:not(.wa-blur-disabled) [aria-label*="You" i] img:hover,
+body:not(.wa-blur-disabled) [title*="Profil" i] img:hover,
+body:not(.wa-blur-disabled) [title*="Profile" i] img:hover,
+body:not(.wa-blur-disabled) [title*="Anda" i] img:hover,
+body:not(.wa-blur-disabled) [title*="You" i] img:hover {
   filter: none !important;
   -webkit-filter: none !important;
 }
 
-/* Hover Nama Kontak & Chat Baru */
+/* Hover Nama Kontak, Last Chat, & Chat Baru */
 body:not(.wa-blur-disabled) [data-testid="cell-frame-title"]:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-container"] > div:last-child:hover,
+body:not(.wa-blur-disabled) #pane-side [data-testid="cell-frame-container"] > div:nth-child(2):hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:last-child:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:nth-child(2):hover,
+body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:last-child:hover,
+body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:nth-child(2):hover,
+body:not(.wa-blur-disabled) .wa-privacy-last-chat:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="conversation-info-header-chat-title"]:hover,
 body:not(.wa-blur-disabled) #main header [data-testid="chat-title"]:hover,
 body:not(.wa-blur-disabled) #main header span[title]:hover,
@@ -284,7 +348,7 @@ body:not(.wa-blur-disabled) span[data-icon*="meta-ai"]:hover {
 }
 
 /* --------------------------------------------------------------------------
-   6. VERIFIED BADGE (TETAP 100% JERNIH)
+   7. VERIFIED BADGE (TETAP 100% JERNIH)
    -------------------------------------------------------------------------- */
 body:not(.wa-blur-disabled) [data-testid*="verified"],
 body:not(.wa-blur-disabled) [data-icon*="verified"],

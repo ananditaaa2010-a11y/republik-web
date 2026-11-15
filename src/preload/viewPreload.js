@@ -1,6 +1,6 @@
-const { ipcRenderer } = require('electron');
+const { ipcRenderer, webFrame } = require('electron');
 
-// 0. Hardened anti-bot: spoof navigator.webdriver & navigator.userAgentData (Microsoft Edge emulation)
+// 0. Hardened anti-bot & Edge Emulation: spoof navigator.webdriver & navigator.userAgentData
 try {
   Object.defineProperty(navigator, 'webdriver', {
     get: () => undefined,
@@ -33,6 +33,43 @@ try {
       }),
       configurable: true
     });
+  }
+
+  // Also execute into main world so page scripts see Edge environment natively
+  if (webFrame && typeof webFrame.executeJavaScript === 'function') {
+    webFrame.executeJavaScript(`
+      (function() {
+        try {
+          Object.defineProperty(navigator, 'webdriver', { get: () => undefined, configurable: true });
+          const brands = [
+            { brand: "Not(A:Brand", version: "99" },
+            { brand: "Microsoft Edge", version: "133" },
+            { brand: "Chromium", version: "133" }
+          ];
+          if (navigator.userAgentData) {
+            Object.defineProperty(navigator, 'userAgentData', {
+              get: () => ({
+                brands: brands,
+                mobile: false,
+                platform: "Windows",
+                getHighEntropyValues: async () => ({
+                  brands: brands,
+                  mobile: false,
+                  platform: "Windows",
+                  platformVersion: "15.0.0",
+                  architecture: "x86",
+                  bitness: "64",
+                  model: "",
+                  uaFullVersion: "133.0.3065.92",
+                  fullVersionList: brands
+                })
+              }),
+              configurable: true
+            });
+          }
+        } catch(e) {}
+      })();
+    `);
   }
 } catch (e) {}
 

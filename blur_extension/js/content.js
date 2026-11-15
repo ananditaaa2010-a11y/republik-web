@@ -490,13 +490,11 @@
         attachDirectHover(gd);
       });
 
-      // 9. Gallery Media Thumbnails
+      // 9. Gallery Media Thumbnails -> 100% Jernih sesuai web.whatsapp.com asli
       const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
       mediaGalleryImgs.forEach(m => {
-        if (!m.classList.contains('wa-privacy-media')) {
-          m.classList.add('wa-privacy-media');
-        }
-        attachDirectHover(m);
+        m.classList.remove('wa-privacy-media');
+        m.style.removeProperty('filter');
       });
     });
   }
@@ -513,12 +511,7 @@
                                   !cell.closest('div[data-testid="archived-chats"]');
       if (isArchivedHeaderBtn) return;
 
-      if (!cell.classList.contains('wa-privacy-chat-list-msg')) {
-        cell.classList.add('wa-privacy-chat-list-msg');
-      }
-      attachDirectHover(cell);
-
-      // Contact Name
+      // Contact Name (Disamarkan, namun teks (Anda) tetap jernih sesuai https://web.whatsapp.com)
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
       if (titleEl) {
         const txt = (titleEl.textContent || '').trim();
@@ -528,7 +521,6 @@
           }
           attachDirectHover(titleEl);
         } else {
-          // Jika ada teks "(Anda)" atau "(You)", pisahkan agar (Anda) tetap jernih
           const innerSpans = Array.from(titleEl.querySelectorAll('span'));
           const andaSpan = innerSpans.find(s => s.textContent.includes('(Anda)') || s.textContent.includes('(You)'));
           if (andaSpan) {
@@ -552,25 +544,9 @@
         }
       }
 
-      // Last Chat Preview (baris kedua)
-      const lastChild = cell.lastElementChild;
-      if (lastChild && lastChild !== titleEl && !lastChild.contains(titleEl)) {
-        if (!lastChild.classList.contains('wa-privacy-last-chat')) {
-          lastChild.classList.add('wa-privacy-last-chat');
-        }
-        attachDirectHover(lastChild);
-      }
-      if (cell.children.length > 1) {
-        const secondChild = cell.children[1];
-        if (secondChild && secondChild !== titleEl && !secondChild.contains(titleEl)) {
-          if (!secondChild.classList.contains('wa-privacy-last-chat')) {
-            secondChild.classList.add('wa-privacy-last-chat');
-          }
-          attachDirectHover(secondChild);
-        }
-      }
+      // CATATAN: Preview Pesan Terakhir (baris kedua) TIDAK DI-BLUR, 100% Jernih persis seperti web.whatsapp.com asli
 
-      // Contact Avatar (Foto maupun Inisial)
+      // Contact Avatar (Foto maupun Inisial non-foto)
       const row = cell.closest('div[role="listitem"]') || 
                   cell.closest('div[role="row"]') || 
                   cell.parentElement;
@@ -672,36 +648,19 @@
     });
   }
 
-  // Conversation Content & Media di Ruang Chat (#main)
+  // Conversation Content & Media di Ruang Chat (#main) -> SELALU JERNIH sesuai web.whatsapp.com asli
   function setupConversationElements() {
     const mainEl = document.getElementById('main');
     if (!mainEl) return;
 
-    // Isi Percakapan
+    // Bersihkan kelas blur dari pesan atau media di #main agar obrolan 100% jernih dan terbaca
     const textMessages = mainEl.querySelectorAll(
-      'div[role="row"] .copyable-text:not([contenteditable="true"]), ' +
-      'div[role="row"] .selectable-text:not([contenteditable="true"]), ' +
-      '[data-testid="quoted-message"]'
+      '.wa-privacy-conversation-msg, .wa-privacy-media, div[role="row"] .copyable-text, div[role="row"] .selectable-text'
     );
     textMessages.forEach(msg => {
-      if (!msg.classList.contains('wa-privacy-conversation-msg')) {
-        msg.classList.add('wa-privacy-conversation-msg');
-      }
-      attachDirectHover(msg);
-    });
-
-    // Media (Gambar, Video, Audio, Dokumen, Stiker)
-    const mediaElements = mainEl.querySelectorAll(
-      'img:not(.emoji), video, audio, [data-testid="media-canvas"], ' +
-      '[data-testid="audio-player"], [data-testid="audio-track"], [data-testid="ptt-playback"], ' +
-      '[data-testid="document-thumb"], [data-testid="document-container"], [data-testid="sticker"]'
-    );
-    mediaElements.forEach(med => {
-      if (med.closest('header')) return;
-      if (!med.classList.contains('wa-privacy-media')) {
-        med.classList.add('wa-privacy-media');
-      }
-      attachDirectHover(med);
+      msg.classList.remove('wa-privacy-conversation-msg', 'wa-privacy-media');
+      msg.style.removeProperty('filter');
+      msg.style.removeProperty('-webkit-filter');
     });
   }
 

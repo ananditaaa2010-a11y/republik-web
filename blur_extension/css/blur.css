@@ -84,6 +84,26 @@ circle[stroke],
   opacity: 1 !important;
 }
 
+/* ==========================================================================
+   PERLINDUNGAN MUTLAK SESUAI CONTOH https://web.whatsapp.com
+   Pesan percakapan (#main) & Preview pesan terakhir TIDAK BOLEH BLUR!
+   ========================================================================== */
+#main div[role="row"],
+#main div[role="row"] *,
+#main .copyable-text,
+#main .selectable-text,
+#main [data-testid="msg-container"],
+#main [data-testid="quoted-message"],
+#pane-side [data-testid="cell-frame-container"] > div:last-child,
+#pane-side [data-testid="cell-frame-container"] > div:nth-child(2),
+#pane-side [data-testid="cell-frame-container"] > div:last-child *,
+#pane-side [data-testid="cell-frame-container"] > div:nth-child(2) *,
+[data-animate-drawer-right="true"] [data-testid="media-gallery"] img,
+[data-animate-drawer-right="true"] [data-testid="image-thumb"] {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
 /* Kotak Input Ketik Pesan & Filter Bar */
 #main footer div[contenteditable="true"],
 #main footer [role="textbox"],
@@ -105,70 +125,15 @@ span[data-icon*="psa-verified"] {
 }
 
 /* --------------------------------------------------------------------------
-   1. FITUR: BLUR ALL MESSAGES IN THE CHAT LIST (.wa-blur-chat-list)
+   FITUR OPSIONAL: DINONAKTIFKAN SECARA DEFAULT AGAR SESUAI ASLI https://web.whatsapp.com
+   Pesan percakapan, media, dan preview chat TIDAK BOLEH BLUR!
    -------------------------------------------------------------------------- */
-body.wa-blur-master-enabled.wa-blur-chat-list #pane-side [data-testid="cell-frame-container"],
-body.wa-blur-master-enabled.wa-blur-chat-list div[data-testid="archived-chats"] [data-testid="cell-frame-container"],
-body.wa-blur-master-enabled.wa-blur-chat-list .wa-privacy-chat-list-msg {
-  filter: blur(var(--wa-blur-intensity, 10px)) !important;
-  -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
-  transition: filter 0.15s ease-in-out !important;
-  cursor: pointer !important;
-}
-
-/* --------------------------------------------------------------------------
-   2. FITUR: BLUR PREVIEW OF THE LATEST MESSAGES (.wa-blur-latest-message)
-   -------------------------------------------------------------------------- */
-body.wa-blur-master-enabled.wa-blur-latest-message #pane-side [data-testid="cell-frame-container"] > div:last-child,
-body.wa-blur-master-enabled.wa-blur-latest-message #pane-side [data-testid="cell-frame-container"] > div:nth-child(2),
-body.wa-blur-master-enabled.wa-blur-latest-message div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:last-child,
-body.wa-blur-master-enabled.wa-blur-latest-message div[data-testid="archived-chats"] [data-testid="cell-frame-container"] > div:nth-child(2),
-body.wa-blur-master-enabled.wa-blur-latest-message div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:last-child,
-body.wa-blur-master-enabled.wa-blur-latest-message div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"] > div:nth-child(2),
-body.wa-blur-master-enabled.wa-blur-latest-message .wa-privacy-last-chat {
-  filter: blur(var(--wa-blur-intensity, 8px)) !important;
-  -webkit-filter: blur(var(--wa-blur-intensity, 8px)) !important;
-  transition: filter 0.15s ease-in-out !important;
-  cursor: pointer !important;
-}
-
-/* --------------------------------------------------------------------------
-   3. FITUR: BLUR CONTENT OF CONVERSATIONS (.wa-blur-conversation)
-   -------------------------------------------------------------------------- */
-body.wa-blur-master-enabled.wa-blur-conversation #main div[role="row"] .copyable-text:not([contenteditable="true"]),
-body.wa-blur-master-enabled.wa-blur-conversation #main div[role="row"] .selectable-text:not([contenteditable="true"]),
-body.wa-blur-master-enabled.wa-blur-conversation #main div[role="row"] [data-testid="msg-container"] span[dir="ltr"],
-body.wa-blur-master-enabled.wa-blur-conversation #main div[role="row"] [data-testid="msg-container"] span[dir="rtl"],
-body.wa-blur-master-enabled.wa-blur-conversation #main [data-testid="quoted-message"],
-body.wa-blur-master-enabled.wa-blur-conversation .wa-privacy-conversation-msg {
-  filter: blur(var(--wa-blur-intensity, 8px)) !important;
-  -webkit-filter: blur(var(--wa-blur-intensity, 8px)) !important;
-  transition: filter 0.15s ease-in-out !important;
-  cursor: pointer !important;
-}
-
-/* --------------------------------------------------------------------------
-   4. FITUR: BLUR MEDIA (IMAGES, VIDEOS, DOCUMENTS, AUDIO) (.wa-blur-media)
-   -------------------------------------------------------------------------- */
-body.wa-blur-master-enabled.wa-blur-media #main img:not(.emoji),
-body.wa-blur-master-enabled.wa-blur-media #main video,
-body.wa-blur-master-enabled.wa-blur-media #main audio,
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="media-canvas"],
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="audio-player"],
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="audio-track"],
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="ptt-playback"],
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="document-thumb"],
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="document-container"],
-body.wa-blur-master-enabled.wa-blur-media #main [data-testid="sticker"],
-body.wa-blur-master-enabled.wa-blur-media #main img[src*="blob:"],
-body.wa-blur-master-enabled.wa-blur-media #main img[src*="whatsapp.net/sticker"],
-body.wa-blur-master-enabled.wa-blur-media [data-animate-drawer-right="true"] [data-testid="media-gallery"] img,
-body.wa-blur-master-enabled.wa-blur-media .wa-privacy-media {
-  filter: blur(var(--wa-blur-intensity, 12px)) !important;
-  -webkit-filter: blur(var(--wa-blur-intensity, 12px)) !important;
-  transition: filter 0.15s ease-in-out !important;
-  cursor: pointer !important;
-}
+/*
+body.wa-blur-master-enabled.wa-blur-chat-list .wa-privacy-chat-list-msg { filter: blur(...) }
+body.wa-blur-master-enabled.wa-blur-latest-message .wa-privacy-last-chat { filter: blur(...) }
+body.wa-blur-master-enabled.wa-blur-conversation .wa-privacy-conversation-msg { filter: blur(...) }
+body.wa-blur-master-enabled.wa-blur-media .wa-privacy-media { filter: blur(...) }
+*/
 
 /* --------------------------------------------------------------------------
    5. FITUR: BLUR CONTACT NAMES (.wa-blur-contact-names)

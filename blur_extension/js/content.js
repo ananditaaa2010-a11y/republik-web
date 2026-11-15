@@ -273,6 +273,10 @@
       // PIN Correct -> Unlock!
       currentSettings.isLocked = false;
       hideLockOverlay();
+      try {
+        window.dispatchEvent(new CustomEvent('wa-privacy-unlocked'));
+        window.postMessage({ type: 'wa-privacy-unlocked' }, '*');
+      } catch (e) {}
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage({ action: 'UNLOCK_SUCCESS' }).catch(() => {});
       }
@@ -376,29 +380,50 @@
     );
 
     drawers.forEach(drawer => {
-      const drawerImgs = drawer.querySelectorAll('img:not(.emoji), [data-testid="profile-pic"], [data-testid="avatar"]');
-      drawerImgs.forEach(img => {
-        if (!img.classList.contains('wa-privacy-drawer-avatar')) {
-          img.classList.add('wa-privacy-drawer-avatar');
-        }
-        attachDirectHover(img);
-      });
+      // 1. Header (Tombol Tutup X, "Info kontak", Edit Pensil) -> Proteksi jernih
+      const drawerHeader = drawer.querySelector('header');
+      if (drawerHeader) {
+        drawerHeader.classList.add('wa-privacy-drawer-protected');
+      }
 
-      const allDivs = drawer.querySelectorAll('div[role="button"] > div, div');
-      allDivs.forEach(d => {
-        const txt = (d.textContent || '').trim();
-        const isInitialText = /^[\p{L}\p{N}]{1,3}$/u.test(txt);
-        if ((d.offsetWidth >= 50 && d.offsetWidth <= 250 && d.offsetHeight >= 50 && d.offsetHeight <= 250) || isInitialText) {
-          const comp = window.getComputedStyle(d);
-          if (comp.borderRadius === '50%' || comp.borderRadius.includes('50%') || isInitialText) {
-            if (!d.classList.contains('wa-privacy-drawer-avatar')) {
-              d.classList.add('wa-privacy-drawer-avatar');
+      // 2. Foto Profil Besar / Inisial di Bagian Atas Drawer
+      const topSection = drawerHeader ? drawerHeader.nextElementSibling : drawer;
+      if (topSection) {
+        // Cari container avatar besar di bagian atas
+        const avatarCandidates = topSection.querySelectorAll('div[role="button"]:not([data-testid*="btn"]), div[tabindex="0"]');
+        avatarCandidates.forEach(btn => {
+          const img = btn.querySelector('img:not(.emoji)');
+          if (img && !img.closest('[data-testid="media-gallery"]')) {
+            if (!img.classList.contains('wa-privacy-drawer-avatar')) {
+              img.classList.add('wa-privacy-drawer-avatar');
             }
-            attachDirectHover(d);
+            attachDirectHover(img);
+          } else {
+            // Inisial huruf atau SVG siluet default
+            const w = btn.offsetWidth;
+            const h = btn.offsetHeight;
+            const txt = (btn.textContent || '').trim();
+            const isInitial = /^[\p{L}\p{N}]{1,2}$/u.test(txt);
+            if ((w >= 60 && h >= 60) || isInitial) {
+              if (!btn.classList.contains('wa-privacy-drawer-avatar')) {
+                btn.classList.add('wa-privacy-drawer-avatar');
+              }
+              attachDirectHover(btn);
+            }
           }
+        });
+      }
+
+      // Pastikan semua avatar gambar di drawer (selain gallery media) tersamarkan
+      const drawerAvatars = drawer.querySelectorAll('[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"]');
+      drawerAvatars.forEach(av => {
+        if (!av.closest('[data-testid="media-gallery"]') && !av.classList.contains('wa-privacy-drawer-avatar') && !av.classList.contains('wa-privacy-shared-avatar')) {
+          av.classList.add('wa-privacy-drawer-avatar');
+          attachDirectHover(av);
         }
       });
 
+      // 3. Nama Kontak di Drawer ("Alpin")
       const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
       headings.forEach(h => {
         if (!h.classList.contains('wa-privacy-drawer-name')) {
@@ -407,6 +432,7 @@
         attachDirectHover(h);
       });
 
+      // 4. Nomor Telepon di Bawah Nama ("+62 858-1755-6573")
       const spans = drawer.querySelectorAll('span, div');
       spans.forEach(sp => {
         if (sp.children.length === 0) {
@@ -420,14 +446,51 @@
         }
       });
 
-      const groupDescs = drawer.querySelectorAll('[data-testid="group-description"], [data-testid="chat-info-description"]');
+      // 5. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> Harus Jernih (Proteksi)
+      const actionButtons = drawer.querySelectorAll('[data-testid="audio-call-btn"], [data-testid="video-call-btn"], [data-testid="search-btn"], div[role="button"]:has(span[data-icon="audio-call"]), div[role="button"]:has(span[data-icon="video-call"]), div[role="button"]:has(span[data-icon="search"])');
+      actionButtons.forEach(btn => {
+        btn.classList.add('wa-privacy-drawer-protected');
+      });
+
+      // 6. Baris Pengaturan ("Pesan berbintang", "Bisukan notifikasi", "Pesan sementara", "Obrolan terbatas", "Tema obrolan", "Enkripsi")
+      const settingRows = drawer.querySelectorAll('div[role="button"]:has([data-icon="star"]), div[role="button"]:has([data-icon="notifications"]), div[role="button"]:has([data-icon="timer"]), div[role="button"]:has([data-icon="lock"]), div[role="button"]:has([data-icon="paint-palette"]), div[role="button"]:has([data-icon="security-padlock"])');
+      settingRows.forEach(row => {
+        row.classList.add('wa-privacy-drawer-protected');
+      });
+
+      // 7. Bagian Grup Bersama ("11 grup yang sama" / "groups in common")
+      const allSections = drawer.querySelectorAll('section, div[role="region"], div');
+      allSections.forEach(sec => {
+        const secText = (sec.textContent || '');
+        if (secText.includes('grup yang sama') || secText.includes('groups in common')) {
+          const groupRows = sec.querySelectorAll('div[role="listitem"], div[role="button"], div[data-testid*="cell"]');
+          groupRows.forEach(row => {
+            // Group avatar
+            const gAvatar = row.querySelector('img:not(.emoji)') || row.querySelector('._ak8h') || row.querySelector('[data-testid="avatar"]');
+            if (gAvatar && !gAvatar.classList.contains('wa-privacy-shared-avatar')) {
+              gAvatar.classList.add('wa-privacy-shared-avatar');
+              attachDirectHover(gAvatar);
+            }
+            // Group title
+            const gTitle = row.querySelector('span[title]') || row.querySelector('span[dir="auto"]') || row.querySelector('[data-testid="cell-frame-title"]');
+            if (gTitle && !gTitle.classList.contains('wa-privacy-shared-name') && !gTitle.contains(gAvatar)) {
+              gTitle.classList.add('wa-privacy-shared-name');
+              attachDirectHover(gTitle);
+            }
+          });
+        }
+      });
+
+      // 8. Info Status / Bio Kontak
+      const groupDescs = drawer.querySelectorAll('[data-testid="group-description"], [data-testid="chat-info-description"], [data-testid="contact-info-about"]');
       groupDescs.forEach(gd => {
-        if (!gd.classList.contains('wa-privacy-group-info')) {
+        if (!gd.classList.contains('wa-privacy-group-info') && !gd.classList.contains('wa-privacy-drawer-about')) {
           gd.classList.add('wa-privacy-group-info');
         }
         attachDirectHover(gd);
       });
 
+      // 9. Gallery Media Thumbnails
       const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
       mediaGalleryImgs.forEach(m => {
         if (!m.classList.contains('wa-privacy-media')) {
@@ -683,7 +746,32 @@
     });
   }
 
+  // Bridge for Electron / Host synchronization
+  window.__applyPrivacySettings = function(settings) {
+    applySettings(settings);
+    scheduleTagAll();
+  };
+
+  window.addEventListener('wa-privacy-sync', (e) => {
+    if (e && e.detail) {
+      applySettings(e.detail);
+      scheduleTagAll();
+    }
+  });
+
   function init() {
+    // Check localStorage cache first
+    try {
+      const cached = localStorage.getItem('wa_privacy_blur_config');
+      if (cached) {
+        const parsed = typeof cached === 'string' && (cached.startsWith('{') || cached.startsWith('"')) ? JSON.parse(cached) : cached;
+        const finalObj = typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
+        if (finalObj && typeof finalObj === 'object') {
+          applySettings(finalObj);
+        }
+      }
+    } catch(e) {}
+
     loadSettingsFromStorage();
     tagAll();
 

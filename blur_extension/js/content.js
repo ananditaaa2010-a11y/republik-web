@@ -439,111 +439,118 @@
 
   // Drawer Elements (Info Kontak, Grup, Media)
   function setupDrawerElements() {
-    let drawers = Array.from(document.querySelectorAll(
-      '[data-animate-drawer-right], [data-animate-drawer-right="true"], [data-animate-drawer-right="false"], ' +
-      'div[data-testid="contact-info"], div[data-testid="chat-info-drawer"], div[data-testid="group-info-drawer"], ' +
-      'div:has(> header [data-icon="x"]), div:has(header span[data-icon="x"]), div:has(header [data-icon="pencil"])'
-    ));
+    const drawers = [];
 
-    // Fallback: cari header di luar obrolan utama dan sidebar
-    if (drawers.length === 0) {
-      const allHeaders = document.querySelectorAll('header');
-      allHeaders.forEach(h => {
-        if (h.closest('#pane-side') || h.closest('#main')) return;
-        const hasX = h.querySelector('[data-icon="x"], button[aria-label*="Tutup" i], button[aria-label*="Close" i]');
+    // Cara 1: Selector standar drawer samping kanan
+    document.querySelectorAll('[data-animate-drawer-right="true"], [data-animate-drawer-right="false"], [data-animate-drawer-right]').forEach(el => {
+      if (!drawers.includes(el)) drawers.push(el);
+    });
+
+    // Cara 2: Temukan header info kontak yang memiliki tombol tutup X
+    const allHeaders = document.querySelectorAll('header');
+    allHeaders.forEach(h => {
+      if (h.closest('#pane-side')) return;
+      const hasClose = h.querySelector('[data-icon="x"], button[aria-label*="tutup" i], button[aria-label*="close" i]');
+      if (hasClose) {
         const text = (h.textContent || '').toLowerCase();
-        if (hasX || text.includes('info kontak') || text.includes('contact info')) {
-          const parent = h.parentElement;
-          if (parent && !drawers.includes(parent)) {
-            drawers.push(parent);
+        if (text.includes('info') || text.includes('kontak') || text.includes('contact') || text.includes('grup') || text.includes('group') || h.closest('[data-animate-drawer-right]')) {
+          const parentDrawer = h.closest('[data-animate-drawer-right]') || h.parentElement;
+          if (parentDrawer && !drawers.includes(parentDrawer) && parentDrawer.id !== 'main' && parentDrawer.id !== 'app') {
+            drawers.push(parentDrawer);
           }
         }
-      });
-    }
+      }
+    });
 
     drawers.forEach(drawer => {
-      drawer.classList.add('wa-privacy-contact-drawer');
+      if (!drawer.classList.contains('wa-privacy-contact-drawer')) {
+        drawer.classList.add('wa-privacy-contact-drawer');
+      }
 
-      // 1. Header (Tombol Tutup X, "Info kontak", Edit Pensil) -> Proteksi jernih
+      // 1. Header (Tombol Tutup X, "Info kontak", Edit Pensil) -> 100% Jernih
       const drawerHeader = drawer.querySelector('header');
       if (drawerHeader) {
         drawerHeader.classList.add('wa-privacy-drawer-protected');
       }
 
-      // 2. Foto Profil Besar di Bagian Atas Drawer
-      const topSection = drawerHeader ? drawerHeader.nextElementSibling : drawer;
+      // 2. Kartu Atas (Top Card): Foto Profil, Nama Kontak, Nomer Telepon
+      // Berada tepat di bawah header, sebelum tombol aksi cepat (Suara/Video/Cari)
+      const topSection = drawerHeader ? drawerHeader.nextElementSibling : drawer.firstElementChild;
       if (topSection) {
-        const avatarCandidates = topSection.querySelectorAll(
-          'div[role="button"]:not([data-testid*="btn"]):not(.wa-privacy-drawer-protected), ' +
-          'div[tabindex="0"]:not(.wa-privacy-drawer-protected), ' +
-          'div._ak8h, [data-testid="profile-pic"], [data-testid="avatar"], [data-testid="default-user"], [data-testid="default-group"]'
+        // A. Foto Profil Utama di Info Kontak
+        const avatarCandidate = topSection.querySelector(
+          '[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"], img:not(.emoji), div._ak8h'
         );
-        avatarCandidates.forEach(btn => {
-          if (btn.closest('[data-testid="media-gallery"]') || btn.classList.contains('wa-privacy-drawer-protected')) return;
-          const img = btn.querySelector('img:not(.emoji)');
-          if (img) {
-            if (!img.classList.contains('wa-privacy-drawer-avatar')) {
-              img.classList.add('wa-privacy-drawer-avatar');
+        if (avatarCandidate && !avatarCandidate.closest('[data-testid="media-gallery"]') && !avatarCandidate.closest('.wa-privacy-drawer-protected')) {
+          const imgEl = avatarCandidate.tagName === 'IMG' ? avatarCandidate : avatarCandidate.querySelector('img:not(.emoji)');
+          const targetAvatar = imgEl || avatarCandidate;
+          if (!targetAvatar.classList.contains('wa-privacy-drawer-avatar')) {
+            targetAvatar.classList.add('wa-privacy-drawer-avatar');
+          }
+          attachDirectHover(targetAvatar);
+
+          const parentBtn = targetAvatar.closest('div[role="button"], button');
+          if (parentBtn && !parentBtn.classList.contains('wa-privacy-drawer-protected')) {
+            if (!parentBtn.classList.contains('wa-privacy-drawer-avatar')) {
+              parentBtn.classList.add('wa-privacy-drawer-avatar');
             }
-            attachDirectHover(img);
-            attachDirectHover(btn);
-          } else {
-            if (!btn.classList.contains('wa-privacy-drawer-avatar') && !btn.querySelector('h2')) {
-              btn.classList.add('wa-privacy-drawer-avatar');
-              attachDirectHover(btn);
+            attachDirectHover(parentBtn);
+          }
+        }
+
+        // B. Nama Kontak di Info Kontak ("Alpin")
+        const nameCandidates = topSection.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
+        nameCandidates.forEach(nc => {
+          if (!nc.classList.contains('wa-privacy-drawer-protected')) {
+            if (!nc.classList.contains('wa-privacy-drawer-name')) {
+              nc.classList.add('wa-privacy-drawer-name');
             }
+            attachDirectHover(nc);
           }
         });
-      }
 
-      // Pastikan semua avatar profil di drawer (selain gallery media) tersamarkan
-      const drawerAvatars = drawer.querySelectorAll('[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"], img._ak8k');
-      drawerAvatars.forEach(av => {
-        if (!av.closest('[data-testid="media-gallery"]') && !av.classList.contains('wa-privacy-drawer-avatar') && !av.classList.contains('wa-privacy-shared-avatar')) {
-          av.classList.add('wa-privacy-drawer-avatar');
-          attachDirectHover(av);
-        }
-      });
-
-      // 3. Nama Kontak di Drawer ("Alpin")
-      const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"], span[data-testid="contact-info-title"]');
-      headings.forEach(h => {
-        if (!h.classList.contains('wa-privacy-drawer-protected')) {
-          if (!h.classList.contains('wa-privacy-drawer-name')) {
-            h.classList.add('wa-privacy-drawer-name');
+        if (nameCandidates.length === 0) {
+          const textSpans = Array.from(topSection.querySelectorAll('span[dir="auto"], span._ak8q, div._ak8q'));
+          for (let sp of textSpans) {
+            const txt = (sp.textContent || '').trim();
+            if (txt.length > 0 && !isPhoneNumber(txt) && !txt.includes('Info') && !sp.closest('.wa-privacy-drawer-protected')) {
+              if (!sp.classList.contains('wa-privacy-drawer-name')) {
+                sp.classList.add('wa-privacy-drawer-name');
+              }
+              attachDirectHover(sp);
+              break;
+            }
           }
-          attachDirectHover(h);
         }
-      });
 
-      // 4. Nomor Telepon di Bawah Nama ("+62 858-1755-6573")
-      if (topSection) {
-        const subtitleCandidates = topSection.querySelectorAll('[data-testid="contact-info-subtitle"], span[dir="ltr"], span[title*="+"]');
+        // C. Nomer Telepon di Bawah Nama ("+62 858-1755-6573")
+        const subtitleCandidates = topSection.querySelectorAll('[data-testid="contact-info-subtitle"], span[dir="ltr"]');
         subtitleCandidates.forEach(sc => {
           if (!sc.classList.contains('wa-privacy-drawer-protected') && !sc.classList.contains('wa-privacy-drawer-name')) {
-            if (!sc.classList.contains('wa-privacy-number')) {
-              sc.classList.add('wa-privacy-number');
+            const txt = (sc.textContent || '').trim();
+            if (isPhoneNumber(txt)) {
+              if (!sc.classList.contains('wa-privacy-number')) {
+                sc.classList.add('wa-privacy-number');
+              }
+              attachDirectHover(sc);
             }
-            attachDirectHover(sc);
           }
         });
-      }
 
-      const spans = drawer.querySelectorAll('span, div');
-      spans.forEach(sp => {
-        if (sp.classList.contains('wa-privacy-drawer-protected') || sp.classList.contains('wa-privacy-drawer-name')) return;
-        const txt = (sp.textContent || '').trim();
-        if (isPhoneNumber(txt)) {
-          if (sp.children.length <= 1) {
+        const allSpans = topSection.querySelectorAll('span, div');
+        allSpans.forEach(sp => {
+          if (sp.classList.contains('wa-privacy-drawer-protected') || sp.classList.contains('wa-privacy-drawer-name')) return;
+          const txt = (sp.textContent || '').trim();
+          if (isPhoneNumber(txt) && sp.children.length <= 1) {
             if (!sp.classList.contains('wa-privacy-number')) {
               sp.classList.add('wa-privacy-number');
             }
             attachDirectHover(sp);
           }
-        }
-      });
+        });
+      }
 
-      // 5. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> Harus Jernih (Proteksi)
+      // 3. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> 100% Jernih
       const actionButtons = drawer.querySelectorAll(
         '[data-testid="audio-call-btn"], [data-testid="video-call-btn"], [data-testid="search-btn"], ' +
         'div[role="button"]:has(span[data-icon="audio-call"]), div[role="button"]:has(span[data-icon="video-call"]), div[role="button"]:has(span[data-icon="search"])'
@@ -552,7 +559,7 @@
         btn.classList.add('wa-privacy-drawer-protected');
       });
 
-      // 6. Baris Pengaturan ("Pesan berbintang", "Bisukan notifikasi", "Pesan sementara", "Obrolan terbatas", "Tema obrolan", "Enkripsi")
+      // 4. Baris Pengaturan ("Pesan berbintang", "Bisukan notifikasi", "Pesan sementara", "Obrolan terbatas", "Tema obrolan", "Enkripsi") -> 100% Jernih
       const settingRows = drawer.querySelectorAll(
         'div[role="button"]:has([data-icon="star"]), div[role="button"]:has([data-icon="notifications"]), ' +
         'div[role="button"]:has([data-icon="timer"]), div[role="button"]:has([data-icon="lock"]), ' +
@@ -562,7 +569,9 @@
         row.classList.add('wa-privacy-drawer-protected');
       });
 
-      // 7. Bagian Grup Bersama ("11 grup yang sama" / "groups in common")
+      // 5. Bagian Grup Bersama ("11 grup yang sama" / Groups in common)
+      // Heading "11 grup yang sama" & tombol "1 lainnya" -> 100% Jernih
+      // Masing-masing baris grup (foto avatar grup & nama grup) -> BLUR (unblur on hover)
       const groupHeadings = Array.from(drawer.querySelectorAll('span, div, h3')).filter(el => {
         const t = (el.textContent || '').trim();
         return /\d+\s+grup yang sama/i.test(t) || /\d+\s+groups in common/i.test(t);
@@ -571,14 +580,19 @@
         gh.classList.add('wa-privacy-drawer-protected');
         const container = gh.closest('section, div[role="region"]') || gh.parentElement?.parentElement;
         if (container) {
-          const rows = container.querySelectorAll('div[role="listitem"], div[role="button"]:not([data-testid*="btn"])');
+          const rows = container.querySelectorAll('div[role="listitem"], div[role="row"], div[role="button"]:not([data-testid*="btn"])');
           rows.forEach(row => {
             if (row.contains(gh)) return;
+            if (row.querySelector('[data-icon="chevron-down"]') || row.textContent.includes('lainnya') || row.textContent.includes('more')) {
+              row.classList.add('wa-privacy-drawer-protected');
+              return;
+            }
+
             const gAvatar = row.querySelector('img:not(.emoji), ._ak8h, [data-testid="avatar"], [data-testid="default-group"]');
             if (gAvatar && !gAvatar.classList.contains('wa-privacy-shared-avatar')) {
               gAvatar.classList.add('wa-privacy-shared-avatar');
             }
-            const gTitle = row.querySelector('span[title], [data-testid="cell-frame-title"], span[dir="auto"]');
+            const gTitle = row.querySelector('span[title], [data-testid="cell-frame-title"], span[dir="auto"], span._ak8q');
             if (gTitle && !gTitle.classList.contains('wa-privacy-shared-name')) {
               gTitle.classList.add('wa-privacy-shared-name');
             }
@@ -589,34 +603,8 @@
         }
       });
 
-      // 8. Info Status / Bio Kontak
-      const aboutHeaders = Array.from(drawer.querySelectorAll('span, div, h3')).filter(el => {
-        const t = (el.textContent || '').trim();
-        return t === 'Tentang' || t === 'About' || t.startsWith('Tentang dan') || t.startsWith('About and');
-      });
-      aboutHeaders.forEach(ah => {
-        ah.classList.add('wa-privacy-drawer-protected');
-        const sec = ah.closest('section, div[role="region"]') || ah.parentElement;
-        if (sec) {
-          const bioTexts = sec.querySelectorAll('span[dir="auto"], div._ak8q');
-          bioTexts.forEach(bt => {
-            if (bt !== ah && !bt.classList.contains('wa-privacy-drawer-about')) {
-              bt.classList.add('wa-privacy-drawer-about');
-              attachDirectHover(bt);
-            }
-          });
-        }
-      });
-
-      const groupDescs = drawer.querySelectorAll('[data-testid="group-description"], [data-testid="chat-info-description"], [data-testid="contact-info-about"]');
-      groupDescs.forEach(gd => {
-        if (!gd.classList.contains('wa-privacy-group-info') && !gd.classList.contains('wa-privacy-drawer-about')) {
-          gd.classList.add('wa-privacy-group-info');
-        }
-        attachDirectHover(gd);
-      });
-
-      // 9. Tombol Bagian Bawah ("Tambah favorit", "Tambah ke daftar", "Ekspor", "Bersihkan", "Blokir", "Laporkan") -> 100% Jernih
+      // 6. Tombol Bagian Bawah ("Tambah favorit", "Tambah ke daftar", "Ekspor obrolan", "Bersihkan obrolan", "Blokir Alpin", "Laporkan Alpin") -> 100% JERNIH!
+      // Catatan: Walaupun tombol Blokir dan Laporkan memuat nama kontak, tombol tersebut DILARANG BLUR!
       const bottomActions = drawer.querySelectorAll(
         'div[role="button"]:has([data-icon="heart"]), div[role="button"]:has([data-icon="contact-card"]), ' +
         'div[role="button"]:has([data-icon="download"]), div[role="button"]:has([data-icon="delete"]), ' +
@@ -625,12 +613,18 @@
       );
       bottomActions.forEach(ba => {
         ba.classList.add('wa-privacy-drawer-protected');
+        const blurredInside = ba.querySelectorAll('.wa-privacy-drawer-name, .wa-privacy-name, .wa-privacy-number');
+        blurredInside.forEach(b => {
+          b.classList.remove('wa-privacy-drawer-name', 'wa-privacy-name', 'wa-privacy-number');
+          b.style.removeProperty('filter');
+          b.style.removeProperty('-webkit-filter');
+        });
       });
 
-      // 10. Gallery Media Thumbnails -> 100% Jernih sesuai web.whatsapp.com asli
+      // 7. Gallery Media Thumbnails -> 100% Jernih sesuai contoh asli
       const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
       mediaGalleryImgs.forEach(m => {
-        m.classList.remove('wa-privacy-media');
+        m.classList.remove('wa-privacy-media', 'wa-privacy-drawer-avatar');
         m.style.removeProperty('filter');
         m.style.removeProperty('-webkit-filter');
       });
@@ -830,13 +824,13 @@
     });
   }
 
-  // Conversation Content & Media di Ruang Chat (#main) -> SELALU JERNIH sesuai web.whatsapp.com asli
+  // Conversation Content & Media di Ruang Chat -> SELALU JERNIH sesuai web.whatsapp.com asli
   function setupConversationElements() {
-    const mainEl = document.getElementById('main');
-    if (!mainEl) return;
+    const convoPanel = document.querySelector('[data-testid="conversation-panel-messages"]');
+    if (!convoPanel) return;
 
-    // Bersihkan kelas blur dari pesan atau media di #main agar obrolan 100% jernih dan terbaca
-    const textMessages = mainEl.querySelectorAll(
+    // Bersihkan kelas blur dari pesan atau media di panel percakapan agar obrolan 100% jernih dan terbaca
+    const textMessages = convoPanel.querySelectorAll(
       '.wa-privacy-conversation-msg, .wa-privacy-media, div[role="row"] .copyable-text, div[role="row"] .selectable-text'
     );
     textMessages.forEach(msg => {

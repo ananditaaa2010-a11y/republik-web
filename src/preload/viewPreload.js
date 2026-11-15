@@ -35,7 +35,47 @@ try {
     });
   }
 
-  // Also execute into main world so page scripts see Edge environment natively
+  // Synchronously inject into main world so page scripts see Edge environment before WhatsApp bundles execute
+  try {
+    const scriptEl = document.createElement('script');
+    scriptEl.textContent = `
+      (function() {
+        try {
+          Object.defineProperty(navigator, 'webdriver', { get: () => undefined, configurable: true });
+          const brands = [
+            { brand: "Not(A:Brand", version: "99" },
+            { brand: "Microsoft Edge", version: "133" },
+            { brand: "Chromium", version: "133" }
+          ];
+          if (navigator.userAgentData) {
+            Object.defineProperty(navigator, 'userAgentData', {
+              get: () => ({
+                brands: brands,
+                mobile: false,
+                platform: "Windows",
+                getHighEntropyValues: async () => ({
+                  brands: brands,
+                  mobile: false,
+                  platform: "Windows",
+                  platformVersion: "15.0.0",
+                  architecture: "x86",
+                  bitness: "64",
+                  model: "",
+                  uaFullVersion: "133.0.3065.92",
+                  fullVersionList: brands
+                })
+              }),
+              configurable: true
+            });
+          }
+        } catch(e) {}
+      })();
+    `;
+    (document.head || document.documentElement).appendChild(scriptEl);
+    scriptEl.remove();
+  } catch(e) {}
+
+  // Also execute into main world via webFrame
   if (webFrame && typeof webFrame.executeJavaScript === 'function') {
     webFrame.executeJavaScript(`
       (function() {

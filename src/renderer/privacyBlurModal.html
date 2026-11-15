@@ -694,7 +694,7 @@
             <div class="setting-desc">Menyamarkan baris kedua cuplikan pesan terakhir di daftar kontak.</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="blurLatestMessage" checked>
+            <input type="checkbox" id="blurLatestMessage">
             <span class="slider"></span>
           </label>
         </div>
@@ -732,7 +732,7 @@
             <div class="setting-desc">Menyamarkan gambar, video, pesan suara/PTT, stiker, dan lampiran berkas.</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="blurMedia" checked>
+            <input type="checkbox" id="blurMedia">
             <span class="slider"></span>
           </label>
         </div>
@@ -972,9 +972,9 @@
         masterToggle.checked = currentSettings.enabled !== false;
         intensitySlider.value = currentSettings.blurIntensity || 10;
         blurChatList.checked = currentSettings.blurChatList === true;
-        blurLatestMessage.checked = currentSettings.blurLatestMessage !== false;
+        blurLatestMessage.checked = currentSettings.blurLatestMessage === true;
         blurConversation.checked = currentSettings.blurConversation === true;
-        blurMedia.checked = currentSettings.blurMedia !== false;
+        blurMedia.checked = currentSettings.blurMedia === true;
         blurContactNames.checked = currentSettings.blurContactNames !== false;
         blurProfilePhotos.checked = currentSettings.blurProfilePhotos !== false;
         blurGroupInfo.checked = currentSettings.blurGroupInfo !== false;

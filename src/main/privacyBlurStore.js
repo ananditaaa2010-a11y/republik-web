@@ -19,8 +19,8 @@ class PrivacyBlurStore {
       blurContactNames: true,      // Blur contact names
       blurProfilePhotos: true,     // Blur profile photos & non-photo initials/silhouettes
       blurConversation: false,     // Blur the content of conversations (messages in #main)
-      blurMedia: true,             // Blur media such as images, videos, audio, documents
-      blurLatestMessage: true,     // Blur preview of latest messages in chat list
+      blurMedia: false,            // Blur media such as images, videos, audio, documents
+      blurLatestMessage: false,    // Blur preview of latest messages in chat list
       blurGroupInfo: true,         // Blur group names and group information
       blurStatusInfo: true,        // Blur status updates and contact information / about
       unblurOnHover: true,         // Reveal / unblur when hovering over with mouse

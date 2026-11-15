@@ -13,8 +13,8 @@
     blurContactNames: true,
     blurProfilePhotos: true,
     blurConversation: false,
-    blurMedia: true,
-    blurLatestMessage: true,
+    blurMedia: false,
+    blurLatestMessage: false,
     blurGroupInfo: true,
     blurStatusInfo: true,
     unblurOnHover: true,
@@ -526,12 +526,30 @@
           if (!titleEl.classList.contains('wa-privacy-number')) {
             titleEl.classList.add('wa-privacy-number');
           }
+          attachDirectHover(titleEl);
         } else {
-          if (!titleEl.classList.contains('wa-privacy-name')) {
-            titleEl.classList.add('wa-privacy-name');
+          // Jika ada teks "(Anda)" atau "(You)", pisahkan agar (Anda) tetap jernih
+          const innerSpans = Array.from(titleEl.querySelectorAll('span'));
+          const andaSpan = innerSpans.find(s => s.textContent.includes('(Anda)') || s.textContent.includes('(You)'));
+          if (andaSpan) {
+            titleEl.classList.remove('wa-privacy-name');
+            innerSpans.forEach(s => {
+              if (s !== andaSpan && !s.contains(andaSpan) && !andaSpan.contains(s) && s.textContent.trim().length > 0) {
+                if (!s.classList.contains('wa-privacy-name')) {
+                  s.classList.add('wa-privacy-name');
+                }
+                attachDirectHover(s);
+              }
+            });
+            andaSpan.style.setProperty('filter', 'none', 'important');
+            andaSpan.style.setProperty('-webkit-filter', 'none', 'important');
+          } else {
+            if (!titleEl.classList.contains('wa-privacy-name')) {
+              titleEl.classList.add('wa-privacy-name');
+            }
+            attachDirectHover(titleEl);
           }
         }
-        attachDirectHover(titleEl);
       }
 
       // Last Chat Preview (baris kedua)

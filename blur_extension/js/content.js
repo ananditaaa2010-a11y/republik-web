@@ -441,12 +441,11 @@
   function setupDrawerElements() {
     const drawers = [];
 
-    // Cara 1: Selector standar drawer samping kanan
+    // Cari drawer di sebelah kanan
     document.querySelectorAll('[data-animate-drawer-right="true"], [data-animate-drawer-right="false"], [data-animate-drawer-right]').forEach(el => {
       if (!drawers.includes(el)) drawers.push(el);
     });
 
-    // Cara 2: Temukan header info kontak yang memiliki tombol tutup X
     const allHeaders = document.querySelectorAll('header');
     allHeaders.forEach(h => {
       if (h.closest('#pane-side')) return;
@@ -473,24 +472,28 @@
         drawerHeader.classList.add('wa-privacy-drawer-protected');
       }
 
-      // 2. Kartu Atas (Top Card): Foto Profil, Nama Kontak, Nomer Telepon
-      // Berada tepat di bawah header, sebelum tombol aksi cepat (Suara/Video/Cari)
-      const topSection = drawerHeader ? drawerHeader.nextElementSibling : drawer.firstElementChild;
-      if (topSection) {
-        // A. Foto Profil Utama di Info Kontak
-        const avatarCandidate = topSection.querySelector(
-          '[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"], img:not(.emoji), div._ak8h'
-        );
-        if (avatarCandidate && !avatarCandidate.closest('[data-testid="media-gallery"]') && !avatarCandidate.closest('.wa-privacy-drawer-protected')) {
-          const imgEl = avatarCandidate.tagName === 'IMG' ? avatarCandidate : avatarCandidate.querySelector('img:not(.emoji)');
-          const targetAvatar = imgEl || avatarCandidate;
+      // 2. Temukan kontainer kartu-kartu di drawer
+      const scrollContainer = drawerHeader ? drawerHeader.nextElementSibling : drawer;
+      if (!scrollContainer) return;
+
+      // KARTU PERTAMA (Top Card): Hanya kartu ini yang memuat foto profil, nama kontak, dan nomor telepon
+      // Kita isolasi HANYA pada kartu pertama (firstElementChild) agar TIDAK PERNAH menyentuh section Media, Pengaturan, atau Footer!
+      const topCard = scrollContainer.firstElementChild || scrollContainer;
+      if (topCard && topCard !== scrollContainer) {
+        // A. Foto Profil Utama di Info Kontak (bisa img, svg siluet, default avatar, atau inisial)
+        const avatarCandidate = topCard.querySelector(
+          '[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"], img:not(.emoji), div._ak8h, [data-icon="default-user"], [data-icon="default-group"], [data-icon="community"]'
+        ) || topCard.querySelector('div[role="button"]');
+
+        if (avatarCandidate && !avatarCandidate.closest('[data-icon="chevron-right"]')) {
+          const targetAvatar = avatarCandidate.tagName === 'IMG' ? avatarCandidate : (avatarCandidate.querySelector('img:not(.emoji)') || avatarCandidate);
           if (!targetAvatar.classList.contains('wa-privacy-drawer-avatar')) {
             targetAvatar.classList.add('wa-privacy-drawer-avatar');
           }
           attachDirectHover(targetAvatar);
 
           const parentBtn = targetAvatar.closest('div[role="button"], button');
-          if (parentBtn && !parentBtn.classList.contains('wa-privacy-drawer-protected')) {
+          if (parentBtn && parentBtn !== topCard && !parentBtn.querySelector('h2')) {
             if (!parentBtn.classList.contains('wa-privacy-drawer-avatar')) {
               parentBtn.classList.add('wa-privacy-drawer-avatar');
             }
@@ -498,59 +501,63 @@
           }
         }
 
-        // B. Nama Kontak di Info Kontak ("Alpin")
-        const nameCandidates = topSection.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
+        // B. Nama Kontak di Info Kontak ("Alpin" / Nama Grup)
+        const nameCandidates = topCard.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
         nameCandidates.forEach(nc => {
-          if (!nc.classList.contains('wa-privacy-drawer-protected')) {
-            if (!nc.classList.contains('wa-privacy-drawer-name')) {
-              nc.classList.add('wa-privacy-drawer-name');
-            }
+          if (!nc.classList.contains('wa-privacy-drawer-protected') && !nc.classList.contains('wa-privacy-drawer-name')) {
+            nc.classList.add('wa-privacy-drawer-name');
             attachDirectHover(nc);
           }
         });
 
         if (nameCandidates.length === 0) {
-          const textSpans = Array.from(topSection.querySelectorAll('span[dir="auto"], span._ak8q, div._ak8q'));
+          const textSpans = Array.from(topCard.querySelectorAll('span[dir="auto"], span._ak8q, div._ak8q'));
           for (let sp of textSpans) {
             const txt = (sp.textContent || '').trim();
-            if (txt.length > 0 && !isPhoneNumber(txt) && !txt.includes('Info') && !sp.closest('.wa-privacy-drawer-protected')) {
+            if (txt.length > 0 && !isPhoneNumber(txt) && !txt.includes('Info') && !sp.closest('.wa-privacy-drawer-avatar') && !sp.closest('.wa-privacy-drawer-protected')) {
               if (!sp.classList.contains('wa-privacy-drawer-name')) {
                 sp.classList.add('wa-privacy-drawer-name');
+                attachDirectHover(sp);
               }
-              attachDirectHover(sp);
               break;
             }
           }
         }
 
-        // C. Nomer Telepon di Bawah Nama ("+62 858-1755-6573")
-        const subtitleCandidates = topSection.querySelectorAll('[data-testid="contact-info-subtitle"], span[dir="ltr"]');
+        // C. Nomor Telepon di Bawah Nama ("+62 858-1755-6573")
+        const subtitleCandidates = topCard.querySelectorAll('[data-testid="contact-info-subtitle"], span[dir="ltr"]');
         subtitleCandidates.forEach(sc => {
-          if (!sc.classList.contains('wa-privacy-drawer-protected') && !sc.classList.contains('wa-privacy-drawer-name')) {
+          if (!sc.classList.contains('wa-privacy-drawer-protected') && !sc.classList.contains('wa-privacy-drawer-name') && !sc.closest('.wa-privacy-drawer-avatar')) {
             const txt = (sc.textContent || '').trim();
             if (isPhoneNumber(txt)) {
               if (!sc.classList.contains('wa-privacy-number')) {
                 sc.classList.add('wa-privacy-number');
+                attachDirectHover(sc);
               }
-              attachDirectHover(sc);
             }
-          }
-        });
-
-        const allSpans = topSection.querySelectorAll('span, div');
-        allSpans.forEach(sp => {
-          if (sp.classList.contains('wa-privacy-drawer-protected') || sp.classList.contains('wa-privacy-drawer-name')) return;
-          const txt = (sp.textContent || '').trim();
-          if (isPhoneNumber(txt) && sp.children.length <= 1) {
-            if (!sp.classList.contains('wa-privacy-number')) {
-              sp.classList.add('wa-privacy-number');
-            }
-            attachDirectHover(sp);
           }
         });
       }
 
-      // 3. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> 100% Jernih
+      // 3. Section Media, tautan, dan dok & Thumbnails -> WAJIB 100% JERNIH! (Proteksi Mutlak)
+      // Cari section media baik melalui teks maupun chevron-right di atas thumbnails
+      const mediaSections = Array.from(drawer.querySelectorAll('div, section')).filter(el => {
+        const t = (el.textContent || '');
+        const isMediaText = t.includes('Media, tautan') || t.includes('Media, links') || t.includes('Media, tautan, dan dok');
+        const hasChevron = !!el.querySelector('[data-icon="chevron-right"]');
+        return isMediaText || (hasChevron && el.querySelector('img'));
+      });
+      mediaSections.forEach(ms => {
+        ms.classList.add('wa-privacy-drawer-protected');
+        const allInMedia = ms.querySelectorAll('*');
+        allInMedia.forEach(el => {
+          el.classList.remove('wa-privacy-drawer-avatar', 'wa-privacy-drawer-name', 'wa-privacy-number', 'wa-privacy-shared-avatar', 'wa-privacy-shared-name', 'wa-privacy-media');
+          el.style.removeProperty('filter');
+          el.style.removeProperty('-webkit-filter');
+        });
+      });
+
+      // 4. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> 100% Jernih
       const actionButtons = drawer.querySelectorAll(
         '[data-testid="audio-call-btn"], [data-testid="video-call-btn"], [data-testid="search-btn"], ' +
         'div[role="button"]:has(span[data-icon="audio-call"]), div[role="button"]:has(span[data-icon="video-call"]), div[role="button"]:has(span[data-icon="search"])'
@@ -559,7 +566,7 @@
         btn.classList.add('wa-privacy-drawer-protected');
       });
 
-      // 4. Baris Pengaturan ("Pesan berbintang", "Bisukan notifikasi", "Pesan sementara", "Obrolan terbatas", "Tema obrolan", "Enkripsi") -> 100% Jernih
+      // 5. Baris Pengaturan ("Pesan berbintang", "Bisukan notifikasi", "Pesan sementara", "Obrolan terbatas", "Tema obrolan", "Enkripsi") -> 100% Jernih
       const settingRows = drawer.querySelectorAll(
         'div[role="button"]:has([data-icon="star"]), div[role="button"]:has([data-icon="notifications"]), ' +
         'div[role="button"]:has([data-icon="timer"]), div[role="button"]:has([data-icon="lock"]), ' +
@@ -569,7 +576,7 @@
         row.classList.add('wa-privacy-drawer-protected');
       });
 
-      // 5. Bagian Grup Bersama ("11 grup yang sama" / Groups in common)
+      // 6. Bagian Grup Bersama ("11 grup yang sama" / Groups in common)
       // Heading "11 grup yang sama" & tombol "1 lainnya" -> 100% Jernih
       // Masing-masing baris grup (foto avatar grup & nama grup) -> BLUR (unblur on hover)
       const groupHeadings = Array.from(drawer.querySelectorAll('span, div, h3')).filter(el => {
@@ -603,30 +610,22 @@
         }
       });
 
-      // 6. Tombol Bagian Bawah ("Tambah favorit", "Tambah ke daftar", "Ekspor obrolan", "Bersihkan obrolan", "Blokir Alpin", "Laporkan Alpin") -> 100% JERNIH!
-      // Catatan: Walaupun tombol Blokir dan Laporkan memuat nama kontak, tombol tersebut DILARANG BLUR!
+      // 7. Tombol Bagian Bawah (Footer: "Tambah favorit", "Tambah ke daftar", "Ekspor", "Bersihkan", "Blokir", "Laporkan") -> 100% JERNIH!
       const bottomActions = drawer.querySelectorAll(
         'div[role="button"]:has([data-icon="heart"]), div[role="button"]:has([data-icon="contact-card"]), ' +
         'div[role="button"]:has([data-icon="download"]), div[role="button"]:has([data-icon="delete"]), ' +
         'div[role="button"]:has([data-icon="block"]), div[role="button"]:has([data-icon="thumb-down"]), ' +
-        '[data-testid="block-contact"], [data-testid="report-contact"]'
+        '[data-testid="block-contact"], [data-testid="report-contact"], ' +
+        'div[role="button"]:has([data-icon="exit"])'
       );
       bottomActions.forEach(ba => {
         ba.classList.add('wa-privacy-drawer-protected');
-        const blurredInside = ba.querySelectorAll('.wa-privacy-drawer-name, .wa-privacy-name, .wa-privacy-number');
+        const blurredInside = ba.querySelectorAll('.wa-privacy-drawer-name, .wa-privacy-name, .wa-privacy-number, .wa-privacy-drawer-avatar');
         blurredInside.forEach(b => {
-          b.classList.remove('wa-privacy-drawer-name', 'wa-privacy-name', 'wa-privacy-number');
+          b.classList.remove('wa-privacy-drawer-name', 'wa-privacy-name', 'wa-privacy-number', 'wa-privacy-drawer-avatar');
           b.style.removeProperty('filter');
           b.style.removeProperty('-webkit-filter');
         });
-      });
-
-      // 7. Gallery Media Thumbnails -> 100% Jernih sesuai contoh asli
-      const mediaGalleryImgs = drawer.querySelectorAll('[data-testid="media-gallery"] img, [data-testid="image-thumb"]');
-      mediaGalleryImgs.forEach(m => {
-        m.classList.remove('wa-privacy-media', 'wa-privacy-drawer-avatar');
-        m.style.removeProperty('filter');
-        m.style.removeProperty('-webkit-filter');
       });
     });
   }

@@ -1,11 +1,10 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 2.6.0 - Ultimate Avatar Engine)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 2.7.0 - Zero Bleed Avatar Engine)
  * 
- * Fokus Utama:
- * 1. Blur SEMUA Foto Profil (baik foto gambar asli maupun lingkaran inisial huruf).
- * 2. Tanda Lingkaran Hijau Status / Story WA TETAP TERLIHAT JELAS (tidak blur) mengelilingi profil.
- * 3. Nama kontak tetap ter-blur sesuai permintaan.
- * 4. Pesan obrolan, preview pesan, jam, tombol arsip, dan filter chips 100% JERNIH NORMAL.
+ * Prinsip Mutlak:
+ * 1. HANYA Foto Profil (Gambar asli, inisial huruf, ikon default) dan Nama Kontak yang di-blur.
+ * 2. PESAN OBROLAN, preview pesan baris kedua, jam, tanda centang status 100% JERNIH NORMAL (DILARANG BLUR).
+ * 3. Tanda lingkaran hijau status/story WA TETAP TERLIHAT JELAS (tidak blur).
  */
 
 (function () {
@@ -97,23 +96,15 @@
   }
 
   // --------------------------------------------------------------------------
-  // Universal Avatar Finder (Menemukan Foto Asli MAUPUN Lingkaran Inisial Huruf)
-  // Menjaga agar lingkaran hijau status/story WA tidak ikut ter-blur!
+  // Universal Avatar Finder (Strictly Avatar Only - Never Message Text)
   // --------------------------------------------------------------------------
-  function findAvatarInRow(rowOrCell) {
-    if (!rowOrCell) return null;
-
-    let row = rowOrCell;
-    if (rowOrCell.getAttribute('data-testid') === 'cell-frame-container' || !rowOrCell.getAttribute('role')) {
-      row = rowOrCell.closest('div[role="listitem"]') || 
-            rowOrCell.closest('div[role="row"]') || 
-            rowOrCell.closest('div[data-testid^="list-item-"]') || 
-            rowOrCell.parentElement;
-    }
+  function findAvatarInRow(row) {
     if (!row) return null;
 
-    // A. Cari status SVG (tanda hijau story WA)
-    const statusSvg = row.querySelector('svg._ak8i, svg[class*="status"], svg:has(circle[stroke]), svg circle[stroke]');
+    const cellFrame = row.querySelector('[data-testid="cell-frame-container"]');
+
+    // A. Proteksi status ring SVG (tanda hijau story WA)
+    const statusSvg = row.querySelector('svg._ak8i, svg:has(circle[stroke])');
     if (statusSvg) {
       const svgEl = statusSvg.tagName.toLowerCase() === 'svg' ? statusSvg : statusSvg.closest('svg');
       if (svgEl) {
@@ -121,7 +112,7 @@
         svgEl.style.setProperty('-webkit-filter', 'none', 'important');
         svgEl.style.setProperty('opacity', '1', 'important');
 
-        // Pastikan SEMUA parent pembungkus SVG ini tidak kena filter blur
+        // Pastikan container SVG tidak kena filter blur
         let p = svgEl.parentElement;
         while (p && p !== row) {
           p.classList.remove('wa-privacy-avatar');
@@ -132,34 +123,32 @@
       }
     }
 
-    const cellFrame = row.querySelector('[data-testid="cell-frame-container"]');
-
-    // B. Cari gambar foto profil (img)
+    // B. Cari gambar foto profil (img) di LUAR cellFrame
     const imgs = row.querySelectorAll('img');
     for (const img of imgs) {
       if (img.classList.contains('emoji')) continue;
-      if (cellFrame && cellFrame.contains(img)) continue;
+      if (cellFrame && cellFrame.contains(img)) continue; // JANGAN PERNAH DI DALAM TEKS PESAN!
       if (img.closest('[data-testid="last-msg-status"]')) continue;
       return img;
     }
 
-    // C. Cari wadah avatar class resmi WhatsApp
+    // C. Cari wadah avatar class resmi WhatsApp (_ak8h atau [data-testid="avatar"])
     const known = row.querySelector('._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"], [data-testid="default-user"], [data-testid="default-group"]');
     if (known && (!cellFrame || !cellFrame.contains(known))) {
       if (known.querySelector('svg._ak8i, svg:has(circle)')) {
         const innerImg = known.querySelector('img:not(.emoji)');
         if (innerImg) return innerImg;
-        const innerDiv = known.querySelector('div:not(:has(svg)), span');
-        if (innerDiv) return innerDiv;
+        const innerChild = known.querySelector('div:not(:has(svg)), span');
+        if (innerChild) return innerChild;
       } else {
         return known;
       }
     }
 
-    // D. Deteksi elemen inisial huruf (lingkaran inisial seperti "A", "T", "GP", "MK")
+    // D. Deteksi elemen lingkaran inisial huruf (di luar cellFrame)
     const candidates = row.querySelectorAll('div, span');
     for (const el of candidates) {
-      if (cellFrame && cellFrame.contains(el)) continue;
+      if (cellFrame && cellFrame.contains(el)) continue; // DILARANG MENYENTUH CELLFRAME!
       if (el.querySelector('svg._ak8i, svg:has(circle)')) continue;
       if (el.querySelector('[data-icon*="archiv"]')) continue;
 
@@ -182,10 +171,10 @@
       }
     }
 
-    // E. Kolom sebelah kiri cellFrame (Kolom Avatar)
+    // E. Fallback: Saudara sebelah kiri cellFrame (Hanya jika teks pendek <= 4 karakter dan bukan pesan)
     if (cellFrame && cellFrame.previousElementSibling) {
       const prev = cellFrame.previousElementSibling;
-      if (!prev.querySelector('svg._ak8i')) {
+      if (prev.textContent.trim().length <= 4 && !prev.querySelector('svg._ak8i')) {
         return prev;
       }
     }
@@ -208,7 +197,6 @@
                          headerBtn.querySelector('._ak8h') ||
                          headerBtn.querySelector('[data-testid="conversation-info-header-chat-avatar"]') ||
                          headerBtn.querySelector('[data-testid="avatar"]') ||
-                         headerBtn.querySelector('div[style*="border-radius"]') ||
                          headerBtn.firstElementChild;
 
     if (headerAvatar && !headerAvatar.classList.contains('wa-privacy-header-avatar')) {
@@ -362,7 +350,7 @@
       const row = cell.closest('div[role="listitem"]') || cell.closest('div[role="row"]') || cell.parentElement;
       if (!row) return;
 
-      // Pengecualian mutlak: Jangan pernah sentuh baris Arsip atau Filter
+      // Pengecualian mutlak: Baris Arsip
       if (row.querySelector('[data-icon*="archiv"]') || 
           row.getAttribute('data-testid') === 'archived' ||
           row.textContent.trim().startsWith('Diarsipkan') ||
@@ -372,7 +360,7 @@
 
       // 1. Avatar Foto Profil (Foto asli MAUPUN Lingkaran Inisial Huruf)
       const avatarEl = findAvatarInRow(row);
-      if (avatarEl) {
+      if (avatarEl && avatarEl !== cell && !cell.contains(avatarEl)) {
         if (!avatarEl.classList.contains('wa-privacy-avatar')) {
           avatarEl.classList.add('wa-privacy-avatar');
         }
@@ -397,31 +385,7 @@
       // BARIS KEDUA (PREVIEW PESAN, STIKER, JAM) 100% TIDAK DISENTUH.
     });
 
-    // B. Tangkap Semua Foto Avatar pps.whatsapp.net / _ak8k di Sidebar
-    const extraImgs = document.querySelectorAll('#pane-side img:not(.emoji), img[src*="pps.whatsapp.net"], img._ak8k');
-    extraImgs.forEach(img => {
-      if (img.closest('[data-testid="cell-frame-container"]')) return;
-      if (img.closest('[data-testid="last-msg-status"]')) return;
-      if (!img.classList.contains('wa-privacy-avatar')) {
-        img.classList.add('wa-privacy-avatar');
-      }
-      attachDirectHover(img);
-    });
-
-    // C. Avatar Pengirim di Obrolan Grup (#main .message-in)
-    const groupSenderAvatars = document.querySelectorAll(
-      '#main .message-in [data-testid="avatar"] img, ' +
-      '#main .message-in img[src*="pps.whatsapp.net"], ' +
-      '#main .message-in img._ak8k'
-    );
-    groupSenderAvatars.forEach(av => {
-      if (!av.classList.contains('wa-privacy-avatar')) {
-        av.classList.add('wa-privacy-avatar');
-      }
-      attachDirectHover(av);
-    });
-
-    // D. Profil Pengguna di Pojok Kiri Bawah
+    // B. Foto Profil Pengguna di Pojok Kiri Bawah
     const userProfileButtons = document.querySelectorAll(
       'header > div:first-child img, ' +
       'nav button:last-child img, ' +
@@ -436,7 +400,7 @@
       attachDirectHover(btn);
     });
 
-    // E. Fitur Meta AI
+    // C. Fitur Meta AI
     const metaAiElements = document.querySelectorAll(
       'button[aria-label*="Meta AI"], ' +
       'div[aria-label*="Meta AI"], ' +
@@ -492,5 +456,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 2.6.0 Ultimate Avatar Engine Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 2.7.0 Zero Bleed Loaded.');
 })();

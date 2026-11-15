@@ -104,6 +104,27 @@ circle[stroke],
   -webkit-filter: none !important;
 }
 
+/* ==========================================================================
+   HEADER CHAT (PROFIL & NAMA KONTAK DI ATAS BUBBLE CHAT):
+   - Jika kursor mengarah ke situ: NONAKTIF BLUR (JERNIH)
+   - Jika kursor TIDAK mengarah ke situ: BLUR
+   ========================================================================== */
+#main header div[role="button"]:hover,
+#main header div[role="button"]:hover *,
+#main header .wa-privacy-header-avatar:hover,
+#main header .wa-privacy-header-avatar:hover *,
+#main header .wa-privacy-header-name:hover,
+#main header .wa-privacy-header-name:hover *,
+#main header [data-testid="conversation-info-header-chat-title"]:hover,
+#main header [data-testid="chat-title"]:hover,
+#main header span[title]:hover,
+#main header img:hover,
+#main header [data-testid="avatar"]:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+}
+
 /* Kotak Input Ketik Pesan & Filter Bar */
 #main footer div[contenteditable="true"],
 #main footer [role="textbox"],

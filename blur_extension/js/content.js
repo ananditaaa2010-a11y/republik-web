@@ -338,7 +338,7 @@
     });
   }
 
-  // Header Elements
+  // Header Elements (Profil & Nama Kontak di Atas Bubble Chat)
   function setupHeaderElements() {
     const mainHeader = document.querySelector('#main header');
     if (!mainHeader) return;
@@ -371,6 +371,29 @@
         attachDirectHover(el);
       }
     });
+
+    // Event listener langsung pada container profil & nama kontak di atas bubble chat
+    // Saat cursor mengarah ke situ: nonaktifkan blur (jernih)
+    // Saat cursor tidak mengarah ke situ: kembalikan blur
+    if (!headerBtn._hasHeaderHoverRevealBound) {
+      headerBtn._hasHeaderHoverRevealBound = true;
+      headerBtn.addEventListener('mouseenter', () => {
+        if (currentSettings.enabled !== false) {
+          const targets = headerBtn.querySelectorAll('.wa-privacy-header-avatar, .wa-privacy-header-name, img:not(.emoji), [data-testid="avatar"], span[title], ._ak8q');
+          targets.forEach(t => {
+            t.style.setProperty('filter', 'none', 'important');
+            t.style.setProperty('-webkit-filter', 'none', 'important');
+          });
+        }
+      });
+      headerBtn.addEventListener('mouseleave', () => {
+        const targets = headerBtn.querySelectorAll('.wa-privacy-header-avatar, .wa-privacy-header-name, img:not(.emoji), [data-testid="avatar"], span[title], ._ak8q');
+        targets.forEach(t => {
+          t.style.removeProperty('filter');
+          t.style.removeProperty('-webkit-filter');
+        });
+      });
+    }
   }
 
   // Drawer Elements (Info Kontak, Grup, Media)

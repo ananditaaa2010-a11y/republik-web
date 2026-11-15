@@ -1,5 +1,5 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 2.5.0 - Universal Avatar Engine)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 2.6.0 - Ultimate Avatar Engine)
  * 
  * Fokus Utama:
  * 1. Blur SEMUA Foto Profil (baik foto gambar asli maupun lingkaran inisial huruf).
@@ -103,7 +103,6 @@
   function findAvatarInRow(rowOrCell) {
     if (!rowOrCell) return null;
 
-    // Pastikan kita bekerja pada elemen row baris chat
     let row = rowOrCell;
     if (rowOrCell.getAttribute('data-testid') === 'cell-frame-container' || !rowOrCell.getAttribute('role')) {
       row = rowOrCell.closest('div[role="listitem"]') || 
@@ -133,19 +132,20 @@
       }
     }
 
-    // B. Cari gambar foto avatar (img) yang bukan emoji dan bukan di dalam teks pesan
+    const cellFrame = row.querySelector('[data-testid="cell-frame-container"]');
+
+    // B. Cari gambar foto profil (img)
     const imgs = row.querySelectorAll('img');
     for (const img of imgs) {
       if (img.classList.contains('emoji')) continue;
-      if (img.closest('[data-testid="cell-frame-container"]')) continue;
+      if (cellFrame && cellFrame.contains(img)) continue;
       if (img.closest('[data-testid="last-msg-status"]')) continue;
       return img;
     }
 
-    // C. Cari wadah avatar class resmi WhatsApp (_ak8h, avatar, default-user, default-group)
+    // C. Cari wadah avatar class resmi WhatsApp
     const known = row.querySelector('._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"], [data-testid="default-user"], [data-testid="default-group"]');
-    if (known && !known.closest('[data-testid="cell-frame-container"]')) {
-      // Jika wadah ini membungkus SVG status, jangan blur wadahnya, tapi ambil elemen avatar di dalam wadah
+    if (known && (!cellFrame || !cellFrame.contains(known))) {
       if (known.querySelector('svg._ak8i, svg:has(circle)')) {
         const innerImg = known.querySelector('img:not(.emoji)');
         if (innerImg) return innerImg;
@@ -156,8 +156,7 @@
       }
     }
 
-    // D. Deteksi elemen lingkaran inisial huruf (seperti "A", "T", "GP", "MK")
-    const cellFrame = row.querySelector('[data-testid="cell-frame-container"]');
+    // D. Deteksi elemen inisial huruf (lingkaran inisial seperti "A", "T", "GP", "MK")
     const candidates = row.querySelectorAll('div, span');
     for (const el of candidates) {
       if (cellFrame && cellFrame.contains(el)) continue;
@@ -165,13 +164,12 @@
       if (el.querySelector('[data-icon*="archiv"]')) continue;
 
       const txt = (el.textContent || '').trim();
-      const isInitialText = /^[A-Z0-9]{1,3}$/.test(txt);
+      const isInitialText = /^[\p{L}\p{N}]{1,3}$/u.test(txt);
 
       const w = el.offsetWidth;
       const h = el.offsetHeight;
 
-      // Kotak avatar sidebar berukuran 28-75px
-      if ((w >= 28 && w <= 75 && h >= 28 && h <= 75) || isInitialText) {
+      if ((w >= 24 && w <= 75 && h >= 24 && h <= 75) || isInitialText) {
         const comp = window.getComputedStyle(el);
         const isRound = comp.borderRadius === '50%' || 
                         comp.borderRadius.includes('50%') || 
@@ -184,7 +182,7 @@
       }
     }
 
-    // E. Fallback: Kolom sebelah kiri cellFrame
+    // E. Kolom sebelah kiri cellFrame (Kolom Avatar)
     if (cellFrame && cellFrame.previousElementSibling) {
       const prev = cellFrame.previousElementSibling;
       if (!prev.querySelector('svg._ak8i')) {
@@ -294,8 +292,8 @@
       const allDivs = drawer.querySelectorAll('div[role="button"] > div, div');
       allDivs.forEach(d => {
         const txt = (d.textContent || '').trim();
-        const isInitialText = /^[A-Z0-9]{1,3}$/.test(txt);
-        if ((d.offsetWidth >= 60 && d.offsetWidth <= 250 && d.offsetHeight >= 60 && d.offsetHeight <= 250) || isInitialText) {
+        const isInitialText = /^[\p{L}\p{N}]{1,3}$/u.test(txt);
+        if ((d.offsetWidth >= 50 && d.offsetWidth <= 250 && d.offsetHeight >= 50 && d.offsetHeight <= 250) || isInitialText) {
           const comp = window.getComputedStyle(d);
           if (comp.borderRadius === '50%' || comp.borderRadius.includes('50%') || comp.borderRadius.includes('9999px') || isInitialText) {
             if (!d.classList.contains('wa-privacy-drawer-avatar')) {
@@ -358,22 +356,11 @@
   // --------------------------------------------------------------------------
   function setupSidebarAndControls() {
     // A. Sidebar Chat List
-    const rows = document.querySelectorAll(
-      '#pane-side div[role="listitem"], ' +
-      '#pane-side div[role="row"], ' +
-      '#pane-side div[data-testid^="list-item-"], ' +
-      '#pane-side [data-testid="cell-frame-container"]'
-    );
+    const cellFrames = document.querySelectorAll('#pane-side [data-testid="cell-frame-container"]');
 
-    const processedRows = new Set();
-
-    rows.forEach(item => {
-      const row = (item.getAttribute('role') === 'listitem' || item.getAttribute('role') === 'row')
-        ? item
-        : (item.closest('div[role="listitem"]') || item.closest('div[role="row"]') || item);
-
-      if (processedRows.has(row)) return;
-      processedRows.add(row);
+    cellFrames.forEach(cell => {
+      const row = cell.closest('div[role="listitem"]') || cell.closest('div[role="row"]') || cell.parentElement;
+      if (!row) return;
 
       // Pengecualian mutlak: Jangan pernah sentuh baris Arsip atau Filter
       if (row.querySelector('[data-icon*="archiv"]') || 
@@ -393,7 +380,7 @@
       }
 
       // 2. Nama Kontak Chat di Baris Atas (TIDAK DIUBAH)
-      const titleEl = row.querySelector('[data-testid="cell-frame-title"]');
+      const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
       if (titleEl) {
         const txt = (titleEl.textContent || '').trim();
         if (isPhoneNumber(txt)) {
@@ -410,11 +397,36 @@
       // BARIS KEDUA (PREVIEW PESAN, STIKER, JAM) 100% TIDAK DISENTUH.
     });
 
-    // B. Profil Pengguna di Pojok Kiri Bawah
+    // B. Tangkap Semua Foto Avatar pps.whatsapp.net / _ak8k di Sidebar
+    const extraImgs = document.querySelectorAll('#pane-side img:not(.emoji), img[src*="pps.whatsapp.net"], img._ak8k');
+    extraImgs.forEach(img => {
+      if (img.closest('[data-testid="cell-frame-container"]')) return;
+      if (img.closest('[data-testid="last-msg-status"]')) return;
+      if (!img.classList.contains('wa-privacy-avatar')) {
+        img.classList.add('wa-privacy-avatar');
+      }
+      attachDirectHover(img);
+    });
+
+    // C. Avatar Pengirim di Obrolan Grup (#main .message-in)
+    const groupSenderAvatars = document.querySelectorAll(
+      '#main .message-in [data-testid="avatar"] img, ' +
+      '#main .message-in img[src*="pps.whatsapp.net"], ' +
+      '#main .message-in img._ak8k'
+    );
+    groupSenderAvatars.forEach(av => {
+      if (!av.classList.contains('wa-privacy-avatar')) {
+        av.classList.add('wa-privacy-avatar');
+      }
+      attachDirectHover(av);
+    });
+
+    // D. Profil Pengguna di Pojok Kiri Bawah
     const userProfileButtons = document.querySelectorAll(
       'header > div:first-child img, ' +
       'nav button:last-child img, ' +
       'nav div[role="button"]:last-child img, ' +
+      '[data-testid="profile-pic-btn"] img, ' +
       '[data-testid="profile-pic-btn"]'
     );
     userProfileButtons.forEach(btn => {
@@ -424,7 +436,7 @@
       attachDirectHover(btn);
     });
 
-    // C. Fitur Meta AI
+    // E. Fitur Meta AI
     const metaAiElements = document.querySelectorAll(
       'button[aria-label*="Meta AI"], ' +
       'div[aria-label*="Meta AI"], ' +
@@ -480,5 +492,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 2.5.0 Universal Avatar Engine Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 2.6.0 Ultimate Avatar Engine Loaded.');
 })();

@@ -535,35 +535,38 @@
       if (isArchivedHeaderBtn) return;
 
       // Contact Name (Disamarkan, namun teks (Anda) tetap jernih sesuai https://web.whatsapp.com)
-      const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
+      const titleEl = cell.querySelector('[data-testid="cell-frame-title"]') ||
+                      cell.querySelector('div._ak8q');
       if (titleEl) {
-        const txt = (titleEl.textContent || '').trim();
-        if (isPhoneNumber(txt)) {
-          if (!titleEl.classList.contains('wa-privacy-number')) {
-            titleEl.classList.add('wa-privacy-number');
-          }
-          attachDirectHover(titleEl);
-        } else {
-          const innerSpans = Array.from(titleEl.querySelectorAll('span'));
-          const andaSpan = innerSpans.find(s => s.textContent.includes('(Anda)') || s.textContent.includes('(You)'));
-          if (andaSpan) {
-            titleEl.classList.remove('wa-privacy-name');
-            innerSpans.forEach(s => {
-              if (s !== andaSpan && !s.contains(andaSpan) && !andaSpan.contains(s) && s.textContent.trim().length > 0) {
-                if (!s.classList.contains('wa-privacy-name')) {
-                  s.classList.add('wa-privacy-name');
-                }
-                attachDirectHover(s);
-              }
-            });
-            andaSpan.style.setProperty('filter', 'none', 'important');
-            andaSpan.style.setProperty('-webkit-filter', 'none', 'important');
-          } else {
-            if (!titleEl.classList.contains('wa-privacy-name')) {
-              titleEl.classList.add('wa-privacy-name');
+        const innerSpans = Array.from(titleEl.querySelectorAll('span'));
+        const andaSpan = innerSpans.find(s => {
+          const t = (s.textContent || '').trim();
+          return t === '(Anda)' || t === '(You)' || t.startsWith('(Anda)') || t.startsWith('(You)');
+        });
+
+        if (andaSpan) {
+          titleEl.classList.remove('wa-privacy-name', 'wa-privacy-number');
+          titleEl.style.removeProperty('filter');
+          titleEl.style.removeProperty('-webkit-filter');
+
+          andaSpan.classList.add('wa-privacy-anda-clear');
+          andaSpan.classList.remove('wa-privacy-name', 'wa-privacy-number');
+          andaSpan.style.setProperty('filter', 'none', 'important');
+          andaSpan.style.setProperty('-webkit-filter', 'none', 'important');
+
+          innerSpans.forEach(s => {
+            if (s !== andaSpan && !s.contains(andaSpan) && !andaSpan.contains(s) && (s.textContent || '').trim().length > 0) {
+              s.classList.add('wa-privacy-name');
+              attachDirectHover(s);
             }
-            attachDirectHover(titleEl);
-          }
+          });
+        } else {
+          titleEl.classList.add('wa-privacy-name');
+          attachDirectHover(titleEl);
+          innerSpans.forEach(s => {
+            s.classList.add('wa-privacy-name');
+            attachDirectHover(s);
+          });
         }
       }
 
@@ -727,6 +730,148 @@
     });
   }
 
+  // --------------------------------------------------------------------------
+  // Left Navigation Rail (Bilah Samping Kiri: Telepon, Saluran, Meta AI)
+  // --------------------------------------------------------------------------
+  function ensureLeftRailIcons() {
+    // 1. Cari bilah navigasi kiri di WhatsApp Web
+    let rail = document.querySelector('header[role="navigation"]') ||
+               document.querySelector('div[role="navigation"]') ||
+               document.querySelector('nav');
+
+    if (!rail) {
+      const anchor = document.querySelector(
+        '[data-icon="chats-outline"], [data-icon="chat"], button[aria-label*="Obrolan" i], button[aria-label*="Chats" i], button[aria-label*="Chat" i]'
+      );
+      if (anchor) {
+        let p = anchor.parentElement;
+        while (p && p !== document.body) {
+          const r = p.getBoundingClientRect();
+          if (r.left >= 0 && r.left < 80 && r.width >= 40 && r.width <= 120 && r.height > 250) {
+            rail = p;
+            break;
+          }
+          p = p.parentElement;
+        }
+      }
+    }
+
+    if (!rail) return;
+
+    // Cari grup tombol atas dan grup tombol bawah di dalam rail
+    const directChildren = Array.from(rail.children);
+    let topGroup = directChildren.length > 0 ? directChildren[0] : rail;
+    let bottomGroup = directChildren.length > 1 ? directChildren[directChildren.length - 1] : rail;
+
+    // Tombol Obrolan (Chat) sebagai acuan posisi
+    const chatBtn = rail.querySelector(
+      'button[aria-label*="Obrolan" i], button[aria-label*="Chats" i], button[aria-label*="Chat" i], button:has([data-icon="chats-outline"]), button:has([data-icon="chat"]), div[role="button"]:has([data-icon="chats-outline"])'
+    );
+
+    // Tombol Status sebagai acuan posisi
+    const statusBtn = rail.querySelector(
+      'button[aria-label*="Status" i], button:has([data-icon="status-outline"]), button:has([data-icon="status"]), div[role="button"]:has([data-icon="status-outline"])'
+    );
+
+    // Tombol Komunitas sebagai acuan posisi
+    const communityBtn = rail.querySelector(
+      'button[aria-label*="Komunitas" i], button[aria-label*="Communities" i], button:has([data-icon="community-outline"]), div[role="button"]:has([data-icon="community-outline"])'
+    );
+
+    // Tombol Pengaturan di grup bawah
+    const settingsBtn = rail.querySelector(
+      'button[aria-label*="Pengaturan" i], button[aria-label*="Settings" i], button:has([data-icon="settings-outline"]), div[role="button"]:has([data-icon="settings-outline"])'
+    );
+
+    // A. Pastikan Ikon Telepon (Panggilan) Ada
+    let callsBtn = rail.querySelector(
+      '.wa-rail-calls-btn, [data-icon*="call"], [data-icon*="phone"], button[aria-label*="Panggilan" i], button[aria-label*="Calls" i]'
+    );
+    if (!callsBtn) {
+      callsBtn = document.createElement('button');
+      callsBtn.className = 'wa-rail-btn wa-rail-calls-btn';
+      callsBtn.setAttribute('type', 'button');
+      callsBtn.setAttribute('aria-label', 'Panggilan');
+      callsBtn.setAttribute('title', 'Panggilan');
+      callsBtn.innerHTML = `
+        <span class="wa-rail-icon-wrapper">
+          <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" fill="currentColor">
+            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-2.2 2.2a15.053 15.053 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1.01A11.36 11.36 0 0 1 8.57 3.9c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.52c0-.55-.45-1-.99-1z"/>
+          </svg>
+        </span>
+      `;
+
+      if (chatBtn && chatBtn.parentElement) {
+        chatBtn.parentElement.insertBefore(callsBtn, chatBtn.nextSibling);
+      } else if (statusBtn && statusBtn.parentElement) {
+        statusBtn.parentElement.insertBefore(callsBtn, statusBtn);
+      } else {
+        topGroup.appendChild(callsBtn);
+      }
+    }
+
+    // B. Pastikan Ikon Saluran Ada
+    let channelsBtn = rail.querySelector(
+      '.wa-rail-channels-btn, [data-icon*="newsletter"], [data-icon*="channel"], button[aria-label*="Saluran" i], button[aria-label*="Channels" i]'
+    );
+    if (!channelsBtn) {
+      channelsBtn = document.createElement('button');
+      channelsBtn.className = 'wa-rail-btn wa-rail-channels-btn';
+      channelsBtn.setAttribute('type', 'button');
+      channelsBtn.setAttribute('aria-label', 'Saluran');
+      channelsBtn.setAttribute('title', 'Saluran');
+      channelsBtn.innerHTML = `
+        <span class="wa-rail-icon-wrapper">
+          <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 1.82.49 3.53 1.35 5L2 22l5.25-1.31A9.95 9.95 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-2h2v2zm0-4h-2V7h2v5.5z"/>
+          </svg>
+        </span>
+      `;
+
+      if (statusBtn && statusBtn.parentElement) {
+        statusBtn.parentElement.insertBefore(channelsBtn, statusBtn.nextSibling);
+      } else if (communityBtn && communityBtn.parentElement) {
+        communityBtn.parentElement.insertBefore(channelsBtn, communityBtn);
+      } else {
+        topGroup.appendChild(channelsBtn);
+      }
+    }
+
+    // C. Pastikan Ikon Meta AI Ada & Selalu Disamarkan (BLUR)
+    let metaAiBtn = rail.querySelector(
+      '.wa-rail-meta-ai-btn, [data-icon*="meta-ai"], button[aria-label*="Meta AI" i], div[aria-label*="Meta AI" i], [data-testid*="meta-ai" i]'
+    );
+    if (!metaAiBtn) {
+      metaAiBtn = document.createElement('button');
+      metaAiBtn.className = 'wa-rail-btn wa-rail-meta-ai-btn wa-privacy-meta-ai';
+      metaAiBtn.setAttribute('type', 'button');
+      metaAiBtn.setAttribute('aria-label', 'Meta AI');
+      metaAiBtn.setAttribute('title', 'Meta AI');
+      metaAiBtn.innerHTML = `
+        <span class="wa-meta-ai-icon-ring wa-privacy-meta-ai"></span>
+      `;
+
+      if (settingsBtn && settingsBtn.parentElement) {
+        settingsBtn.parentElement.insertBefore(metaAiBtn, settingsBtn);
+      } else {
+        bottomGroup.appendChild(metaAiBtn);
+      }
+    }
+
+    // Pastikan Meta AI memiliki kelas blur dan hover reveal
+    if (!metaAiBtn.classList.contains('wa-privacy-meta-ai')) {
+      metaAiBtn.classList.add('wa-privacy-meta-ai');
+    }
+    attachDirectHover(metaAiBtn);
+    const ring = metaAiBtn.querySelector('.wa-meta-ai-icon-ring');
+    if (ring) {
+      if (!ring.classList.contains('wa-privacy-meta-ai')) {
+        ring.classList.add('wa-privacy-meta-ai');
+      }
+      attachDirectHover(ring);
+    }
+  }
+
   // Master Runner (Debounced)
   function tagAll() {
     setupHeaderElements();
@@ -734,6 +879,7 @@
     setupSidebarAndControls();
     setupConversationElements();
     setupNewChatDrawerElements();
+    ensureLeftRailIcons();
   }
 
   let isScheduled = false;

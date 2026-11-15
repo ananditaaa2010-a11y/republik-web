@@ -434,6 +434,30 @@ function setupIPCHandlers() {
     return { success: true };
   });
 
+  ipcMain.handle('privacy:lockNow', () => {
+    if (!privacyBlurStore) return { success: false };
+    const settings = privacyBlurStore.getSettings();
+    if (!settings.securityPin || settings.securityPin.length < 4) {
+      if (viewManager) viewManager.openPrivacyBlurModal();
+      return { success: false, needPin: true };
+    }
+    const updated = privacyBlurStore.updateSettings({ isLocked: true });
+    if (viewManager) {
+      viewManager.broadcastPrivacySettings(updated);
+      viewManager.closePrivacyBlurModal();
+    }
+    return { success: true };
+  });
+
+  ipcMain.on('privacy:unlocked', () => {
+    if (privacyBlurStore) {
+      const updated = privacyBlurStore.updateSettings({ isLocked: false });
+      if (viewManager) {
+        viewManager.broadcastPrivacySettings(updated);
+      }
+    }
+  });
+
   ipcMain.on('privacy:closeModal', () => {
     if (viewManager) {
       viewManager.closePrivacyBlurModal();

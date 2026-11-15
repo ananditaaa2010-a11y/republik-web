@@ -286,6 +286,11 @@ body {
   border-color: rgba(167, 139, 250, 0.4);
 }
 
+.dock-action-btn.lock-btn:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 .dock-action-btn.notif-btn.muted {
   color: #f87171;
   border-color: rgba(239, 68, 68, 0.3);

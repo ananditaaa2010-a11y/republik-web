@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Pengaturan Privasi Blur — WhatsApp Web</title>
+  <title>Pengaturan Privasi Blur & Kunci — WhatsApp Web</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -15,6 +15,7 @@
       --primary-hover: #059669;
       --accent: #38bdf8;
       --danger: #ef4444;
+      --danger-hover: #dc2626;
     }
 
     * {
@@ -28,7 +29,7 @@
     body {
       background: var(--bg);
       color: var(--text);
-      padding: 22px 24px;
+      padding: 20px 22px;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -39,17 +40,17 @@
     .header {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 14px;
+      gap: 12px;
+      margin-bottom: 12px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
 
     .header-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(56, 189, 248, 0.2));
       border: 1px solid rgba(16, 185, 129, 0.35);
       display: flex;
@@ -59,18 +60,18 @@
     }
 
     .header-icon svg {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
     }
 
     .header-title h2 {
-      font-size: 17px;
+      font-size: 16px;
       color: #ffffff;
       font-weight: 600;
     }
 
     .header-title p {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
       margin-top: 2px;
     }
@@ -82,7 +83,7 @@
       padding-right: 6px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
     .content::-webkit-scrollbar {
@@ -94,12 +95,74 @@
       border-radius: 4px;
     }
 
+    /* Lock Now Banner */
+    .lock-banner {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .lock-banner-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-lock-now {
+      padding: 8px 16px;
+      background: var(--danger);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-lock-now:hover {
+      background: var(--danger-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-lock-now svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .pin-status-text {
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .btn-text-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .btn-text-link:hover {
+      text-decoration: underline;
+    }
+
     /* Master Switch Card */
     .master-card {
       background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
       border: 1.5px solid rgba(16, 185, 129, 0.4);
-      border-radius: 12px;
-      padding: 14px 18px;
+      border-radius: 10px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -113,7 +176,7 @@
     }
 
     .master-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #ffffff;
       display: flex;
@@ -122,21 +185,21 @@
     }
 
     .master-badge {
-      font-size: 10px;
+      font-size: 9.5px;
       background: rgba(16, 185, 129, 0.2);
       color: #34d399;
       border: 1px solid rgba(16, 185, 129, 0.4);
       padding: 2px 7px;
-      border-radius: 12px;
+      border-radius: 10px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .master-desc {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     /* Blur Intensity Slider Card */
@@ -144,7 +207,7 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 14px 16px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -166,19 +229,19 @@
     }
 
     .intensity-title svg {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       color: #38bdf8;
     }
 
     .intensity-value {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 2px 10px;
-      border-radius: 12px;
+      padding: 2px 9px;
+      border-radius: 10px;
     }
 
     .slider-container {
@@ -199,8 +262,8 @@
 
     .range-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 17px;
+      height: 17px;
       border-radius: 50%;
       background: var(--primary);
       border: 2px solid #ffffff;
@@ -218,16 +281,16 @@
       background: rgba(15, 23, 42, 0.6);
       border: 1px dashed rgba(255, 255, 255, 0.15);
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 9px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
     }
 
     .preview-sample-avatar {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: #0ea5e9;
       color: #ffffff;
@@ -235,7 +298,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
       flex-shrink: 0;
       transition: filter 0.15s ease;
     }
@@ -244,36 +307,36 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
 
     .preview-sample-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #ffffff;
       transition: filter 0.15s ease;
     }
 
     .preview-sample-text {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       transition: filter 0.15s ease;
     }
 
     .preview-hint {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #38bdf8;
       font-style: italic;
     }
 
     /* Section */
     .section-title {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -290,7 +353,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 11px 16px;
+      padding: 10px 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       transition: background 0.15s ease;
     }
@@ -311,7 +374,7 @@
     }
 
     .setting-name {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 500;
       color: #ffffff;
       display: flex;
@@ -320,16 +383,16 @@
     }
 
     .setting-name svg {
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       color: #94a3b8;
       flex-shrink: 0;
     }
 
     .setting-desc {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--muted);
-      padding-left: 23px;
+      padding-left: 22px;
       line-height: 1.3;
     }
 
@@ -337,8 +400,8 @@
     .switch {
       position: relative;
       display: inline-block;
-      width: 40px;
-      height: 22px;
+      width: 38px;
+      height: 20px;
       flex-shrink: 0;
     }
 
@@ -357,14 +420,14 @@
       bottom: 0;
       background-color: #334155;
       transition: .25s;
-      border-radius: 22px;
+      border-radius: 20px;
     }
 
     .slider:before {
       position: absolute;
       content: "";
-      height: 16px;
-      width: 16px;
+      height: 14px;
+      width: 14px;
       left: 3px;
       bottom: 3px;
       background-color: white;
@@ -389,8 +452,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 14px;
-      padding-top: 12px;
+      margin-top: 12px;
+      padding-top: 10px;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
     }
@@ -402,21 +465,21 @@
     }
 
     .btn {
-      padding: 9px 16px;
+      padding: 8px 15px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 500;
       cursor: pointer;
       border: 1px solid transparent;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       transition: all 0.2s ease;
     }
 
     .btn svg {
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
     }
 
     .btn-secondary {
@@ -438,6 +501,80 @@
       background: var(--primary-hover);
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
+
+    /* PIN Modal */
+    .pin-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .pin-modal-overlay.active {
+      display: flex;
+    }
+
+    .pin-modal-card {
+      width: 300px;
+      background: #111b21;
+      border: 1px solid rgba(0, 168, 132, 0.4);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .pin-modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pin-modal-desc {
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .pin-input-field {
+      width: 150px;
+      margin: 8px auto;
+      padding: 8px 12px;
+      background: #202c33;
+      border: 1.5px solid #3b4a54;
+      border-radius: 8px;
+      color: #00a884;
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 8px;
+      outline: none;
+    }
+
+    .pin-input-field:focus {
+      border-color: #00a884;
+    }
+
+    .pin-modal-error {
+      min-height: 14px;
+      font-size: 11px;
+      color: #ea4335;
+    }
+
+    .pin-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
@@ -450,13 +587,33 @@
       </svg>
     </div>
     <div class="header-title">
-      <h2>Pengaturan Privasi Blur (Privacy Blur Settings)</h2>
-      <p>Kustomisasi tingkat intensitas blur dan pilih bagian WhatsApp yang ingin disamarkan</p>
+      <h2>Pengaturan Privasi Blur & Kunci</h2>
+      <p>Kustomisasi filter blur, slider intensitas, dan proteksi Lock Now WhatsApp Web</p>
     </div>
   </div>
 
   <!-- Content -->
   <div class="content">
+
+    <!-- Lock Now Banner -->
+    <div class="lock-banner">
+      <div class="lock-banner-row">
+        <div>
+          <span style="font-size: 13px; font-weight: 600; color: #ffffff;">Kunci WhatsApp Web Segera</span>
+          <div class="pin-status-text" id="pinStatusText">PIN Keamanan: Belum diatur</div>
+        </div>
+        <button class="btn-lock-now" id="btnLockNow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Lock Now</span>
+        </button>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn-text-link" id="btnManagePin">Atur PIN Keamanan</button>
+      </div>
+    </div>
 
     <!-- Master Switch -->
     <div class="master-card">
@@ -466,7 +623,7 @@
           <span class="master-badge">Global</span>
         </div>
         <div class="master-desc">
-          Aktifkan proteksi privasi otomatis di seluruh akun WhatsApp Web. Pintasan keyboard cepat: <strong>Alt + B</strong>.
+          Aktifkan proteksi privasi otomatis di WhatsApp Web. Pintasan cepat: <strong>Alt + B</strong>.
         </div>
       </div>
       <label class="switch">
@@ -483,7 +640,7 @@
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
-          <span>Tingkat Intensitas Blur (Adjustable Intensity)</span>
+          <span>Tingkat Intensitas Blur</span>
         </div>
         <span class="intensity-value" id="intensityDisplay">10 px</span>
       </div>
@@ -532,7 +689,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
               </svg>
-              <span>Blur Preview Pesan Terakhir (Latest Message Preview)</span>
+              <span>Blur Preview Pesan Terakhir</span>
             </div>
             <div class="setting-desc">Menyamarkan baris kedua cuplikan pesan terakhir di daftar kontak.</div>
           </div>
@@ -551,7 +708,7 @@
                 <line x1="8" y1="21" x2="16" y2="21"></line>
                 <line x1="12" y1="17" x2="12" y2="21"></line>
               </svg>
-              <span>Blur Isi Percakapan (Conversation Content)</span>
+              <span>Blur Isi Percakapan (#main)</span>
             </div>
             <div class="setting-desc">Menyamarkan seluruh gelembung teks pesan di ruang chat yang sedang dibuka.</div>
           </div>
@@ -596,7 +753,7 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              <span>Blur Nama Kontak (Contact Names)</span>
+              <span>Blur Nama Kontak</span>
             </div>
             <div class="setting-desc">Menyamarkan nama kontak di daftar chat, header percakapan, dan info kontak.</div>
           </div>
@@ -616,7 +773,7 @@
                 <line x1="9" y1="9" x2="9.01" y2="9"></line>
                 <line x1="15" y1="9" x2="15.01" y2="9"></line>
               </svg>
-              <span>Blur Foto Profil & Inisial (Profile Photos)</span>
+              <span>Blur Foto Profil & Inisial</span>
             </div>
             <div class="setting-desc">Menyamarkan foto profil asli, lingkaran inisial huruf, dan profil akun Anda di pojok kiri bawah.</div>
           </div>
@@ -636,7 +793,7 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
               </svg>
-              <span>Blur Nama & Informasi Grup (Group Names & Info)</span>
+              <span>Blur Nama & Informasi Grup</span>
             </div>
             <div class="setting-desc">Menyamarkan nama grup, deskripsi grup, dan daftar anggota di grup.</div>
           </div>
@@ -654,9 +811,9 @@
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 14 14"></polyline>
               </svg>
-              <span>Blur Pembaruan Status & Info Kontak (Status & About)</span>
+              <span>Blur Pembaruan Status & Info Kontak</span>
             </div>
-            <div class="setting-desc">Menyamarkan pratinjau pembaruan status (story), nomor telepon, dan status/bio info.</div>
+            <div class="setting-desc">Menyamarkan pratinjau pembaruan status cerita (story), nomor telepon, dan bio info.</div>
           </div>
           <label class="switch">
             <input type="checkbox" id="blurStatusInfo" checked>
@@ -716,6 +873,23 @@
     </div>
   </div>
 
+  <!-- PIN Setup Modal -->
+  <div class="pin-modal-overlay" id="pinModalOverlay">
+    <div class="pin-modal-card">
+      <h3 class="pin-modal-title" id="pinModalTitle">Atur PIN Keamanan</h3>
+      <p class="pin-modal-desc">Masukkan 4 digit angka untuk mengunci WhatsApp Web:</p>
+      
+      <input type="password" maxlength="4" class="pin-input-field" id="pinInputField" placeholder="••••" inputmode="numeric">
+
+      <div class="pin-modal-error" id="pinModalError"></div>
+
+      <div class="pin-modal-actions">
+        <button class="btn btn-secondary" id="btnCancelPin">Batal</button>
+        <button class="btn btn-primary" id="btnSavePin">Simpan PIN</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentSettings = {};
 
@@ -736,6 +910,17 @@
     const blurStatusInfo = document.getElementById('blurStatusInfo');
     const unblurOnHover = document.getElementById('unblurOnHover');
 
+    const btnLockNow = document.getElementById('btnLockNow');
+    const pinStatusText = document.getElementById('pinStatusText');
+    const btnManagePin = document.getElementById('btnManagePin');
+
+    const pinModalOverlay = document.getElementById('pinModalOverlay');
+    const pinModalTitle = document.getElementById('pinModalTitle');
+    const pinInputField = document.getElementById('pinInputField');
+    const pinModalError = document.getElementById('pinModalError');
+    const btnCancelPin = document.getElementById('btnCancelPin');
+    const btnSavePin = document.getElementById('btnSavePin');
+
     const btnReset = document.getElementById('btnReset');
     const btnClose = document.getElementById('btnClose');
     const btnSave = document.getElementById('btnSave');
@@ -749,7 +934,6 @@
       sampleText.style.filter = blurVal;
     }
 
-    // Attach hover reveal to sample
     [sampleAvatar, sampleTitle, sampleText].forEach(el => {
       el.addEventListener('mouseenter', () => {
         if (unblurOnHover.checked && masterToggle.checked) {
@@ -771,6 +955,16 @@
       updateLivePreview(intensitySlider.value);
     });
 
+    function updatePinDisplay() {
+      if (currentSettings.securityPin && currentSettings.securityPin.length >= 4) {
+        pinStatusText.textContent = 'PIN Keamanan: Aktif (••••)';
+        btnManagePin.textContent = 'Ubah PIN';
+      } else {
+        pinStatusText.textContent = 'PIN Keamanan: Belum diatur';
+        btnManagePin.textContent = 'Atur PIN';
+      }
+    }
+
     async function init() {
       try {
         currentSettings = await window.privacyAPI.getSettings();
@@ -787,11 +981,60 @@
         blurStatusInfo.checked = currentSettings.blurStatusInfo !== false;
         unblurOnHover.checked = currentSettings.unblurOnHover !== false;
 
+        updatePinDisplay();
         updateLivePreview(intensitySlider.value);
       } catch (e) {
         console.error('Error initializing privacy settings:', e);
       }
     }
+
+    // PIN Management
+    function openPinModal(isFirstTime = false) {
+      pinModalTitle.textContent = isFirstTime ? 'Atur PIN Sebelum Kunci' : (currentSettings.securityPin ? 'Ubah PIN Keamanan' : 'Atur PIN Keamanan');
+      pinInputField.value = '';
+      pinModalError.textContent = '';
+      pinModalOverlay.classList.add('active');
+      setTimeout(() => pinInputField.focus(), 100);
+    }
+
+    function closePinModal() {
+      pinModalOverlay.classList.remove('active');
+      pinInputField.value = '';
+      pinModalError.textContent = '';
+    }
+
+    btnManagePin.addEventListener('click', () => openPinModal(false));
+    btnCancelPin.addEventListener('click', closePinModal);
+
+    btnSavePin.addEventListener('click', async () => {
+      const val = (pinInputField.value || '').trim();
+      if (!/^\d{4}$/.test(val)) {
+        pinModalError.textContent = 'Harap masukkan 4 digit angka (0-9).';
+        pinInputField.focus();
+        return;
+      }
+      currentSettings.securityPin = val;
+      await window.privacyAPI.saveSettings({ securityPin: val });
+      updatePinDisplay();
+      closePinModal();
+    });
+
+    pinInputField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnSavePin.click();
+      else if (e.key === 'Escape') closePinModal();
+    });
+
+    // Lock Now
+    btnLockNow.addEventListener('click', async () => {
+      if (!currentSettings.securityPin || currentSettings.securityPin.length < 4) {
+        openPinModal(true);
+        return;
+      }
+      const res = await window.privacyAPI.lockNow();
+      if (res && res.needPin) {
+        openPinModal(true);
+      }
+    });
 
     async function saveSettings() {
       const updated = {
@@ -816,8 +1059,10 @@
     btnClose.addEventListener('click', () => window.privacyAPI.closeModal());
     btnReset.addEventListener('click', async () => {
       if (confirm('Kembalikan semua pengaturan privasi blur ke bawaan?')) {
+        const pin = currentSettings.securityPin;
         const defaults = await window.privacyAPI.resetDefaults();
-        currentSettings = defaults;
+        currentSettings = { ...defaults, securityPin: pin };
+        await window.privacyAPI.saveSettings({ securityPin: pin });
         init();
       }
     });

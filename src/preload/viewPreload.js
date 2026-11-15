@@ -558,4 +558,14 @@ if (!isAuthPage) {
 
     showAutoTextToast(tpl.shortcut || fullWord);
   }, true);
+
+  // Privacy Blur Lock screen unlock sync
+  window.addEventListener('wa-privacy-unlocked', () => {
+    ipcRenderer.send('privacy:unlocked');
+  });
+  window.addEventListener('message', (e) => {
+    if (e && e.data && e.data.type === 'wa-privacy-unlocked') {
+      ipcRenderer.send('privacy:unlocked');
+    }
+  });
 }

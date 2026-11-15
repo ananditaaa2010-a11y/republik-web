@@ -188,6 +188,34 @@ function setupEventListeners() {
     });
   }
 
+  // Lock Now Button
+  const btnLockApp = document.getElementById('btnLockApp');
+  if (btnLockApp) {
+    btnLockApp.addEventListener('click', () => {
+      if (api.lockNow) {
+        api.lockNow().then(res => {
+          if (res && res.needPin && api.openPrivacyBlurModal) {
+            api.openPrivacyBlurModal();
+          }
+        });
+      }
+    });
+  }
+
+  // Keyboard shortcut Alt + L for Lock Now
+  window.addEventListener('keydown', (e) => {
+    if (e.altKey && (e.key === 'l' || e.key === 'L')) {
+      e.preventDefault();
+      if (api.lockNow) {
+        api.lockNow().then(res => {
+          if (res && res.needPin && api.openPrivacyBlurModal) {
+            api.openPrivacyBlurModal();
+          }
+        });
+      }
+    }
+  });
+
   // Auto Text Manager
   if (btnAutoText) {
     btnAutoText.addEventListener('click', () => {

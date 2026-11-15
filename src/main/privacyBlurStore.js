@@ -23,7 +23,9 @@ class PrivacyBlurStore {
       blurLatestMessage: true,     // Blur preview of latest messages in chat list
       blurGroupInfo: true,         // Blur group names and group information
       blurStatusInfo: true,        // Blur status updates and contact information / about
-      unblurOnHover: true          // Reveal / unblur when hovering over with mouse
+      unblurOnHover: true,         // Reveal / unblur when hovering over with mouse
+      isLocked: false,             // PIN Lock Screen state
+      securityPin: ''              // 4-digit PIN (empty string = no PIN set)
     };
   }
 

@@ -15,6 +15,7 @@ const api = {
   openPrivacyBlurModal: () => ipcRenderer.invoke('privacy:openModal'),
   getPrivacySettings: () => ipcRenderer.invoke('privacy:getSettings'),
   savePrivacySettings: (settings) => ipcRenderer.invoke('privacy:saveSettings', settings),
+  lockNow: () => ipcRenderer.invoke('privacy:lockNow'),
   toggleBlur: () => ipcRenderer.send('view:toggle-blur'),
   openNotificationModal: () => ipcRenderer.invoke('notifications:openModal'),
   getNotificationSettings: () => ipcRenderer.invoke('notifications:getSettings'),

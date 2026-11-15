@@ -1,23 +1,11 @@
 /**
- * WhatsApp Privacy Blur Addon — Content Script (Version 2.3.0 - Ultra Safe)
+ * WhatsApp Privacy Blur Addon — Content Script (Version 2.5.0 - Universal Avatar Engine)
  * 
- * Strict Specification:
- * 1. Sidebar Chat List:
- *    - HANYA Foto profil dan Nama kontak chat yang di-blur.
- *    - Preview pesan, jam, stiker, dan status: 100% JERNIH.
- *    - "WhatsApp", Filter chips ("Semua", "Belum dibaca", dll.), "Diarsipkan": 100% JERNIH.
- * 2. Header di Atas Bubble Chat (#main header):
- *    - HANYA Foto profil dan Nama kontak yang di-blur.
- *    - Hover mandiri: kursor ke foto -> foto saja buka; kursor ke nama -> nama saja buka.
- * 3. Chat Bubbles (#main):
- *    - 100% JERNIH (TIDAK ADA BLUR PADA PESAN SAMA SEKALI).
- * 4. Drawer Info Kontak (Saat Profil Diklik):
- *    - Foto profil besar (lingkaran "GP", foto asli, dll.) ter-blur + hover.
- *    - Nama kontak besar ("Gatut P") ter-blur + hover.
- *    - Nomor telepon ter-blur + hover.
- *    - Grup bersama ter-blur + hover.
- * 5. Meta AI & Profil Pojok Kiri Bawah:
- *    - Ter-blur + hover.
+ * Fokus Utama:
+ * 1. Blur SEMUA Foto Profil (baik foto gambar asli maupun lingkaran inisial huruf).
+ * 2. Tanda Lingkaran Hijau Status / Story WA TETAP TERLIHAT JELAS (tidak blur) mengelilingi profil.
+ * 3. Nama kontak tetap ter-blur sesuai permintaan.
+ * 4. Pesan obrolan, preview pesan, jam, tombol arsip, dan filter chips 100% JERNIH NORMAL.
  */
 
 (function () {
@@ -109,6 +97,105 @@
   }
 
   // --------------------------------------------------------------------------
+  // Universal Avatar Finder (Menemukan Foto Asli MAUPUN Lingkaran Inisial Huruf)
+  // Menjaga agar lingkaran hijau status/story WA tidak ikut ter-blur!
+  // --------------------------------------------------------------------------
+  function findAvatarInRow(rowOrCell) {
+    if (!rowOrCell) return null;
+
+    // Pastikan kita bekerja pada elemen row baris chat
+    let row = rowOrCell;
+    if (rowOrCell.getAttribute('data-testid') === 'cell-frame-container' || !rowOrCell.getAttribute('role')) {
+      row = rowOrCell.closest('div[role="listitem"]') || 
+            rowOrCell.closest('div[role="row"]') || 
+            rowOrCell.closest('div[data-testid^="list-item-"]') || 
+            rowOrCell.parentElement;
+    }
+    if (!row) return null;
+
+    // A. Cari status SVG (tanda hijau story WA)
+    const statusSvg = row.querySelector('svg._ak8i, svg[class*="status"], svg:has(circle[stroke]), svg circle[stroke]');
+    if (statusSvg) {
+      const svgEl = statusSvg.tagName.toLowerCase() === 'svg' ? statusSvg : statusSvg.closest('svg');
+      if (svgEl) {
+        svgEl.style.setProperty('filter', 'none', 'important');
+        svgEl.style.setProperty('-webkit-filter', 'none', 'important');
+        svgEl.style.setProperty('opacity', '1', 'important');
+
+        // Pastikan SEMUA parent pembungkus SVG ini tidak kena filter blur
+        let p = svgEl.parentElement;
+        while (p && p !== row) {
+          p.classList.remove('wa-privacy-avatar');
+          p.style.removeProperty('filter');
+          p.style.removeProperty('-webkit-filter');
+          p = p.parentElement;
+        }
+      }
+    }
+
+    // B. Cari gambar foto avatar (img) yang bukan emoji dan bukan di dalam teks pesan
+    const imgs = row.querySelectorAll('img');
+    for (const img of imgs) {
+      if (img.classList.contains('emoji')) continue;
+      if (img.closest('[data-testid="cell-frame-container"]')) continue;
+      if (img.closest('[data-testid="last-msg-status"]')) continue;
+      return img;
+    }
+
+    // C. Cari wadah avatar class resmi WhatsApp (_ak8h, avatar, default-user, default-group)
+    const known = row.querySelector('._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"], [data-testid="default-user"], [data-testid="default-group"]');
+    if (known && !known.closest('[data-testid="cell-frame-container"]')) {
+      // Jika wadah ini membungkus SVG status, jangan blur wadahnya, tapi ambil elemen avatar di dalam wadah
+      if (known.querySelector('svg._ak8i, svg:has(circle)')) {
+        const innerImg = known.querySelector('img:not(.emoji)');
+        if (innerImg) return innerImg;
+        const innerDiv = known.querySelector('div:not(:has(svg)), span');
+        if (innerDiv) return innerDiv;
+      } else {
+        return known;
+      }
+    }
+
+    // D. Deteksi elemen lingkaran inisial huruf (seperti "A", "T", "GP", "MK")
+    const cellFrame = row.querySelector('[data-testid="cell-frame-container"]');
+    const candidates = row.querySelectorAll('div, span');
+    for (const el of candidates) {
+      if (cellFrame && cellFrame.contains(el)) continue;
+      if (el.querySelector('svg._ak8i, svg:has(circle)')) continue;
+      if (el.querySelector('[data-icon*="archiv"]')) continue;
+
+      const txt = (el.textContent || '').trim();
+      const isInitialText = /^[A-Z0-9]{1,3}$/.test(txt);
+
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+
+      // Kotak avatar sidebar berukuran 28-75px
+      if ((w >= 28 && w <= 75 && h >= 28 && h <= 75) || isInitialText) {
+        const comp = window.getComputedStyle(el);
+        const isRound = comp.borderRadius === '50%' || 
+                        comp.borderRadius.includes('50%') || 
+                        comp.borderRadius.includes('9999px') ||
+                        parseFloat(comp.borderRadius) >= 12;
+
+        if (isRound || isInitialText) {
+          return el;
+        }
+      }
+    }
+
+    // E. Fallback: Kolom sebelah kiri cellFrame
+    if (cellFrame && cellFrame.previousElementSibling) {
+      const prev = cellFrame.previousElementSibling;
+      if (!prev.querySelector('svg._ak8i')) {
+        return prev;
+      }
+    }
+
+    return null;
+  }
+
+  // --------------------------------------------------------------------------
   // 1. Header di Atas Bubble Chat (#main header)
   // --------------------------------------------------------------------------
   function setupHeaderElements() {
@@ -118,49 +205,39 @@
     const headerBtn = mainHeader.querySelector('div[role="button"]') || mainHeader.firstElementChild;
     if (!headerBtn) return;
 
-    // A. Foto Profil di Header
-    const avatarEl = headerBtn.firstElementChild;
-    if (avatarEl && avatarEl.offsetWidth > 0 && avatarEl.offsetWidth < 90) {
-      if (!avatarEl.classList.contains('wa-privacy-header-avatar')) {
-        avatarEl.classList.add('wa-privacy-header-avatar');
-      }
-      attachDirectHover(avatarEl);
+    // A. Foto Profil di Header (#main header)
+    const headerAvatar = headerBtn.querySelector('img:not(.emoji)') ||
+                         headerBtn.querySelector('._ak8h') ||
+                         headerBtn.querySelector('[data-testid="conversation-info-header-chat-avatar"]') ||
+                         headerBtn.querySelector('[data-testid="avatar"]') ||
+                         headerBtn.querySelector('div[style*="border-radius"]') ||
+                         headerBtn.firstElementChild;
+
+    if (headerAvatar && !headerAvatar.classList.contains('wa-privacy-header-avatar')) {
+      headerAvatar.classList.add('wa-privacy-header-avatar');
     }
 
-    // B. Nama Kontak di Header
-    const titleEl = headerBtn.querySelector('span[title]') ||
-                    headerBtn.querySelector('._ak8q') ||
-                    headerBtn.querySelector('[data-testid="conversation-info-header-chat-title"]') ||
-                    headerBtn.querySelector('[data-testid="chat-title"]') ||
-                    headerBtn.lastElementChild?.firstElementChild;
-
-    if (titleEl && titleEl !== avatarEl) {
-      if (!titleEl.classList.contains('wa-privacy-header-name')) {
-        titleEl.classList.add('wa-privacy-header-name');
+    // B. Nama Kontak di Header (#main header) - TIDAK DIUBAH
+    const titleCandidates = headerBtn.querySelectorAll('span[title], div[title], ._ak8q, [data-testid="conversation-info-header-chat-title"], [data-testid="chat-title"]');
+    titleCandidates.forEach(el => {
+      if (!el.closest('.wa-privacy-header-avatar') && !el.classList.contains('wa-privacy-header-name')) {
+        el.classList.add('wa-privacy-header-name');
       }
-      attachDirectHover(titleEl);
-    }
+    });
 
-    // Zero-fail hit engine di atas header
-    if (!mainHeader._hasHeaderHitEngine) {
-      mainHeader._hasHeaderHitEngine = true;
-      mainHeader.addEventListener('mousemove', (e) => {
-        if (!isBlurEnabled) return;
+    // Independent Hover di Header
+    if (!headerBtn.dataset.waHoverBound) {
+      headerBtn.dataset.waHoverBound = 'true';
 
-        const curAvatar = headerBtn.firstElementChild;
-        const curTitle = headerBtn.querySelector('span[title]') ||
-                         headerBtn.querySelector('._ak8q') ||
-                         headerBtn.querySelector('[data-testid="conversation-info-header-chat-title"]') ||
-                         headerBtn.querySelector('[data-testid="chat-title"]') ||
-                         headerBtn.lastElementChild?.firstElementChild;
+      headerBtn.addEventListener('mousemove', (e) => {
+        const curAvatar = headerBtn.querySelector('.wa-privacy-header-avatar') || headerAvatar;
+        const curTitle = headerBtn.querySelector('.wa-privacy-header-name');
+
+        const onAvatar = curAvatar && (curAvatar === e.target || curAvatar.contains(e.target));
+        const onTitle = curTitle && (curTitle === e.target || curTitle.contains(e.target));
 
         if (curAvatar) {
-          const rect = curAvatar.getBoundingClientRect();
-          const isOverAvatar = (
-            e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom
-          );
-          if (isOverAvatar) {
+          if (onAvatar) {
             curAvatar.style.setProperty('filter', 'none', 'important');
             curAvatar.style.setProperty('-webkit-filter', 'none', 'important');
           } else {
@@ -170,12 +247,7 @@
         }
 
         if (curTitle) {
-          const rect = curTitle.getBoundingClientRect();
-          const isOverTitle = (
-            e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom
-          );
-          if (isOverTitle) {
+          if (onTitle) {
             curTitle.style.setProperty('filter', 'none', 'important');
             curTitle.style.setProperty('-webkit-filter', 'none', 'important');
           } else {
@@ -185,11 +257,9 @@
         }
       });
 
-      mainHeader.addEventListener('mouseleave', () => {
-        const curAvatar = headerBtn.firstElementChild;
-        const curTitle = headerBtn.querySelector('span[title]') ||
-                         headerBtn.querySelector('._ak8q') ||
-                         headerBtn.lastElementChild?.firstElementChild;
+      headerBtn.addEventListener('mouseleave', () => {
+        const curAvatar = headerBtn.querySelector('.wa-privacy-header-avatar') || headerAvatar;
+        const curTitle = headerBtn.querySelector('.wa-privacy-header-name');
         if (curAvatar) {
           curAvatar.style.removeProperty('filter');
           curAvatar.style.removeProperty('-webkit-filter');
@@ -203,17 +273,16 @@
   }
 
   // --------------------------------------------------------------------------
-  // 2. Drawer Info Kontak (HANYA MENGINSPEKSI DRAWER KANAN RESMI)
+  // 2. Drawer Info Kontak (Profil Besar & Inisial)
   // --------------------------------------------------------------------------
   function setupDrawerElements() {
-    // KHUSUS DRAWER INFO KONTAK (TIDAK BOLEH MEMINDAI SECTION / REGION LAIN)
     const drawers = document.querySelectorAll(
       '[data-animate-drawer-right="true"], div[data-testid="contact-info"], div[data-testid="chat-info-drawer"]'
     );
 
     drawers.forEach(drawer => {
-      // A. Foto Profil Besar di Drawer (Lingkaran inisial "GP", foto asli, dsb.)
-      const drawerImgs = drawer.querySelectorAll('img, [data-testid="profile-pic"], [data-testid="avatar"]');
+      // A. Foto Profil Besar / Lingkaran Inisial ("GP", foto asli, dsb.)
+      const drawerImgs = drawer.querySelectorAll('img:not(.emoji), [data-testid="profile-pic"], [data-testid="avatar"]');
       drawerImgs.forEach(img => {
         if (!img.classList.contains('wa-privacy-drawer-avatar')) {
           img.classList.add('wa-privacy-drawer-avatar');
@@ -224,9 +293,11 @@
       // Deteksi wadah lingkaran avatar besar ("GP")
       const allDivs = drawer.querySelectorAll('div[role="button"] > div, div');
       allDivs.forEach(d => {
-        if (d.offsetWidth >= 60 && d.offsetWidth <= 250 && d.offsetHeight >= 60 && d.offsetHeight <= 250) {
+        const txt = (d.textContent || '').trim();
+        const isInitialText = /^[A-Z0-9]{1,3}$/.test(txt);
+        if ((d.offsetWidth >= 60 && d.offsetWidth <= 250 && d.offsetHeight >= 60 && d.offsetHeight <= 250) || isInitialText) {
           const comp = window.getComputedStyle(d);
-          if (comp.borderRadius === '50%' || comp.borderRadius.includes('50%') || comp.borderRadius.includes('9999px')) {
+          if (comp.borderRadius === '50%' || comp.borderRadius.includes('50%') || comp.borderRadius.includes('9999px') || isInitialText) {
             if (!d.classList.contains('wa-privacy-drawer-avatar')) {
               d.classList.add('wa-privacy-drawer-avatar');
             }
@@ -235,7 +306,7 @@
         }
       });
 
-      // B. Nama Kontak Besar di Drawer ("Gatut P")
+      // B. Nama Kontak Besar di Drawer ("Gatut P" - TIDAK DIUBAH)
       const headings = drawer.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
       headings.forEach(h => {
         if (!h.classList.contains('wa-privacy-drawer-name')) {
@@ -244,7 +315,7 @@
         attachDirectHover(h);
       });
 
-      // C. Nomor Telepon / Info Status di Drawer
+      // C. Nomor Telepon / Info Status di Drawer (TIDAK DIUBAH)
       const spans = drawer.querySelectorAll('span, div');
       spans.forEach(sp => {
         if (sp.children.length === 0) {
@@ -258,11 +329,11 @@
         }
       });
 
-      // D. Grup Bersama (Shared Groups) di Drawer
+      // D. Grup Bersama (Shared Groups) di Drawer (TIDAK DIUBAH)
       const sharedRows = drawer.querySelectorAll('div[role="listitem"], div[role="button"][tabindex="0"]');
       sharedRows.forEach(row => {
         if (row.offsetTop > 250) {
-          const groupAvatar = row.querySelector('img') || row.querySelector('._ak8h') || row.firstElementChild;
+          const groupAvatar = row.querySelector('img:not(.emoji)') || row.querySelector('._ak8h') || row.firstElementChild;
           if (groupAvatar && groupAvatar.offsetWidth > 0 && groupAvatar.offsetWidth < 75) {
             if (!groupAvatar.classList.contains('wa-privacy-shared-avatar')) {
               groupAvatar.classList.add('wa-privacy-shared-avatar');
@@ -287,30 +358,42 @@
   // --------------------------------------------------------------------------
   function setupSidebarAndControls() {
     // A. Sidebar Chat List
-    const cellFrames = document.querySelectorAll('#pane-side [data-testid="cell-frame-container"]');
-    cellFrames.forEach(cell => {
-      // JANGAN PERNAH SENTUH JIKA INI BARIS ARSIP ATAU FILTER
-      if (cell.closest('[data-testid="archived"]') || 
-          cell.closest('button') || 
-          cell.textContent.includes('Diarsipkan')) {
+    const rows = document.querySelectorAll(
+      '#pane-side div[role="listitem"], ' +
+      '#pane-side div[role="row"], ' +
+      '#pane-side div[data-testid^="list-item-"], ' +
+      '#pane-side [data-testid="cell-frame-container"]'
+    );
+
+    const processedRows = new Set();
+
+    rows.forEach(item => {
+      const row = (item.getAttribute('role') === 'listitem' || item.getAttribute('role') === 'row')
+        ? item
+        : (item.closest('div[role="listitem"]') || item.closest('div[role="row"]') || item);
+
+      if (processedRows.has(row)) return;
+      processedRows.add(row);
+
+      // Pengecualian mutlak: Jangan pernah sentuh baris Arsip atau Filter
+      if (row.querySelector('[data-icon*="archiv"]') || 
+          row.getAttribute('data-testid') === 'archived' ||
+          row.textContent.trim().startsWith('Diarsipkan') ||
+          row.textContent.trim().startsWith('Archived')) {
         return;
       }
 
-      // 1. Avatar Foto Profil di sebelah kiri chat
-      const avatarEl = cell.previousElementSibling || 
-                       cell.parentElement?.querySelector('img') || 
-                       cell.parentElement?.querySelector('._ak8h') || 
-                       cell.parentElement?.firstElementChild;
-
-      if (avatarEl && avatarEl.offsetWidth > 0 && avatarEl.offsetWidth < 75) {
-        if (!avatarEl.querySelector('[data-icon*="archiv"]') && !avatarEl.classList.contains('wa-privacy-avatar')) {
+      // 1. Avatar Foto Profil (Foto asli MAUPUN Lingkaran Inisial Huruf)
+      const avatarEl = findAvatarInRow(row);
+      if (avatarEl) {
+        if (!avatarEl.classList.contains('wa-privacy-avatar')) {
           avatarEl.classList.add('wa-privacy-avatar');
         }
         attachDirectHover(avatarEl);
       }
 
-      // 2. Nama Kontak Chat di Baris Atas
-      const titleEl = cell.querySelector('[data-testid="cell-frame-title"]');
+      // 2. Nama Kontak Chat di Baris Atas (TIDAK DIUBAH)
+      const titleEl = row.querySelector('[data-testid="cell-frame-title"]');
       if (titleEl) {
         const txt = (titleEl.textContent || '').trim();
         if (isPhoneNumber(txt)) {
@@ -397,5 +480,5 @@
     init();
   }
 
-  console.log('[WA Privacy Blur Addon] Version 2.3.0 Ultra Safe Loaded.');
+  console.log('[WA Privacy Blur Addon] Version 2.5.0 Universal Avatar Engine Loaded.');
 })();

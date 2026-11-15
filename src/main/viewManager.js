@@ -196,7 +196,7 @@ class ViewManager {
           headers['User-Agent'] = 'https://accounts.google.com/';
         } else {
           headers['User-Agent'] = CHROME_USER_AGENT;
-          headers['sec-ch-ua'] = '"Not_A Brand";v="8", "Chromium";v="133", "Google Chrome";v="133"';
+          headers['sec-ch-ua'] = '"Not(A:Brand";v="99", "Microsoft Edge";v="133", "Chromium";v="133"';
           headers['sec-ch-ua-mobile'] = '?0';
           headers['sec-ch-ua-platform'] = '"Windows"';
         }

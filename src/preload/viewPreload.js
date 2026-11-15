@@ -1,11 +1,39 @@
 const { ipcRenderer } = require('electron');
 
-// 0. Hardened anti-bot: spoof navigator.webdriver
+// 0. Hardened anti-bot: spoof navigator.webdriver & navigator.userAgentData (Microsoft Edge emulation)
 try {
   Object.defineProperty(navigator, 'webdriver', {
     get: () => undefined,
     configurable: true
   });
+
+  const edgeBrands = [
+    { brand: "Not(A:Brand", version: "99" },
+    { brand: "Microsoft Edge", version: "133" },
+    { brand: "Chromium", version: "133" }
+  ];
+
+  if (navigator.userAgentData) {
+    Object.defineProperty(navigator, 'userAgentData', {
+      get: () => ({
+        brands: edgeBrands,
+        mobile: false,
+        platform: "Windows",
+        getHighEntropyValues: async () => ({
+          brands: edgeBrands,
+          mobile: false,
+          platform: "Windows",
+          platformVersion: "15.0.0",
+          architecture: "x86",
+          bitness: "64",
+          model: "",
+          uaFullVersion: "133.0.3065.92",
+          fullVersionList: edgeBrands
+        })
+      }),
+      configurable: true
+    });
+  }
 } catch (e) {}
 
 // 0. Native Notification Bridge for WhatsApp, Telegram, and Gmail

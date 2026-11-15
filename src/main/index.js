@@ -88,8 +88,8 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 // Disable FedCM and Windows Native Occlusion (which suspends renderers when window is minimized)
 app.commandLine.appendSwitch('disable-features', 'FedCm,CalculateNativeWinOcclusion');
 
-// Set global User-Agent fallback to genuine Chrome desktop
-app.userAgentFallback = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36';
+// Set global User-Agent fallback to genuine Microsoft Edge desktop
+app.userAgentFallback = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0';
 
 function createMainWindow() {
   accountStore = new AccountStore();

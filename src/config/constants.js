@@ -23,8 +23,8 @@ module.exports = {
   },
 
   SIDEBAR_WIDTH: 64,
-  // Standard Google Chrome Desktop User-Agent matching modern desktop Chrome
-  CHROME_USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+  // Microsoft Edge User-Agent to enable WhatsApp Web Calling, Channels & Meta AI
+  CHROME_USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',
   // Standard Firefox User-Agent used to bypass Google Botguard embedded Chromium blocks
   FIREFOX_USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0'
 };

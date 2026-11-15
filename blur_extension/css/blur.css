@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WhatsApp Web Privacy Blur Stylesheet (Version 3.1.0 - Total Avatar & Nav Fix)
+   WhatsApp Web Privacy Blur Stylesheet (Version 3.1.1 - Total Avatar & Nav Fix)
    
    PRINSIP PRESISI:
    1. HANYA BLUR:
@@ -96,6 +96,11 @@ body:not(.wa-blur-disabled) img._ak8k,
 body:not(.wa-blur-disabled) #pane-side div:has(> [data-testid="cell-frame-container"]) > div:first-child:not(:has(circle[stroke])):not(:has(svg._ak8i)),
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div:has(> [data-testid="cell-frame-container"]) > div:first-child:not(:has(circle[stroke])):not(:has(svg._ak8i)),
 body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] div:has(> [data-testid="cell-frame-container"]) > div:first-child:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) #pane-side ._ak8h:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] ._ak8h:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-animate-drawer-left="true"] ._ak8h:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) #pane-side ._ak8m:not(:has(circle[stroke])):not(:has(svg._ak8i)),
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] ._ak8m:not(:has(circle[stroke])):not(:has(svg._ak8i)),
 body:not(.wa-blur-disabled) #pane-side [data-testid="avatar"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="chat-avatar"],
 body:not(.wa-blur-disabled) #pane-side [data-testid="default-user"],
@@ -104,8 +109,6 @@ body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="avat
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="chat-avatar"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-user"],
 body:not(.wa-blur-disabled) div[data-testid="archived-chats"] [data-testid="default-group"],
-body:not(.wa-blur-disabled) #pane-side div._ak8m,
-body:not(.wa-blur-disabled) div[data-testid="archived-chats"] div._ak8m,
 
 /* C. Wadah Avatar yang Memiliki Ring Story (Hanya blur isi di dalamnya, BUKAN ring svg) */
 body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:has(circle[stroke]) img,
@@ -114,6 +117,8 @@ body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > di
 body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:has(svg._ak8i) > div,
 body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) img,
 body:not(.wa-blur-disabled) div._ak8h:has(svg._ak8i) > div:not(svg),
+body:not(.wa-blur-disabled) div._ak8h:has(circle[stroke]) img,
+body:not(.wa-blur-disabled) div._ak8h:has(circle[stroke]) > div:not(svg),
 
 /* D. Header Avatar di Atas Bubble Chat (#main header) */
 body:not(.wa-blur-disabled) #main header img:not(.emoji),
@@ -176,6 +181,10 @@ body:not(.wa-blur-disabled) img[src*="pps.whatsapp.net"]:hover,
 body:not(.wa-blur-disabled) img._ak8k:hover,
 body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child:hover,
 body:not(.wa-blur-disabled) div:has(> [data-testid="cell-frame-container"]) > div:first-child *:hover,
+body:not(.wa-blur-disabled) #pane-side ._ak8h:hover,
+body:not(.wa-blur-disabled) #pane-side ._ak8h *:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] ._ak8h:hover,
+body:not(.wa-blur-disabled) div[data-testid="archived-chats"] ._ak8h *:hover,
 body:not(.wa-blur-disabled) [data-testid="avatar"]:hover,
 body:not(.wa-blur-disabled) [data-testid="chat-avatar"]:hover,
 body:not(.wa-blur-disabled) [data-testid="default-user"]:hover,

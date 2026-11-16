@@ -360,10 +360,17 @@
     );
     if (!drawer) return;
 
-    // 1. Header Drawer (Tombol ✕, "Info kontak", Pensil) -> 100% CLEAR
+    // 1. HEADER DRAWER (Tombol ✕, "Info kontak", Pensil) -> 100% CLEAR
     const drawerHeader = drawer.querySelector('header');
     if (drawerHeader) {
       drawerHeader.classList.add('wa-privacy-drawer-header', 'wa-privacy-clear');
+      drawerHeader.classList.remove('wa-privacy-card1-name', 'wa-privacy-card1-number', 'wa-privacy-shared-content');
+      drawerHeader.querySelectorAll('*').forEach(el => {
+        el.classList.add('wa-privacy-clear');
+        el.classList.remove('wa-privacy-card1-name', 'wa-privacy-card1-number', 'wa-privacy-shared-content');
+        el.style.setProperty('filter', 'none', 'important');
+        el.style.setProperty('-webkit-filter', 'none', 'important');
+      });
     }
 
     // Scroll container
@@ -385,12 +392,14 @@
         const btnWrapper = cb.closest('div[role="button"]') || cb.closest('button') || cb.parentElement;
         if (btnWrapper) {
           btnWrapper.classList.add('wa-privacy-clear');
-          btnWrapper.classList.remove('wa-privacy-card1-avatar', 'wa-privacy-card1-name', 'wa-privacy-card1-number');
+          btnWrapper.classList.remove('wa-privacy-card1-avatar', 'wa-privacy-card1-name', 'wa-privacy-card1-number', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+          btnWrapper.style.setProperty('filter', 'none', 'important');
+          btnWrapper.style.setProperty('-webkit-filter', 'none', 'important');
         }
       });
 
       // Foto Profil di Card 1 (HANYA avatar di atas nama)
-      const avatarBtn = Array.from(card1.querySelectorAll('div[role="button"]:not(.wa-privacy-clear), img:not(.emoji), div._ak8h')).find(el => {
+      const avatarBtn = Array.from(card1.querySelectorAll('div[role="button"]:not(.wa-privacy-clear), img:not(.emoji), div._ak8h, [data-testid="avatar"]')).find(el => {
         return !el.closest('.wa-privacy-clear') &&
                !el.querySelector('[data-icon="audio-call"], [data-icon="video-call"], [data-icon="search"]');
       });
@@ -421,25 +430,106 @@
       }
     }
 
-    // 3. CARD 2, 3, 5: MEDIA, PENGATURAN, & FOOTER -> 100% CLEAR
-    const protectedElements = drawer.querySelectorAll(
-      '[data-testid="media-gallery"], [data-testid="media-gallery-title"], [data-testid="image-thumb"], ' +
-      '[role="switch"], [data-icon="star"], [data-icon="notifications"], [data-icon="timer"], [data-icon="lock"], ' +
-      '[data-icon="paint-palette"], [data-icon="security-padlock"], [data-icon="heart"], [data-icon="contact-card"], ' +
-      '[data-icon="download"], [data-icon="delete"], [data-icon="block"], [data-icon="thumb-down"], ' +
-      '[data-testid="block-contact"], [data-testid="report-contact"]'
+    // 3. CARD 2: MEDIA, TAUTAN, DAN DOK -> 100% CLEAR
+    const mediaNodes = drawer.querySelectorAll(
+      '[data-testid="media-gallery"], [data-testid="media-gallery-title"], [data-testid="image-thumb"]'
     );
-    protectedElements.forEach(pe => {
-      const wrapper = pe.closest('div[role="button"]') || pe.closest('div[role="listitem"]') || pe.parentElement;
-      if (wrapper) {
-        wrapper.classList.add('wa-privacy-clear');
-        wrapper.classList.remove('wa-privacy-card1-avatar', 'wa-privacy-card1-name', 'wa-privacy-card1-number', 'wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+    mediaNodes.forEach(mn => {
+      const sec = mn.closest('section') || mn.parentElement?.parentElement;
+      if (sec && !sec.classList.contains('wa-privacy-drawer-card1')) {
+        sec.classList.add('wa-privacy-media-section', 'wa-privacy-clear');
+      }
+      mn.classList.add('wa-privacy-clear');
+      mn.querySelectorAll('*').forEach(c => {
+        c.classList.add('wa-privacy-clear');
+        c.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content', 'wa-privacy-card1-name', 'wa-privacy-card1-number');
+        c.style.setProperty('filter', 'none', 'important');
+        c.style.setProperty('-webkit-filter', 'none', 'important');
+      });
+    });
+
+    const allDrawerSpans = drawer.querySelectorAll('span, div, h2, h3');
+    allDrawerSpans.forEach(el => {
+      if (el.children.length > 2) return;
+      const t = (el.textContent || '').trim().toLowerCase();
+      if (t.includes('media, tautan') || t.includes('media, links') || t.startsWith('media, ')) {
+        const row = el.closest('div[role="button"]') || el.closest('div[role="listitem"]') || el.parentElement;
+        if (row && !row.classList.contains('wa-privacy-drawer-card1')) {
+          row.classList.add('wa-privacy-media-section', 'wa-privacy-clear');
+          row.querySelectorAll('*').forEach(c => {
+            c.classList.add('wa-privacy-clear');
+            c.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+            c.style.setProperty('filter', 'none', 'important');
+            c.style.setProperty('-webkit-filter', 'none', 'important');
+          });
+        }
       }
     });
 
-    // 4. CARD 4: "GRUP YANG SAMA" / "GROUPS IN COMMON" (Grup PETAROENK & Anggotanya)
-    const allDrawerNodes = Array.from(drawer.querySelectorAll('span, div, h2, h3'));
-    const groupHeading = allDrawerNodes.find(el => {
+    // 4. CARD 3: PENGATURAN (Pesan berbintang s/d Enkripsi) -> 100% CLEAR
+    const settingsIcons = drawer.querySelectorAll(
+      '[data-icon="star"], [data-icon="notifications"], [data-icon="timer"], ' +
+      '[data-icon="lock"], [data-icon="paint-palette"], [data-icon="security-padlock"], [role="switch"]'
+    );
+    settingsIcons.forEach(ico => {
+      const row = ico.closest('div[role="button"]') || ico.closest('div[role="listitem"]') || ico.parentElement?.parentElement;
+      if (row && !row.classList.contains('wa-privacy-drawer-card1')) {
+        row.classList.add('wa-privacy-settings-section', 'wa-privacy-clear');
+        row.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content', 'wa-privacy-card1-name', 'wa-privacy-card1-number');
+        row.querySelectorAll('*').forEach(c => {
+          c.classList.add('wa-privacy-clear');
+          c.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+          c.style.setProperty('filter', 'none', 'important');
+          c.style.setProperty('-webkit-filter', 'none', 'important');
+        });
+      }
+    });
+
+    // 5. CARD 5: FOOTER (Favorit, Blokir, Laporkan, Hapus Chat) -> 100% CLEAR
+    const footerIcons = drawer.querySelectorAll(
+      '[data-icon="heart"], [data-icon="contact-card"], [data-icon="download"], ' +
+      '[data-icon="delete"], [data-icon="block"], [data-icon="thumb-down"], ' +
+      '[data-testid="block-contact"], [data-testid="report-contact"]'
+    );
+    footerIcons.forEach(fIco => {
+      const row = fIco.closest('div[role="button"]') || fIco.closest('div[role="listitem"]') || fIco.parentElement?.parentElement;
+      if (row && !row.classList.contains('wa-privacy-drawer-card1')) {
+        row.classList.add('wa-privacy-footer-section', 'wa-privacy-clear');
+        row.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+        row.querySelectorAll('*').forEach(c => {
+          c.classList.add('wa-privacy-clear');
+          c.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+          c.style.setProperty('filter', 'none', 'important');
+          c.style.setProperty('-webkit-filter', 'none', 'important');
+        });
+      }
+    });
+
+    allDrawerSpans.forEach(el => {
+      if (el.children.length > 2) return;
+      const t = (el.textContent || '').trim().toLowerCase();
+      if (
+        t.startsWith('blokir') || t.startsWith('block') ||
+        t.startsWith('laporkan') || t.startsWith('report') ||
+        t.includes('favorit') || t.includes('favorite') ||
+        t.includes('hapus chat') || t.includes('delete chat') ||
+        t.includes('bersihkan') || t.includes('clear chat')
+      ) {
+        const row = el.closest('div[role="button"]') || el.closest('div[role="listitem"]') || el.parentElement;
+        if (row && !row.classList.contains('wa-privacy-drawer-card1')) {
+          row.classList.add('wa-privacy-footer-section', 'wa-privacy-clear');
+          row.querySelectorAll('*').forEach(c => {
+            c.classList.add('wa-privacy-clear');
+            c.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+            c.style.setProperty('filter', 'none', 'important');
+            c.style.setProperty('-webkit-filter', 'none', 'important');
+          });
+        }
+      }
+    });
+
+    // 6. CARD 4: "GRUP YANG SAMA" / "GROUPS IN COMMON" (Grup Bersama & Anggota)
+    const groupHeading = Array.from(allDrawerSpans).find(el => {
       if (el.children.length > 2) return false;
       const txt = (el.textContent || '').trim().toLowerCase();
       return txt.includes('grup yang sama') || txt.includes('groups in common');
@@ -447,19 +537,40 @@
 
     if (groupHeading) {
       groupHeading.classList.add('wa-privacy-clear', 'wa-privacy-group-heading');
+      groupHeading.style.setProperty('filter', 'none', 'important');
 
-      // Ambil elemen pembungkus langsung dari grup yang sama
-      let parentBox = groupHeading.parentElement;
-      while (parentBox && parentBox !== scrollContainer && parentBox.querySelectorAll('div[role="listitem"], div[role="button"]').length < 2) {
-        parentBox = parentBox.parentElement;
-      }
+      // Wadah card grup yang sama
+      const groupSection = groupHeading.closest('section') || groupHeading.parentElement?.parentElement;
 
-      if (parentBox && parentBox !== scrollContainer) {
-        const rows = parentBox.querySelectorAll('div[role="listitem"], div[role="button"], div[role="row"]');
+      if (groupSection && !groupSection.classList.contains('wa-privacy-drawer-card1')) {
+        const rows = groupSection.querySelectorAll('div[role="listitem"], div[role="button"], div[role="row"]');
         rows.forEach(row => {
-          if (row.contains(groupHeading) || row.closest('.wa-privacy-drawer-card1') || row.classList.contains('wa-privacy-clear')) return;
+          if (
+            row.contains(groupHeading) ||
+            row.classList.contains('wa-privacy-drawer-card1') ||
+            row.classList.contains('wa-privacy-clear') ||
+            row.classList.contains('wa-privacy-media-section') ||
+            row.classList.contains('wa-privacy-settings-section') ||
+            row.classList.contains('wa-privacy-footer-section')
+          ) {
+            return;
+          }
+
           const rowText = (row.textContent || '').trim().toLowerCase();
+          // Judul / expander "1 lainnya", "lainnya", "more"
           if (rowText.includes('lainnya') || rowText.includes('more') || row.querySelector('[data-icon="chevron-down"]')) {
+            row.classList.add('wa-privacy-clear', 'wa-privacy-group-expand');
+            row.style.setProperty('filter', 'none', 'important');
+            row.querySelectorAll('*').forEach(c => {
+              c.classList.add('wa-privacy-clear');
+              c.classList.remove('wa-privacy-shared-row', 'wa-privacy-shared-avatar', 'wa-privacy-shared-content');
+              c.style.setProperty('filter', 'none', 'important');
+            });
+            return;
+          }
+
+          // Abaikan baris jika ada icon protected (favorit, star, block, report, dll)
+          if (row.querySelector('[data-icon="heart"], [data-icon="block"], [data-icon="thumb-down"], [data-icon="star"], [data-icon="notifications"], [data-icon="timer"], [data-icon="lock"], [data-icon="delete"]')) {
             row.classList.add('wa-privacy-clear');
             return;
           }
@@ -473,10 +584,10 @@
             gAvatar.classList.add('wa-privacy-shared-avatar');
           }
 
-          // Teks Grup (Nama PETAROENK & Nomor Anggota)
+          // Teks Grup (Nama grup & Anggota)
           const gTexts = row.querySelectorAll('span, div._ak8q, [data-testid="cell-frame-title"], [dir="auto"]');
           gTexts.forEach(gt => {
-            if (gt !== gAvatar && !gAvatar?.contains(gt)) {
+            if (gt !== gAvatar && !gAvatar?.contains(gt) && !gt.contains(gAvatar)) {
               gt.classList.add('wa-privacy-shared-content');
             }
           });
@@ -505,23 +616,29 @@
         row.querySelector('[data-icon*="archiv"]') ||
         cell.closest('div[role="button"]:has([data-icon*="archiv"])') ||
         row.closest('div[role="button"]:has([data-icon*="archiv"])') ||
-        (cell.textContent || '').trim().toLowerCase() === 'diarsipkan' ||
-        (cell.textContent || '').trim().toLowerCase() === 'archived'
+        /diarsipkan|archived/i.test(cell.textContent || '') ||
+        /diarsipkan|archived/i.test(row.textContent || '')
       );
 
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]') ||
                       cell.querySelector('div._ak8q');
 
       if (isArchivedBtn && !cell.closest('div[data-animate-drawer-left="true"]')) {
+        row.classList.add('wa-privacy-archived-clear');
+        cell.classList.add('wa-privacy-archived-clear');
+        row.classList.remove('wa-privacy-name', 'wa-privacy-number');
+        cell.classList.remove('wa-privacy-name', 'wa-privacy-number');
+        cell.querySelectorAll('*').forEach(c => {
+          c.classList.remove('wa-privacy-name', 'wa-privacy-number');
+          c.classList.add('wa-privacy-archived-clear');
+          c.style.setProperty('filter', 'none', 'important');
+          c.style.setProperty('-webkit-filter', 'none', 'important');
+        });
         if (titleEl) {
           titleEl.classList.remove('wa-privacy-name', 'wa-privacy-number');
           titleEl.classList.add('wa-privacy-archived-clear');
-          titleEl.querySelectorAll('*').forEach(c => {
-            c.classList.remove('wa-privacy-name', 'wa-privacy-number');
-            c.classList.add('wa-privacy-archived-clear');
-            c.style.setProperty('filter', 'none', 'important');
-            c.style.setProperty('-webkit-filter', 'none', 'important');
-          });
+          titleEl.style.setProperty('filter', 'none', 'important');
+          titleEl.style.setProperty('-webkit-filter', 'none', 'important');
         }
         return;
       }
@@ -578,7 +695,7 @@
         return;
       }
 
-      // Kumpulkan avatar (gambar, default silhouette SVG, inisial)
+      // Kumpulkan avatar (gambar, default silhouette SVG, inisial seperti 'A', 'T')
       const avatarTargets = [];
       const rowImgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
       avatarTargets.push(...rowImgs);
@@ -589,16 +706,14 @@
       const avatarContainers = Array.from(row.querySelectorAll('div._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"]')).filter(d => !cell.contains(d));
       avatarTargets.push(...avatarContainers);
 
-      if (avatarTargets.length > 0) {
-        avatarTargets.forEach(target => {
-          target.classList.add('wa-privacy-avatar');
-        });
-      } else {
-        const sib = cell.previousElementSibling;
-        if (sib && !cell.contains(sib)) {
-          sib.classList.add('wa-privacy-avatar');
-        }
+      const avatarCol = cell.previousElementSibling || (row.firstElementChild !== cell ? row.firstElementChild : null);
+      if (avatarCol && !cell.contains(avatarCol)) {
+        avatarTargets.push(avatarCol);
       }
+
+      avatarTargets.forEach(target => {
+        target.classList.add('wa-privacy-avatar');
+      });
     });
 
     // Profil Pengguna Pojok Kiri Bawah ("Kontak Anda")
@@ -699,13 +814,22 @@
       setTimeout(tagAll, 600);
     }, { passive: true });
 
-    // 3. Event Mouseover: saat kursor masuk ke area drawer atau chat list
-    document.addEventListener('mouseover', (e) => {
-      const t = e.target;
-      if (t && t.closest && (t.closest('[data-animate-drawer-right]') || t.closest('#pane-side') || t.closest('[data-animate-drawer-left]'))) {
-        scheduleTagAll();
-      }
-    }, { passive: true });
+    // 3. MutationObserver: deteksi penambahan node/drawer secara asinkron tanpa mengganggu hover cursor
+    try {
+      const observer = new MutationObserver((mutations) => {
+        let shouldTag = false;
+        for (const m of mutations) {
+          if (m.addedNodes && m.addedNodes.length > 0) {
+            shouldTag = true;
+            break;
+          }
+        }
+        if (shouldTag) {
+          scheduleTagAll();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    } catch(e) {}
 
     // 4. Interval Ringan: memastikan elemen dinamis WhatsApp terdeteksi seketika (<0.2ms overhead)
     setInterval(() => {

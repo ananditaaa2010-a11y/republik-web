@@ -689,31 +689,23 @@
 
         const innerAvatar = row.querySelector('img:not(.emoji)') ||
                             (p ? Array.from(p.children).find(c => c !== statusSvg) : null);
-        if (innerAvatar && innerAvatar !== statusSvg && !cell.contains(innerAvatar)) {
+        if (innerAvatar && innerAvatar !== statusSvg && !cell.contains(innerAvatar) && !innerAvatar.contains(cell)) {
           innerAvatar.classList.add('wa-privacy-avatar');
         }
         return;
       }
 
-      // Kumpulkan avatar (gambar, default silhouette SVG, inisial seperti 'A', 'T')
-      const avatarTargets = [];
-      const rowImgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
-      avatarTargets.push(...rowImgs);
+      // Kumpulkan HANYA elemen avatar langsung (gambar, inisial huruf seperti 'A', 'T' di dalam div._ak8h)
+      // DILARANG KERAS menandai container atau elemen yang membungkus cell!
+      const avCircle = row.querySelector('div._ak8h:not(:has(circle[stroke])):not(:has(svg._ak8i))') ||
+                       row.querySelector('[data-testid="avatar"]') ||
+                       row.querySelector('[data-testid="chat-avatar"]') ||
+                       row.querySelector('img:not(.emoji)') ||
+                       (cell.previousElementSibling && !cell.previousElementSibling.contains(cell) && !cell.contains(cell.previousElementSibling) ? cell.previousElementSibling : null);
 
-      const avatarSvgs = Array.from(row.querySelectorAll('[data-icon="default-user"], [data-icon="default-group"], [data-icon="community"], [data-icon*="avatar"]')).filter(svg => !cell.contains(svg));
-      avatarTargets.push(...avatarSvgs);
-
-      const avatarContainers = Array.from(row.querySelectorAll('div._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"]')).filter(d => !cell.contains(d));
-      avatarTargets.push(...avatarContainers);
-
-      const avatarCol = cell.previousElementSibling || (row.firstElementChild !== cell ? row.firstElementChild : null);
-      if (avatarCol && !cell.contains(avatarCol)) {
-        avatarTargets.push(avatarCol);
+      if (avCircle && !cell.contains(avCircle) && !avCircle.contains(cell)) {
+        avCircle.classList.add('wa-privacy-avatar');
       }
-
-      avatarTargets.forEach(target => {
-        target.classList.add('wa-privacy-avatar');
-      });
     });
 
     // Profil Pengguna Pojok Kiri Bawah ("Kontak Anda")
@@ -814,24 +806,7 @@
       setTimeout(tagAll, 600);
     }, { passive: true });
 
-    // 3. MutationObserver: deteksi penambahan node/drawer secara asinkron tanpa mengganggu hover cursor
-    try {
-      const observer = new MutationObserver((mutations) => {
-        let shouldTag = false;
-        for (const m of mutations) {
-          if (m.addedNodes && m.addedNodes.length > 0) {
-            shouldTag = true;
-            break;
-          }
-        }
-        if (shouldTag) {
-          scheduleTagAll();
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    } catch(e) {}
-
-    // 4. Interval Ringan: memastikan elemen dinamis WhatsApp terdeteksi seketika (<0.2ms overhead)
+    // 3. Interval Ringan: memastikan elemen dinamis WhatsApp terdeteksi seketika (<0.2ms overhead)
     setInterval(() => {
       if (document.querySelector('[data-animate-drawer-right], [data-animate-drawer-left], #pane-side')) {
         tagAll();

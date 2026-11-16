@@ -581,39 +581,53 @@
         row.classList.add('wa-privacy-drawer-protected');
       });
 
-      // 6. Bagian Grup Bersama ("11 grup yang sama" / Groups in common)
-      // Heading "11 grup yang sama" & tombol "1 lainnya" -> 100% Jernih
-      // Masing-masing baris grup (foto avatar grup & nama grup) -> BLUR (unblur on hover)
-      const groupHeadings = Array.from(drawer.querySelectorAll('span, div, h3')).filter(el => {
-        const t = (el.textContent || '').trim();
-        return /\d+\s+grup yang sama/i.test(t) || /\d+\s+groups in common/i.test(t);
+      // 6. Bagian Grup Bersama ("grup yang sama" / Groups in common)
+      // User requirement: "sama grup yang sama itu blur semua dari foto sampai chat nya"
+      // Heading & tombol "1 lainnya" -> 100% Jernih
+      // Masing-masing baris grup (foto avatar grup & semua teks nama + chat preview) -> BLUR (unblur on hover)
+      const allDrawerElements = Array.from(drawer.querySelectorAll('*'));
+      const groupHeading = allDrawerElements.find(el => {
+        if (el.children.length > 2) return false;
+        const t = (el.textContent || '').trim().toLowerCase();
+        return t.includes('grup yang sama') || t.includes('groups in common');
       });
-      groupHeadings.forEach(gh => {
-        gh.classList.add('wa-privacy-drawer-protected');
-        const container = gh.closest('section, div[role="region"]') || gh.parentElement?.parentElement;
+
+      if (groupHeading) {
+        groupHeading.classList.add('wa-privacy-drawer-protected');
+        const container = groupHeading.closest('section') || 
+                          groupHeading.closest('div[role="region"]') || 
+                          groupHeading.parentElement?.parentElement;
         if (container) {
           const rows = container.querySelectorAll('div[role="listitem"], div[role="row"], div[role="button"]:not([data-testid*="btn"])');
           rows.forEach(row => {
-            if (row.contains(gh)) return;
-            if (row.querySelector('[data-icon="chevron-down"]') || row.textContent.includes('lainnya') || row.textContent.includes('more')) {
+            if (row.contains(groupHeading)) return;
+            const rowText = (row.textContent || '').toLowerCase();
+            if (row.querySelector('[data-icon="chevron-down"]') || rowText.includes('lainnya') || rowText.includes('more')) {
               row.classList.add('wa-privacy-drawer-protected');
               return;
             }
 
-            const gAvatar = row.querySelector('img:not(.emoji), ._ak8h, [data-testid="avatar"], [data-testid="default-group"]');
+            row.classList.add('wa-privacy-shared-row');
+
+            // 1. Avatar grup
+            const gAvatar = row.querySelector('img:not(.emoji), ._ak8h, [data-testid="avatar"], [data-icon*="group"], [data-icon*="community"], [data-testid="default-group"]') || row.firstElementChild;
             if (gAvatar && !gAvatar.classList.contains('wa-privacy-shared-avatar')) {
               gAvatar.classList.add('wa-privacy-shared-avatar');
             }
-            const gTitle = row.querySelector('span[title], [data-testid="cell-frame-title"], span[dir="auto"], span._ak8q');
-            if (gTitle && !gTitle.classList.contains('wa-privacy-shared-name')) {
-              gTitle.classList.add('wa-privacy-shared-name');
-            }
-            if (gAvatar || gTitle) {
-              attachRowHover(row, [gAvatar, gTitle]);
-            }
+
+            // 2. Seluruh teks (Nama grup + Chat preview / subtitle di bawahnya) -> "blur semua dari foto sampai chat nya"
+            const textElements = Array.from(row.querySelectorAll('[data-testid="cell-frame-title"], [data-testid="cell-frame-container"] span, [data-testid="cell-frame-container"] div, span[title], span[dir="auto"], span._ak8q, div._ak8q'));
+            textElements.forEach(te => {
+              if (!te.classList.contains('wa-privacy-shared-content')) {
+                te.classList.add('wa-privacy-shared-content');
+              }
+            });
+
+            // 3. Hover pada baris grup -> Foto sampai Chat-nya langsung jernih
+            attachRowHover(row, [gAvatar, ...textElements].filter(Boolean));
           });
         }
-      });
+      }
 
       // 7. Tombol Bagian Bawah (Footer: "Tambah favorit", "Tambah ke daftar", "Ekspor", "Bersihkan", "Blokir", "Laporkan") -> 100% JERNIH!
       const bottomActions = drawer.querySelectorAll(
@@ -639,17 +653,44 @@
   function setupSidebarAndControls() {
     const cellFrames = document.querySelectorAll(
       '#pane-side [data-testid="cell-frame-container"], ' +
-      'div[data-testid="archived-chats"] [data-testid="cell-frame-container"]'
+      'div[data-testid="archived-chats"] [data-testid="cell-frame-container"], ' +
+      'div[data-animate-drawer-left="true"] [data-testid="cell-frame-container"]'
     );
 
     cellFrames.forEach(cell => {
-      const isArchivedHeaderBtn = cell.closest('[data-testid="archived"]') && 
-                                  !cell.closest('div[data-testid="archived-chats"]');
-      if (isArchivedHeaderBtn) return;
+      const row = cell.closest('div[role="listitem"]') || 
+                  cell.closest('div[role="row"]') || 
+                  cell.parentElement;
+      if (!row) return;
 
-      // Contact Name (Disamarkan, namun teks (Anda) tetap jernih sesuai https://web.whatsapp.com)
+      // Proteksi Tulisan 'Diarsipkan' / 'Archived' agar TIDAK BLUR
+      const isArchivedBtn = !!(
+        cell.querySelector('[data-icon="archived"]') ||
+        row.querySelector('[data-icon="archived"]') ||
+        cell.closest('div[role="button"]:has([data-icon="archived"])') ||
+        row.closest('div[role="button"]:has([data-icon="archived"])') ||
+        (cell.textContent || '').trim().toLowerCase() === 'diarsipkan' ||
+        (cell.textContent || '').trim().toLowerCase() === 'archived'
+      );
+
       const titleEl = cell.querySelector('[data-testid="cell-frame-title"]') ||
                       cell.querySelector('div._ak8q');
+
+      if (isArchivedBtn && !cell.closest('div[data-animate-drawer-left="true"]')) {
+        if (titleEl) {
+          titleEl.classList.remove('wa-privacy-name', 'wa-privacy-number');
+          titleEl.classList.add('wa-privacy-archived-clear');
+          titleEl.querySelectorAll('*').forEach(c => {
+            c.classList.remove('wa-privacy-name', 'wa-privacy-number');
+            c.classList.add('wa-privacy-archived-clear');
+            c.style.setProperty('filter', 'none', 'important');
+            c.style.setProperty('-webkit-filter', 'none', 'important');
+          });
+        }
+        return;
+      }
+
+      // Contact Name (Disamarkan, namun teks (Anda) tetap jernih sesuai https://web.whatsapp.com)
       if (titleEl) {
         const innerSpans = Array.from(titleEl.querySelectorAll('span'));
         const andaSpan = innerSpans.find(s => {
@@ -685,12 +726,7 @@
 
       // CATATAN: Preview Pesan Terakhir (baris kedua) TIDAK DI-BLUR, 100% Jernih persis seperti web.whatsapp.com asli
 
-      // Contact Avatar (Foto maupun Inisial non-foto)
-      const row = cell.closest('div[role="listitem"]') || 
-                  cell.closest('div[role="row"]') || 
-                  cell.parentElement;
-      if (!row) return;
-
+      // Contact Avatar (Foto, Inisial, SVG default, di chat list biasa maupun di dalam arsipan)
       // Status Ring Hijau (Selalu dilindungi jernih)
       const statusSvg = row.querySelector('svg._ak8i, circle[stroke]');
       if (statusSvg && !cell.contains(statusSvg)) {
@@ -715,34 +751,24 @@
         return;
       }
 
-      // Foto Gambar
-      const imgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
-      if (imgs.length > 0) {
-        imgs.forEach(img => {
-          if (!img.classList.contains('wa-privacy-avatar')) {
-            img.classList.add('wa-privacy-avatar');
+      // Kumpulkan semua varian avatar (gambar, default silhouette SVG, inisial)
+      const avatarTargets = [];
+      const rowImgs = Array.from(row.querySelectorAll('img')).filter(img => !cell.contains(img) && !img.classList.contains('emoji'));
+      avatarTargets.push(...rowImgs);
+
+      const avatarSvgs = Array.from(row.querySelectorAll('[data-icon="default-user"], [data-icon="default-group"], [data-icon="community"], [data-icon*="avatar"]')).filter(svg => !cell.contains(svg));
+      avatarTargets.push(...avatarSvgs);
+
+      const avatarContainers = Array.from(row.querySelectorAll('div._ak8h, [data-testid="avatar"], [data-testid="chat-avatar"]')).filter(d => !cell.contains(d));
+      avatarTargets.push(...avatarContainers);
+
+      if (avatarTargets.length > 0) {
+        avatarTargets.forEach(target => {
+          if (!target.classList.contains('wa-privacy-avatar')) {
+            target.classList.add('wa-privacy-avatar');
           }
-          attachDirectHover(img);
+          attachDirectHover(target);
         });
-        return;
-      }
-
-      // Inisial Tanpa Foto ("A", "T", siluet)
-      const elementsOutsideCell = Array.from(row.querySelectorAll('div, span')).filter(el => {
-        if (cell === el || cell.contains(el) || el.contains(cell)) return false;
-        const w = el.offsetWidth;
-        const h = el.offsetHeight;
-        if (w >= 30 && w <= 70 && h >= 30 && h <= 70) return true;
-        const txt = (el.textContent || '').trim();
-        return /^[\p{L}\p{N}]{1,2}$/u.test(txt);
-      });
-
-      if (elementsOutsideCell.length > 0) {
-        const initialAvatar = elementsOutsideCell[0];
-        if (!initialAvatar.classList.contains('wa-privacy-avatar')) {
-          initialAvatar.classList.add('wa-privacy-avatar');
-        }
-        attachDirectHover(initialAvatar);
       } else {
         const sib = cell.previousElementSibling;
         if (sib && !cell.contains(sib)) {

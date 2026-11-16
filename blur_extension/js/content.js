@@ -6,6 +6,11 @@
 (function () {
   'use strict';
 
+  if (window.__waPrivacyBlurLoaded) {
+    return;
+  }
+  window.__waPrivacyBlurLoaded = true;
+
   const DEFAULT_SETTINGS = {
     enabled: true,
     blurIntensity: 10,

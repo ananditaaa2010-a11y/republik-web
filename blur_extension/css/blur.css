@@ -152,8 +152,8 @@ div[role="button"]:has([data-icon="thumb-down"]) *,
 [data-animate-drawer-right] div[role="button"]:has(span[data-icon="chevron-right"]) *,
 .wa-privacy-contact-drawer div[role="button"]:has(span[data-icon="chevron-right"]),
 .wa-privacy-contact-drawer div[role="button"]:has(span[data-icon="chevron-right"]) *,
-.wa-privacy-drawer-protected,
-.wa-privacy-drawer-protected * {
+.wa-privacy-drawer-header,
+.wa-privacy-drawer-header * {
   filter: none !important;
   -webkit-filter: none !important;
   opacity: 1 !important;
@@ -228,20 +228,26 @@ div[role="button"]:has([data-icon="thumb-down"]) *,
 /* 1. Foto Profil Utama di Info Kontak */
 body.wa-blur-master-enabled .wa-privacy-drawer-avatar,
 body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-drawer-avatar,
-body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-avatar {
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-avatar,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="profile-pic"] img,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="avatar"] img,
+body.wa-blur-master-enabled [data-animate-drawer-right] header + div img:first-of-type {
   filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   -webkit-filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+  transition: filter 0.05s ease-out !important;
   cursor: pointer !important;
 }
 
 /* 2. Nama Kontak di Info Kontak */
 body.wa-blur-master-enabled .wa-privacy-drawer-name,
 body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-drawer-name,
-body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-name {
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-name,
+body.wa-blur-master-enabled [data-animate-drawer-right] h2,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-title"],
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="chat-info-title"] {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+  transition: filter 0.05s ease-out !important;
   cursor: pointer !important;
   display: inline-block !important;
 }
@@ -249,10 +255,12 @@ body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-drawer-name 
 /* 3. Nomor Telepon di Bawah Nama di Info Kontak */
 body.wa-blur-master-enabled .wa-privacy-number,
 body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-number,
-body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-number {
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-number,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-subtitle"],
+body.wa-blur-master-enabled [data-animate-drawer-right] span[dir="ltr"] {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+  transition: filter 0.05s ease-out !important;
   cursor: pointer !important;
   display: inline-block !important;
 }
@@ -263,16 +271,18 @@ body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-shared-avatar
 body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-avatar {
   filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
   -webkit-filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+  transition: filter 0.05s ease-out !important;
   cursor: pointer !important;
 }
 
 body.wa-blur-master-enabled .wa-privacy-shared-name,
+body.wa-blur-master-enabled .wa-privacy-shared-content,
 body.wa-blur-master-enabled .wa-privacy-contact-drawer .wa-privacy-shared-name,
-body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-name {
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-name,
+body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-content {
   filter: blur(var(--wa-blur-intensity, 10px)) !important;
   -webkit-filter: blur(var(--wa-blur-intensity, 10px)) !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+  transition: filter 0.05s ease-out !important;
   cursor: pointer !important;
   display: inline-block !important;
 }
@@ -283,34 +293,39 @@ body.wa-blur-master-enabled [data-animate-drawer-right] .wa-privacy-shared-name 
 /* A. Hover Foto Profil Utama */
 body.wa-blur-master-enabled .wa-privacy-drawer-avatar:hover,
 body.wa-blur-master-enabled .wa-privacy-drawer-avatar:hover *,
+body.wa-blur-master-enabled [data-animate-drawer-right] header + div img:first-of-type:hover,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="profile-pic"]:hover,
 body.wa-blur-master-enabled div:has(> .wa-privacy-drawer-avatar):hover,
 body.wa-blur-master-enabled div:has(> .wa-privacy-drawer-avatar):hover *,
 
 /* B. Hover Nama Kontak */
 body.wa-blur-master-enabled .wa-privacy-drawer-name:hover,
 body.wa-blur-master-enabled .wa-privacy-drawer-name:hover *,
+body.wa-blur-master-enabled [data-animate-drawer-right] h2:hover,
+body.wa-blur-master-enabled [data-animate-drawer-right] h2:hover *,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-title"]:hover,
 
 /* C. Hover Nomor Telepon */
 body.wa-blur-master-enabled .wa-privacy-number:hover,
 body.wa-blur-master-enabled .wa-privacy-number:hover *,
+body.wa-blur-master-enabled [data-animate-drawer-right] [data-testid="contact-info-subtitle"]:hover,
+body.wa-blur-master-enabled [data-animate-drawer-right] span[dir="ltr"]:hover,
 
-/* D. Hover Grup Bersama (Avatar & Nama Grup menjadi Jernih) */
+/* D. Hover Grup Bersama (Avatar & Semua Teks menjadi Jernih Seketika) */
 body.wa-blur-master-enabled .wa-privacy-shared-avatar:hover,
 body.wa-blur-master-enabled .wa-privacy-shared-avatar:hover *,
 body.wa-blur-master-enabled .wa-privacy-shared-name:hover,
 body.wa-blur-master-enabled .wa-privacy-shared-name:hover *,
-body.wa-blur-master-enabled div[role="listitem"]:has(.wa-privacy-shared-name):hover .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled div[role="listitem"]:has(.wa-privacy-shared-name):hover .wa-privacy-shared-name,
+body.wa-blur-master-enabled .wa-privacy-shared-content:hover,
+body.wa-blur-master-enabled .wa-privacy-shared-content:hover *,
+body.wa-blur-master-enabled .wa-privacy-shared-row:hover,
+body.wa-blur-master-enabled .wa-privacy-shared-row:hover *,
 body.wa-blur-master-enabled div[role="listitem"]:has(.wa-privacy-shared-name):hover *,
-body.wa-blur-master-enabled div[role="row"]:has(.wa-privacy-shared-name):hover .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled div[role="row"]:has(.wa-privacy-shared-name):hover .wa-privacy-shared-name,
 body.wa-blur-master-enabled div[role="row"]:has(.wa-privacy-shared-name):hover *,
-body.wa-blur-master-enabled div[role="button"]:has(.wa-privacy-shared-name):hover .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled div[role="button"]:has(.wa-privacy-shared-name):hover .wa-privacy-shared-name,
 body.wa-blur-master-enabled div[role="button"]:has(.wa-privacy-shared-name):hover * {
   filter: none !important;
   -webkit-filter: none !important;
-  transition: filter 0.15s ease-in-out, -webkit-filter 0.15s ease-in-out !important;
+  transition: none !important;
 }
 
 /* Kotak Input Ketik Pesan & Filter Bar */

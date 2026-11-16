@@ -481,86 +481,78 @@
       const scrollContainer = drawerHeader ? drawerHeader.nextElementSibling : drawer;
       if (!scrollContainer) return;
 
-      // KARTU PERTAMA (Top Card): Hanya kartu ini yang memuat foto profil, nama kontak, dan nomor telepon
-      // Kita isolasi HANYA pada kartu pertama (firstElementChild) agar TIDAK PERNAH menyentuh section Media, Pengaturan, atau Footer!
-      const topCard = scrollContainer.firstElementChild || scrollContainer;
-      if (topCard && topCard !== scrollContainer) {
-        // A. Foto Profil Utama di Info Kontak (bisa img, svg siluet, default avatar, atau inisial)
-        const avatarCandidate = topCard.querySelector(
-          '[data-testid="profile-pic"], [data-testid="avatar"], img[src*="pps.whatsapp.net"], img:not(.emoji), div._ak8h, [data-icon="default-user"], [data-icon="default-group"], [data-icon="community"]'
-        ) || topCard.querySelector('div[role="button"]');
-
-        if (avatarCandidate && !avatarCandidate.closest('[data-icon="chevron-right"]')) {
-          const targetAvatar = avatarCandidate.tagName === 'IMG' ? avatarCandidate : (avatarCandidate.querySelector('img:not(.emoji)') || avatarCandidate);
-          if (!targetAvatar.classList.contains('wa-privacy-drawer-avatar')) {
-            targetAvatar.classList.add('wa-privacy-drawer-avatar');
-          }
-          attachDirectHover(targetAvatar);
-
-          const parentBtn = targetAvatar.closest('div[role="button"], button');
-          if (parentBtn && parentBtn !== topCard && !parentBtn.querySelector('h2')) {
-            if (!parentBtn.classList.contains('wa-privacy-drawer-avatar')) {
-              parentBtn.classList.add('wa-privacy-drawer-avatar');
-            }
-            attachDirectHover(parentBtn);
-          }
+      // 2. KARTU PERTAMA (Top Card): Foto Profil, Nama Kontak, Nomor Telepon
+      // A. Foto Profil Utama di Info Kontak
+      let topAvatar = drawer.querySelector(
+        '[data-testid="profile-pic"] img, [data-testid="avatar"] img, img[src*="pps.whatsapp.net"], img._ak8k'
+      );
+      if (!topAvatar) {
+        const firstBtnWithImg = drawer.querySelector('div[role="button"]:has(img)');
+        if (firstBtnWithImg && !firstBtnWithImg.querySelector('[data-icon="chevron-right"]')) {
+          topAvatar = firstBtnWithImg.querySelector('img:not(.emoji)');
         }
-
-        // B. Nama Kontak di Info Kontak ("Alpin" / Nama Grup)
-        const nameCandidates = topCard.querySelectorAll('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
-        nameCandidates.forEach(nc => {
-          if (!nc.classList.contains('wa-privacy-drawer-protected') && !nc.classList.contains('wa-privacy-drawer-name')) {
-            nc.classList.add('wa-privacy-drawer-name');
-            attachDirectHover(nc);
-          }
-        });
-
-        if (nameCandidates.length === 0) {
-          const textSpans = Array.from(topCard.querySelectorAll('span[dir="auto"], span._ak8q, div._ak8q'));
-          for (let sp of textSpans) {
-            const txt = (sp.textContent || '').trim();
-            if (txt.length > 0 && !isPhoneNumber(txt) && !txt.includes('Info') && !sp.closest('.wa-privacy-drawer-avatar') && !sp.closest('.wa-privacy-drawer-protected')) {
-              if (!sp.classList.contains('wa-privacy-drawer-name')) {
-                sp.classList.add('wa-privacy-drawer-name');
-                attachDirectHover(sp);
-              }
-              break;
-            }
-          }
-        }
-
-        // C. Nomor Telepon di Bawah Nama ("+62 858-1755-6573")
-        const subtitleCandidates = topCard.querySelectorAll('[data-testid="contact-info-subtitle"], span[dir="ltr"]');
-        subtitleCandidates.forEach(sc => {
-          if (!sc.classList.contains('wa-privacy-drawer-protected') && !sc.classList.contains('wa-privacy-drawer-name') && !sc.closest('.wa-privacy-drawer-avatar')) {
-            const txt = (sc.textContent || '').trim();
-            if (isPhoneNumber(txt)) {
-              if (!sc.classList.contains('wa-privacy-number')) {
-                sc.classList.add('wa-privacy-number');
-                attachDirectHover(sc);
-              }
-            }
-          }
-        });
+      }
+      if (!topAvatar && drawerHeader && drawerHeader.nextElementSibling) {
+        topAvatar = drawerHeader.nextElementSibling.querySelector('img:not(.emoji)');
       }
 
-      // 3. Section Media, tautan, dan dok & Thumbnails -> WAJIB 100% JERNIH! (Proteksi Mutlak)
-      // Cari section media baik melalui teks maupun chevron-right di atas thumbnails
-      const mediaSections = Array.from(drawer.querySelectorAll('div, section')).filter(el => {
-        const t = (el.textContent || '');
-        const isMediaText = t.includes('Media, tautan') || t.includes('Media, links') || t.includes('Media, tautan, dan dok');
-        const hasChevron = !!el.querySelector('[data-icon="chevron-right"]');
-        return isMediaText || (hasChevron && el.querySelector('img'));
+      if (topAvatar && !topAvatar.closest('[data-icon="chevron-right"]')) {
+        topAvatar.classList.add('wa-privacy-drawer-avatar');
+        attachDirectHover(topAvatar);
+        const pBtn = topAvatar.closest('div[role="button"]');
+        if (pBtn && !pBtn.querySelector('h2') && !pBtn.querySelector('[data-icon="chevron-right"]')) {
+          pBtn.classList.add('wa-privacy-drawer-avatar');
+          attachDirectHover(pBtn);
+        }
+      } else {
+        // Fallback: avatar default tanpa foto (silhouette icon)
+        const topSvg = drawer.querySelector('[data-icon="default-user"], [data-icon="default-group"], [data-icon="community"]');
+        if (topSvg && !topSvg.closest('[data-icon="chevron-right"]')) {
+          topSvg.classList.add('wa-privacy-drawer-avatar');
+          attachDirectHover(topSvg);
+        }
+      }
+
+      // B. Nama Kontak di Info Kontak
+      const nameEl = drawer.querySelector('h2, [data-testid="contact-info-title"], [data-testid="chat-info-title"]');
+      if (nameEl) {
+        nameEl.classList.add('wa-privacy-drawer-name');
+        attachDirectHover(nameEl);
+      } else {
+        const textSpans = Array.from(drawer.querySelectorAll('span[dir="auto"], span._ak8q, div._ak8q'));
+        for (let sp of textSpans) {
+          const txt = (sp.textContent || '').trim();
+          if (txt.length > 0 && !isPhoneNumber(txt) && !txt.includes('Info') && !sp.closest('[data-icon="chevron-right"]') && !sp.closest('header')) {
+            sp.classList.add('wa-privacy-drawer-name');
+            attachDirectHover(sp);
+            break;
+          }
+        }
+      }
+
+      // C. Nomor Telepon di Info Kontak
+      const phoneSpans = Array.from(drawer.querySelectorAll('span[dir="ltr"], [data-testid="contact-info-subtitle"], span'));
+      for (let sp of phoneSpans) {
+        if (sp.closest('header') || sp.closest('[data-icon="chevron-right"]') || sp.classList.contains('wa-privacy-drawer-name')) continue;
+        const txt = (sp.textContent || '').trim();
+        if (isPhoneNumber(txt)) {
+          sp.classList.add('wa-privacy-number');
+          attachDirectHover(sp);
+        }
+      }
+
+      // 3. Section Media, tautan, dan dok & Thumbnails -> WAJIB 100% JERNIH! (Proteksi Aman Tanpa Menyentuh Card 1)
+      const mediaHeading = Array.from(drawer.querySelectorAll('span, div, h3')).find(el => {
+        if (el.children.length > 2) return false;
+        const t = (el.textContent || '').trim().toLowerCase();
+        return t.includes('media, tautan') || t.includes('media, links');
       });
-      mediaSections.forEach(ms => {
-        ms.classList.add('wa-privacy-drawer-protected');
-        const allInMedia = ms.querySelectorAll('*');
-        allInMedia.forEach(el => {
-          el.classList.remove('wa-privacy-drawer-avatar', 'wa-privacy-drawer-name', 'wa-privacy-number', 'wa-privacy-shared-avatar', 'wa-privacy-shared-name', 'wa-privacy-media');
-          el.style.removeProperty('filter');
-          el.style.removeProperty('-webkit-filter');
-        });
-      });
+      if (mediaHeading) {
+        const mediaSection = mediaHeading.closest('section') || mediaHeading.closest('div[role="button"]') || mediaHeading.parentElement;
+        if (mediaSection && nameEl && !mediaSection.contains(nameEl)) {
+          mediaSection.classList.add('wa-privacy-drawer-protected');
+        }
+      }
 
       // 4. Tombol Aksi Cepat ("Suara", "Video", "Cari") -> 100% Jernih
       const actionButtons = drawer.querySelectorAll(

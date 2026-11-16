@@ -281,35 +281,34 @@ body.wa-blur-master-enabled .wa-privacy-drawer-avatar:hover * {
   transition: none !important;
 }
 
-/* B. Hover Nama Kontak (0ms Instan) */
+/* B. Hover Nama Kontak (0ms Instan - HANYA nama kontak yang terbuka) */
 body.wa-blur-master-enabled .wa-privacy-card1-name:hover,
 body.wa-blur-master-enabled .wa-privacy-card1-name:hover *,
 body.wa-blur-master-enabled .wa-privacy-drawer-name:hover,
-body.wa-blur-master-enabled .wa-privacy-drawer-name:hover *,
-body.wa-blur-master-enabled div:has(> .wa-privacy-card1-name):hover .wa-privacy-card1-name {
+body.wa-blur-master-enabled .wa-privacy-drawer-name:hover * {
   filter: none !important;
   -webkit-filter: none !important;
   transition: none !important;
 }
 
-/* C. Hover Nomor Telepon (0ms Instan) */
+/* C. Hover Nomor Telepon (0ms Instan - HANYA nomor telepon yang terbuka) */
 body.wa-blur-master-enabled .wa-privacy-card1-number:hover,
 body.wa-blur-master-enabled .wa-privacy-card1-number:hover *,
 body.wa-blur-master-enabled .wa-privacy-number:hover,
-body.wa-blur-master-enabled .wa-privacy-number:hover *,
-body.wa-blur-master-enabled div:has(> .wa-privacy-card1-number):hover .wa-privacy-card1-number {
+body.wa-blur-master-enabled .wa-privacy-number:hover * {
   filter: none !important;
   -webkit-filter: none !important;
   transition: none !important;
 }
 
-/* D. Hover Grup Bersama: Begitu kursor masuk baris grup, FOTO + NAMA + ANGGOTA JERNIH SEKETIKA (0ms) */
-body.wa-blur-master-enabled .wa-privacy-shared-row:hover .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled .wa-privacy-shared-row:hover .wa-privacy-shared-avatar *,
-body.wa-blur-master-enabled .wa-privacy-shared-row:hover .wa-privacy-shared-content,
-body.wa-blur-master-enabled .wa-privacy-shared-row:hover .wa-privacy-shared-content *,
+/* D. Hover Grup Bersama Bergantian: HANYA elemen yang ditunjuk kursor yang terbuka (Foto ATAU Teks), BUKAN semuanya sekaligus */
 body.wa-blur-master-enabled .wa-privacy-shared-avatar:hover,
-body.wa-blur-master-enabled .wa-privacy-shared-avatar:hover *,
+body.wa-blur-master-enabled .wa-privacy-shared-avatar:hover * {
+  filter: none !important;
+  -webkit-filter: none !important;
+  transition: none !important;
+}
+
 body.wa-blur-master-enabled .wa-privacy-shared-content:hover,
 body.wa-blur-master-enabled .wa-privacy-shared-content:hover * {
   filter: none !important;
@@ -391,8 +390,8 @@ body.wa-blur-master-enabled div[role="row"]:has([data-icon*="archiv"]),
 body.wa-blur-master-enabled div[role="row"]:has([data-icon*="archiv"]) *,
 body.wa-blur-master-enabled [data-icon*="archiv"],
 body.wa-blur-master-enabled [data-icon*="archiv"] *,
-body.wa-blur-master-enabled span[data-icon*="archiv"] + span,
-body.wa-blur-master-enabled span[data-icon*="archiv"] ~ *,
+body.wa-blur-master-enabled span[data-icon*="archiv"]+span,
+body.wa-blur-master-enabled span[data-icon*="archiv"]~*,
 body.wa-blur-master-enabled .wa-privacy-archived-clear,
 body.wa-blur-master-enabled .wa-privacy-archived-clear * {
   filter: none !important;
@@ -471,19 +470,7 @@ body.wa-blur-master-enabled.wa-blur-profile-photos [title*="Profil" i] img,
 body.wa-blur-master-enabled.wa-blur-profile-photos [title*="Profile" i] img,
 body.wa-blur-master-enabled.wa-blur-profile-photos [title*="Anda" i] img,
 body.wa-blur-master-enabled.wa-blur-profile-photos [title*="You" i] img,
-/* Grup yang sama di Info Kontak: FOTO sampai CHAT NYA BLUR */
-body.wa-blur-master-enabled .wa-privacy-shared-avatar,
-body.wa-blur-master-enabled .wa-privacy-shared-content,
-body.wa-blur-master-enabled .wa-privacy-shared-name,
-body.wa-blur-master-enabled .wa-privacy-shared-row img,
-body.wa-blur-master-enabled .wa-privacy-shared-row [data-testid="cell-frame-title"],
-body.wa-blur-master-enabled .wa-privacy-shared-row [data-testid="cell-frame-container"] span,
-body.wa-blur-master-enabled .wa-privacy-shared-row [data-testid="cell-frame-container"] div {
-  filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
-  -webkit-filter: blur(var(--wa-blur-avatar-intensity, 12px)) !important;
-  transition: none !important;
-  cursor: pointer !important;
-}
+
 
 /* --------------------------------------------------------------------------
    7. FITUR: BLUR GROUP NAMES & GROUP INFO (.wa-blur-group-info)
@@ -600,8 +587,6 @@ body.wa-blur-master-enabled.wa-blur-hover-reveal #main header div[role="button"]
 body.wa-blur-master-enabled.wa-blur-hover-reveal #main div[role="row"] img[src*="whatsapp.net"]:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal #main div[role="row"] [data-testid="avatar"] img:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-header-avatar:hover,
-body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-shared-row:hover,
-body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-shared-row:hover *,
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-shared-avatar:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-shared-content:hover,
 body.wa-blur-master-enabled.wa-blur-hover-reveal .wa-privacy-shared-name:hover,
